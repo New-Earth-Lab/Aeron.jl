@@ -72,24 +72,24 @@ struct addrinfo
     ai_next::Ptr{addrinfo}
 end
 
-struct var"##Ctag#3420"
+struct var"##Ctag#4998"
     data::NTuple{8, UInt8}
 end
 
-function Base.getproperty(x::Ptr{var"##Ctag#3420"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#4998"}, f::Symbol)
     f === :ifu_broadaddr && return Ptr{Ptr{sockaddr}}(x + 0)
     f === :ifu_dstaddr && return Ptr{Ptr{sockaddr}}(x + 0)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#3420", f::Symbol)
-    r = Ref{var"##Ctag#3420"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#3420"}, r)
+function Base.getproperty(x::var"##Ctag#4998", f::Symbol)
+    r = Ref{var"##Ctag#4998"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#4998"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#3420"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#4998"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
@@ -103,7 +103,7 @@ function Base.getproperty(x::Ptr{ifaddrs}, f::Symbol)
     f === :ifa_flags && return Ptr{Cuint}(x + 16)
     f === :ifa_addr && return Ptr{Ptr{sockaddr}}(x + 24)
     f === :ifa_netmask && return Ptr{Ptr{sockaddr}}(x + 32)
-    f === :ifa_ifu && return Ptr{var"##Ctag#3420"}(x + 40)
+    f === :ifa_ifu && return Ptr{var"##Ctag#4998"}(x + 40)
     f === :ifa_data && return Ptr{Ptr{Cvoid}}(x + 48)
     return getfield(x, f)
 end
@@ -368,14 +368,14 @@ end
 
 const aeron_mapped_file_t = aeron_mapped_file_stct
 
-mutable struct var"##Ctag#3421"
+mutable struct var"##Ctag#4999"
     tail::UInt64
     head_cache::UInt64
     shared_head_cache::UInt64
     padding::NTuple{40, Int8}
-    var"##Ctag#3421"() = new()
+    var"##Ctag#4999"() = new()
 end
-function Base.getproperty(x::Ptr{var"##Ctag#3421"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#4999"}, f::Symbol)
     f === :tail && return Ptr{UInt64}(x + 0)
     f === :head_cache && return Ptr{UInt64}(x + 8)
     f === :shared_head_cache && return Ptr{UInt64}(x + 16)
@@ -383,37 +383,37 @@ function Base.getproperty(x::Ptr{var"##Ctag#3421"}, f::Symbol)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#3421", f::Symbol)
-    r = Ref{var"##Ctag#3421"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#3421"}, r)
+function Base.getproperty(x::var"##Ctag#4999", f::Symbol)
+    r = Ref{var"##Ctag#4999"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#4999"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#3421"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#4999"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
 
-mutable struct var"##Ctag#3424"
+mutable struct var"##Ctag#5002"
     head::UInt64
     padding::NTuple{56, Int8}
-    var"##Ctag#3424"() = new()
+    var"##Ctag#5002"() = new()
 end
-function Base.getproperty(x::Ptr{var"##Ctag#3424"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#5002"}, f::Symbol)
     f === :head && return Ptr{UInt64}(x + 0)
     f === :padding && return Ptr{NTuple{56, Int8}}(x + 8)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#3424", f::Symbol)
-    r = Ref{var"##Ctag#3424"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#3424"}, r)
+function Base.getproperty(x::var"##Ctag#5002", f::Symbol)
+    r = Ref{var"##Ctag#5002"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#5002"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#3424"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#5002"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
@@ -424,8 +424,8 @@ end
 
 function Base.getproperty(x::Ptr{aeron_mpsc_concurrent_array_queue_stct}, f::Symbol)
     f === :padding && return Ptr{NTuple{56, Int8}}(x + 0)
-    f === :producer && return Ptr{var"##Ctag#3421"}(x + 56)
-    f === :consumer && return Ptr{var"##Ctag#3422"}(x + 120)
+    f === :producer && return Ptr{var"##Ctag#4999"}(x + 56)
+    f === :consumer && return Ptr{var"##Ctag#5002"}(x + 120)
     f === :capacity && return Ptr{Csize_t}(x + 184)
     f === :mask && return Ptr{Csize_t}(x + 192)
     f === :buffer && return Ptr{Ptr{Ptr{Cvoid}}}(x + 200)
@@ -445,7 +445,7 @@ end
 
 const aeron_mpsc_concurrent_array_queue_t = aeron_mpsc_concurrent_array_queue_stct
 
-struct aeron_context_stct
+mutable struct aeron_context_stct
     aeron_dir::Cstring
     error_handler::aeron_error_handler_t
     error_handler_clientd::Ptr{Cvoid}
@@ -478,6 +478,7 @@ struct aeron_context_stct
     epoch_clock::aeron_clock_func_t
     cnc_map::aeron_mapped_file_t
     command_queue::aeron_mpsc_concurrent_array_queue_t
+    aeron_context_stct() = new()
 end
 
 const aeron_context_t = aeron_context_stct
@@ -9078,27 +9079,27 @@ function aeron_env_unset(key)
     @ccall Aeron.aeron_env_unset(key::Cstring)::Cint
 end
 
-mutable struct var"##Ctag#3423"
+mutable struct var"##Ctag#5001"
     tail::UInt64
     head_cache::UInt64
     padding::NTuple{48, Int8}
-    var"##Ctag#3423"() = new()
+    var"##Ctag#5001"() = new()
 end
-function Base.getproperty(x::Ptr{var"##Ctag#3423"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#5001"}, f::Symbol)
     f === :tail && return Ptr{UInt64}(x + 0)
     f === :head_cache && return Ptr{UInt64}(x + 8)
     f === :padding && return Ptr{NTuple{48, Int8}}(x + 16)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#3423", f::Symbol)
-    r = Ref{var"##Ctag#3423"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#3423"}, r)
+function Base.getproperty(x::var"##Ctag#5001", f::Symbol)
+    r = Ref{var"##Ctag#5001"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#5001"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#3423"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#5001"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
@@ -9109,8 +9110,8 @@ end
 
 function Base.getproperty(x::Ptr{aeron_spsc_concurrent_array_queue_stct}, f::Symbol)
     f === :padding && return Ptr{NTuple{56, Int8}}(x + 0)
-    f === :producer && return Ptr{var"##Ctag#3423"}(x + 56)
-    f === :consumer && return Ptr{var"##Ctag#3422"}(x + 120)
+    f === :producer && return Ptr{var"##Ctag#5001"}(x + 56)
+    f === :consumer && return Ptr{var"##Ctag#5002"}(x + 120)
     f === :capacity && return Ptr{Csize_t}(x + 184)
     f === :mask && return Ptr{Csize_t}(x + 192)
     f === :buffer && return Ptr{Ptr{Ptr{Cvoid}}}(x + 200)
@@ -10612,24 +10613,24 @@ end
 
 const aeron_uri_type_t = aeron_uri_type_enum
 
-struct var"##Ctag#3425"
+struct var"##Ctag#5003"
     data::NTuple{72, UInt8}
 end
 
-function Base.getproperty(x::Ptr{var"##Ctag#3425"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#5003"}, f::Symbol)
     f === :udp && return Ptr{aeron_udp_channel_params_t}(x + 0)
     f === :ipc && return Ptr{aeron_ipc_channel_params_t}(x + 0)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#3425", f::Symbol)
-    r = Ref{var"##Ctag#3425"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#3425"}, r)
+function Base.getproperty(x::var"##Ctag#5003", f::Symbol)
+    r = Ref{var"##Ctag#5003"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#5003"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#3425"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#5003"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
@@ -10640,7 +10641,7 @@ end
 function Base.getproperty(x::Ptr{aeron_uri_stct}, f::Symbol)
     f === :mutable_uri && return Ptr{NTuple{384, Cchar}}(x + 0)
     f === :type && return Ptr{aeron_uri_type_t}(x + 384)
-    f === :params && return Ptr{var"##Ctag#3425"}(x + 392)
+    f === :params && return Ptr{var"##Ctag#5003"}(x + 392)
     return getfield(x, f)
 end
 
@@ -11244,29 +11245,6 @@ function aeron_netutil_get_so_buf_lengths(default_so_rcvbuf, default_so_sndbuf)
     @ccall Aeron.aeron_netutil_get_so_buf_lengths(default_so_rcvbuf::Ptr{Csize_t}, default_so_sndbuf::Ptr{Csize_t})::Cint
 end
 
-mutable struct var"##Ctag#3422"
-    head::UInt64
-    padding::NTuple{56, Int8}
-    var"##Ctag#3422"() = new()
-end
-function Base.getproperty(x::Ptr{var"##Ctag#3422"}, f::Symbol)
-    f === :head && return Ptr{UInt64}(x + 0)
-    f === :padding && return Ptr{NTuple{56, Int8}}(x + 8)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::var"##Ctag#3422", f::Symbol)
-    r = Ref{var"##Ctag#3422"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#3422"}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{var"##Ctag#3422"}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
-
 mutable struct __pthread_mutex_s
     __lock::Cint
     __count::Cuint
@@ -11277,6 +11255,29 @@ mutable struct __pthread_mutex_s
     __list::__pthread_list_t
     __pthread_mutex_s() = new()
 end
+
+mutable struct var"##Ctag#5000"
+    head::UInt64
+    padding::NTuple{56, Int8}
+    var"##Ctag#5000"() = new()
+end
+function Base.getproperty(x::Ptr{var"##Ctag#5000"}, f::Symbol)
+    f === :head && return Ptr{UInt64}(x + 0)
+    f === :padding && return Ptr{NTuple{56, Int8}}(x + 8)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::var"##Ctag#5000", f::Symbol)
+    r = Ref{var"##Ctag#5000"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#5000"}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{var"##Ctag#5000"}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
 
 # exports
 const PREFIXES = ["aeron_"]

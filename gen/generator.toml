@@ -43,3 +43,6 @@ functionlike_macro_includelist = [
     # "AERON_COUNTER_KEY_OFFSET",
     # "AERON_COUNTER_LABEL_LENGTH_OFFSET",
 ]
+
+[log]
+TweakMutability_log=true

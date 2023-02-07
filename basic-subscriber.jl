@@ -1,5 +1,7 @@
 include("gen/LibAeron.jl")
 
+using CSyntax
+
 
 ## Basic config
 DEFAULT_CHANNEL = "aeron:udp?endpoint=localhost:20121"
@@ -30,40 +32,37 @@ function main()
     subscription = C_NULL
     fragment_assembler = C_NULL
 
-    # try
+    try
         
-        context = LibAeron.aeron_context_t()
-        # @show context
-        context_ptr = pointer_from_objref(context)
-        # context_ptr = Ptr{LibAeron.aeron_context_t}()
-        # @show context
-        if LibAeron.aeron_context_init(context_ptr) < 0
+        context = Ptr{LibAeron.aeron_context_t}(C_NULL)
+
+        if @c(LibAeron.aeron_context_init(&context)) < 0
             error("aeron_context_init: "*unsafe_string(LibAeron.aeron_errmsg()))
         end
-        @info "contexted" context
 
-        aeron = LibAeron.aeron_t()
-        aeron_ptr = pointer_from_objref(LibAeron.aeron_t())
-        aeron_ptr_ptr = Ptr{Nothing}(aeron_ptr)
-        if LibAeron.aeron_init(aeron_ptr_ptr, context_ptr) < 0
+
+        aeron = Ptr{LibAeron.aeron_t}()
+
+        # int aeron_init(aeron_t **client, aeron_context_t *context);
+        if @c(LibAeron.aeron_init(&aeron, context)) < 0
             error("aeron_init: "*unsafe_string(LibAeron.aeron_errmsg()))
         end
         @info "inited"
-
 
         if aeron_start(aeron) < 0
             error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
         end
         @info "started"
 
-    # finally
-    #     LibAeron.aeron_subscription_close(subscription, C_NULL, C_NULL)
-    #     LibAeron.aeron_close(aeron)
-    #     if context != C_NULL
-    #         LibAeron.aeron_context_close(context)
-    #     end
-    #     LibAeron.aeron_fragment_assembler_delete(fragment_assembler)
-    # end
+    finally
+        LibAeron.aeron_subscription_close(subscription, C_NULL, C_NULL)
+        LibAeron.aeron_close(aeron)
+        if context != C_NULL
+            LibAeron.aeron_context_close(context)
+        end
+        LibAeron.aeron_fragment_assembler_delete(fragment_assembler)
+        @info "Cleanup complete"
+    end
 end
 
 main()
