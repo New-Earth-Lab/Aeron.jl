@@ -1,0 +1,31 @@
+[general]
+library_name = "AeronClient"
+output_file_path = "./LibAeronClient.jl"
+module_name = "LibAeronClient"
+# jll_pkg_name = "Aeron_jll"
+export_symbol_prefixes = ["aeron_"]
+prologue_file_path = "./prologue.jl"
+
+# For simplicity right now
+use_julia_native_enum_type = true
+
+
+[codegen]
+use_ccall_macro = true
+always_NUL_terminated_string = true
+opaque_as_mutable_struct = false
+
+
+[codegen.macro]
+# it‘s highly recommended to set this entry to "basic".
+# if you'd like to skip all of the macros, please set this entry to "disable".
+# if you'd like to translate function-like macros to Julia, please set this entry to "aggressive".
+macro_mode = "disable"
+
+functionlike_macro_includelist = [
+    # "AERON_COUNTER_REGISTRATION_ID_OFFSET",
+    # "AERON_COUNTER_TYPE_ID_OFFSET",
+    # "AERON_COUNTER_FREE_FOR_REUSE_DEADLINE_OFFSET",
+    # "AERON_COUNTER_KEY_OFFSET",
+    # "AERON_COUNTER_LABEL_LENGTH_OFFSET",
+]
