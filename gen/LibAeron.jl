@@ -3,7 +3,7 @@ module LibAeron
 using CEnum
 
 # Prologue file
-Aeron = joinpath(@__DIR__, "../artifact/lib/libaeron.so")
+libaeron = joinpath(@__DIR__, "../artifact/lib/libaeron.so")
 
 INT64_C = Int64
 INT64_MAX = typemax(INT64_C)
@@ -72,24 +72,24 @@ struct addrinfo
     ai_next::Ptr{addrinfo}
 end
 
-struct var"##Ctag#4998"
+struct var"##Ctag#2336"
     data::NTuple{8, UInt8}
 end
 
-function Base.getproperty(x::Ptr{var"##Ctag#4998"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#2336"}, f::Symbol)
     f === :ifu_broadaddr && return Ptr{Ptr{sockaddr}}(x + 0)
     f === :ifu_dstaddr && return Ptr{Ptr{sockaddr}}(x + 0)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#4998", f::Symbol)
-    r = Ref{var"##Ctag#4998"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#4998"}, r)
+function Base.getproperty(x::var"##Ctag#2336", f::Symbol)
+    r = Ref{var"##Ctag#2336"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#2336"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#4998"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#2336"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
@@ -103,7 +103,7 @@ function Base.getproperty(x::Ptr{ifaddrs}, f::Symbol)
     f === :ifa_flags && return Ptr{Cuint}(x + 16)
     f === :ifa_addr && return Ptr{Ptr{sockaddr}}(x + 24)
     f === :ifa_netmask && return Ptr{Ptr{sockaddr}}(x + 32)
-    f === :ifa_ifu && return Ptr{var"##Ctag#4998"}(x + 40)
+    f === :ifa_ifu && return Ptr{var"##Ctag#2336"}(x + 40)
     f === :ifa_data && return Ptr{Ptr{Cvoid}}(x + 48)
     return getfield(x, f)
 end
@@ -205,7 +205,7 @@ int aeron_alloc_no_err(void **ptr, size_t size);
 ```
 """
 function aeron_alloc_no_err(ptr, size)
-    @ccall Aeron.aeron_alloc_no_err(ptr::Ptr{Ptr{Cvoid}}, size::Csize_t)::Cint
+    @ccall libaeron.aeron_alloc_no_err(ptr::Ptr{Ptr{Cvoid}}, size::Csize_t)::Cint
 end
 
 """
@@ -217,7 +217,7 @@ int aeron_alloc(void **ptr, size_t size);
 ```
 """
 function aeron_alloc(ptr, size)
-    @ccall Aeron.aeron_alloc(ptr::Ptr{Ptr{Cvoid}}, size::Csize_t)::Cint
+    @ccall libaeron.aeron_alloc(ptr::Ptr{Ptr{Cvoid}}, size::Csize_t)::Cint
 end
 
 """
@@ -229,7 +229,7 @@ int aeron_alloc_aligned(void **ptr, size_t *offset, size_t size, size_t alignmen
 ```
 """
 function aeron_alloc_aligned(ptr, offset, size, alignment)
-    @ccall Aeron.aeron_alloc_aligned(ptr::Ptr{Ptr{Cvoid}}, offset::Ptr{Csize_t}, size::Csize_t, alignment::Csize_t)::Cint
+    @ccall libaeron.aeron_alloc_aligned(ptr::Ptr{Ptr{Cvoid}}, offset::Ptr{Csize_t}, size::Csize_t, alignment::Csize_t)::Cint
 end
 
 """
@@ -241,7 +241,7 @@ int aeron_reallocf(void **ptr, size_t size);
 ```
 """
 function aeron_reallocf(ptr, size)
-    @ccall Aeron.aeron_reallocf(ptr::Ptr{Ptr{Cvoid}}, size::Csize_t)::Cint
+    @ccall libaeron.aeron_reallocf(ptr::Ptr{Ptr{Cvoid}}, size::Csize_t)::Cint
 end
 
 """
@@ -253,7 +253,7 @@ void aeron_free(void *ptr);
 ```
 """
 function aeron_free(ptr)
-    @ccall Aeron.aeron_free(ptr::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_free(ptr::Ptr{Cvoid})::Cvoid
 end
 
 # typedef void ( * aeron_error_handler_t ) ( void * clientd , int errcode , const char * message )
@@ -368,14 +368,14 @@ end
 
 const aeron_mapped_file_t = aeron_mapped_file_stct
 
-mutable struct var"##Ctag#4999"
+mutable struct var"##Ctag#2337"
     tail::UInt64
     head_cache::UInt64
     shared_head_cache::UInt64
     padding::NTuple{40, Int8}
-    var"##Ctag#4999"() = new()
+    var"##Ctag#2337"() = new()
 end
-function Base.getproperty(x::Ptr{var"##Ctag#4999"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#2337"}, f::Symbol)
     f === :tail && return Ptr{UInt64}(x + 0)
     f === :head_cache && return Ptr{UInt64}(x + 8)
     f === :shared_head_cache && return Ptr{UInt64}(x + 16)
@@ -383,37 +383,37 @@ function Base.getproperty(x::Ptr{var"##Ctag#4999"}, f::Symbol)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#4999", f::Symbol)
-    r = Ref{var"##Ctag#4999"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#4999"}, r)
+function Base.getproperty(x::var"##Ctag#2337", f::Symbol)
+    r = Ref{var"##Ctag#2337"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#2337"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#4999"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#2337"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
 
-mutable struct var"##Ctag#5002"
+mutable struct var"##Ctag#2340"
     head::UInt64
     padding::NTuple{56, Int8}
-    var"##Ctag#5002"() = new()
+    var"##Ctag#2340"() = new()
 end
-function Base.getproperty(x::Ptr{var"##Ctag#5002"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#2340"}, f::Symbol)
     f === :head && return Ptr{UInt64}(x + 0)
     f === :padding && return Ptr{NTuple{56, Int8}}(x + 8)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#5002", f::Symbol)
-    r = Ref{var"##Ctag#5002"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#5002"}, r)
+function Base.getproperty(x::var"##Ctag#2340", f::Symbol)
+    r = Ref{var"##Ctag#2340"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#2340"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#5002"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#2340"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
@@ -424,8 +424,8 @@ end
 
 function Base.getproperty(x::Ptr{aeron_mpsc_concurrent_array_queue_stct}, f::Symbol)
     f === :padding && return Ptr{NTuple{56, Int8}}(x + 0)
-    f === :producer && return Ptr{var"##Ctag#4999"}(x + 56)
-    f === :consumer && return Ptr{var"##Ctag#5002"}(x + 120)
+    f === :producer && return Ptr{var"##Ctag#2337"}(x + 56)
+    f === :consumer && return Ptr{var"##Ctag#2340"}(x + 120)
     f === :capacity && return Ptr{Csize_t}(x + 184)
     f === :mask && return Ptr{Csize_t}(x + 192)
     f === :buffer && return Ptr{Ptr{Ptr{Cvoid}}}(x + 200)
@@ -1308,7 +1308,7 @@ int aeron_context_set_dir(aeron_context_t *context, const char *value);
 ```
 """
 function aeron_context_set_dir(context, value)
-    @ccall Aeron.aeron_context_set_dir(context::Ptr{aeron_context_t}, value::Cstring)::Cint
+    @ccall libaeron.aeron_context_set_dir(context::Ptr{aeron_context_t}, value::Cstring)::Cint
 end
 
 """
@@ -1320,7 +1320,7 @@ const char *aeron_context_get_dir(aeron_context_t *context);
 ```
 """
 function aeron_context_get_dir(context)
-    @ccall Aeron.aeron_context_get_dir(context::Ptr{aeron_context_t})::Cstring
+    @ccall libaeron.aeron_context_get_dir(context::Ptr{aeron_context_t})::Cstring
 end
 
 """
@@ -1332,7 +1332,7 @@ int aeron_context_set_driver_timeout_ms(aeron_context_t *context, uint64_t value
 ```
 """
 function aeron_context_set_driver_timeout_ms(context, value)
-    @ccall Aeron.aeron_context_set_driver_timeout_ms(context::Ptr{aeron_context_t}, value::UInt64)::Cint
+    @ccall libaeron.aeron_context_set_driver_timeout_ms(context::Ptr{aeron_context_t}, value::UInt64)::Cint
 end
 
 """
@@ -1344,7 +1344,7 @@ uint64_t aeron_context_get_driver_timeout_ms(aeron_context_t *context);
 ```
 """
 function aeron_context_get_driver_timeout_ms(context)
-    @ccall Aeron.aeron_context_get_driver_timeout_ms(context::Ptr{aeron_context_t})::UInt64
+    @ccall libaeron.aeron_context_get_driver_timeout_ms(context::Ptr{aeron_context_t})::UInt64
 end
 
 """
@@ -1356,7 +1356,7 @@ int aeron_context_set_keepalive_interval_ns(aeron_context_t *context, uint64_t v
 ```
 """
 function aeron_context_set_keepalive_interval_ns(context, value)
-    @ccall Aeron.aeron_context_set_keepalive_interval_ns(context::Ptr{aeron_context_t}, value::UInt64)::Cint
+    @ccall libaeron.aeron_context_set_keepalive_interval_ns(context::Ptr{aeron_context_t}, value::UInt64)::Cint
 end
 
 """
@@ -1368,7 +1368,7 @@ uint64_t aeron_context_get_keepalive_interval_ns(aeron_context_t *context);
 ```
 """
 function aeron_context_get_keepalive_interval_ns(context)
-    @ccall Aeron.aeron_context_get_keepalive_interval_ns(context::Ptr{aeron_context_t})::UInt64
+    @ccall libaeron.aeron_context_get_keepalive_interval_ns(context::Ptr{aeron_context_t})::UInt64
 end
 
 """
@@ -1380,7 +1380,7 @@ int aeron_context_set_resource_linger_duration_ns(aeron_context_t *context, uint
 ```
 """
 function aeron_context_set_resource_linger_duration_ns(context, value)
-    @ccall Aeron.aeron_context_set_resource_linger_duration_ns(context::Ptr{aeron_context_t}, value::UInt64)::Cint
+    @ccall libaeron.aeron_context_set_resource_linger_duration_ns(context::Ptr{aeron_context_t}, value::UInt64)::Cint
 end
 
 """
@@ -1392,7 +1392,7 @@ uint64_t aeron_context_get_resource_linger_duration_ns(aeron_context_t *context)
 ```
 """
 function aeron_context_get_resource_linger_duration_ns(context)
-    @ccall Aeron.aeron_context_get_resource_linger_duration_ns(context::Ptr{aeron_context_t})::UInt64
+    @ccall libaeron.aeron_context_get_resource_linger_duration_ns(context::Ptr{aeron_context_t})::UInt64
 end
 
 """
@@ -1404,7 +1404,7 @@ int aeron_context_set_pre_touch_mapped_memory(aeron_context_t *context, bool val
 ```
 """
 function aeron_context_set_pre_touch_mapped_memory(context, value)
-    @ccall Aeron.aeron_context_set_pre_touch_mapped_memory(context::Ptr{aeron_context_t}, value::Bool)::Cint
+    @ccall libaeron.aeron_context_set_pre_touch_mapped_memory(context::Ptr{aeron_context_t}, value::Bool)::Cint
 end
 
 """
@@ -1416,7 +1416,7 @@ bool aeron_context_get_pre_touch_mapped_memory(aeron_context_t *context);
 ```
 """
 function aeron_context_get_pre_touch_mapped_memory(context)
-    @ccall Aeron.aeron_context_get_pre_touch_mapped_memory(context::Ptr{aeron_context_t})::Bool
+    @ccall libaeron.aeron_context_get_pre_touch_mapped_memory(context::Ptr{aeron_context_t})::Bool
 end
 
 """
@@ -1428,7 +1428,7 @@ int aeron_context_set_error_handler(aeron_context_t *context, aeron_error_handle
 ```
 """
 function aeron_context_set_error_handler(context, handler, clientd)
-    @ccall Aeron.aeron_context_set_error_handler(context::Ptr{aeron_context_t}, handler::aeron_error_handler_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_context_set_error_handler(context::Ptr{aeron_context_t}, handler::aeron_error_handler_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -1440,7 +1440,7 @@ aeron_error_handler_t aeron_context_get_error_handler(aeron_context_t *context);
 ```
 """
 function aeron_context_get_error_handler(context)
-    @ccall Aeron.aeron_context_get_error_handler(context::Ptr{aeron_context_t})::aeron_error_handler_t
+    @ccall libaeron.aeron_context_get_error_handler(context::Ptr{aeron_context_t})::aeron_error_handler_t
 end
 
 """
@@ -1452,7 +1452,7 @@ void *aeron_context_get_error_handler_clientd(aeron_context_t *context);
 ```
 """
 function aeron_context_get_error_handler_clientd(context)
-    @ccall Aeron.aeron_context_get_error_handler_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
+    @ccall libaeron.aeron_context_get_error_handler_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
 end
 
 """
@@ -1464,7 +1464,7 @@ int aeron_context_set_on_new_publication(aeron_context_t *context, aeron_on_new_
 ```
 """
 function aeron_context_set_on_new_publication(context, handler, clientd)
-    @ccall Aeron.aeron_context_set_on_new_publication(context::Ptr{aeron_context_t}, handler::aeron_on_new_publication_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_context_set_on_new_publication(context::Ptr{aeron_context_t}, handler::aeron_on_new_publication_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -1476,7 +1476,7 @@ aeron_on_new_publication_t aeron_context_get_on_new_publication(aeron_context_t 
 ```
 """
 function aeron_context_get_on_new_publication(context)
-    @ccall Aeron.aeron_context_get_on_new_publication(context::Ptr{aeron_context_t})::aeron_on_new_publication_t
+    @ccall libaeron.aeron_context_get_on_new_publication(context::Ptr{aeron_context_t})::aeron_on_new_publication_t
 end
 
 """
@@ -1488,7 +1488,7 @@ void *aeron_context_get_on_new_publication_clientd(aeron_context_t *context);
 ```
 """
 function aeron_context_get_on_new_publication_clientd(context)
-    @ccall Aeron.aeron_context_get_on_new_publication_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
+    @ccall libaeron.aeron_context_get_on_new_publication_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
 end
 
 """
@@ -1500,7 +1500,7 @@ int aeron_context_set_on_new_exclusive_publication( aeron_context_t *context, ae
 ```
 """
 function aeron_context_set_on_new_exclusive_publication(context, handler, clientd)
-    @ccall Aeron.aeron_context_set_on_new_exclusive_publication(context::Ptr{aeron_context_t}, handler::aeron_on_new_publication_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_context_set_on_new_exclusive_publication(context::Ptr{aeron_context_t}, handler::aeron_on_new_publication_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -1512,7 +1512,7 @@ aeron_on_new_publication_t aeron_context_get_on_new_exclusive_publication(aeron_
 ```
 """
 function aeron_context_get_on_new_exclusive_publication(context)
-    @ccall Aeron.aeron_context_get_on_new_exclusive_publication(context::Ptr{aeron_context_t})::aeron_on_new_publication_t
+    @ccall libaeron.aeron_context_get_on_new_exclusive_publication(context::Ptr{aeron_context_t})::aeron_on_new_publication_t
 end
 
 """
@@ -1524,7 +1524,7 @@ void *aeron_context_get_on_new_exclusive_publication_clientd(aeron_context_t *co
 ```
 """
 function aeron_context_get_on_new_exclusive_publication_clientd(context)
-    @ccall Aeron.aeron_context_get_on_new_exclusive_publication_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
+    @ccall libaeron.aeron_context_get_on_new_exclusive_publication_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
 end
 
 """
@@ -1536,7 +1536,7 @@ int aeron_context_set_on_new_subscription( aeron_context_t *context, aeron_on_ne
 ```
 """
 function aeron_context_set_on_new_subscription(context, handler, clientd)
-    @ccall Aeron.aeron_context_set_on_new_subscription(context::Ptr{aeron_context_t}, handler::aeron_on_new_subscription_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_context_set_on_new_subscription(context::Ptr{aeron_context_t}, handler::aeron_on_new_subscription_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -1548,7 +1548,7 @@ aeron_on_new_subscription_t aeron_context_get_on_new_subscription(aeron_context_
 ```
 """
 function aeron_context_get_on_new_subscription(context)
-    @ccall Aeron.aeron_context_get_on_new_subscription(context::Ptr{aeron_context_t})::aeron_on_new_subscription_t
+    @ccall libaeron.aeron_context_get_on_new_subscription(context::Ptr{aeron_context_t})::aeron_on_new_subscription_t
 end
 
 """
@@ -1560,7 +1560,7 @@ void *aeron_context_get_on_new_subscription_clientd(aeron_context_t *context);
 ```
 """
 function aeron_context_get_on_new_subscription_clientd(context)
-    @ccall Aeron.aeron_context_get_on_new_subscription_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
+    @ccall libaeron.aeron_context_get_on_new_subscription_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
 end
 
 """
@@ -1572,7 +1572,7 @@ int aeron_context_set_on_available_counter( aeron_context_t *context, aeron_on_a
 ```
 """
 function aeron_context_set_on_available_counter(context, handler, clientd)
-    @ccall Aeron.aeron_context_set_on_available_counter(context::Ptr{aeron_context_t}, handler::aeron_on_available_counter_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_context_set_on_available_counter(context::Ptr{aeron_context_t}, handler::aeron_on_available_counter_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -1584,7 +1584,7 @@ aeron_on_available_counter_t aeron_context_get_on_available_counter(aeron_contex
 ```
 """
 function aeron_context_get_on_available_counter(context)
-    @ccall Aeron.aeron_context_get_on_available_counter(context::Ptr{aeron_context_t})::aeron_on_available_counter_t
+    @ccall libaeron.aeron_context_get_on_available_counter(context::Ptr{aeron_context_t})::aeron_on_available_counter_t
 end
 
 """
@@ -1596,7 +1596,7 @@ void *aeron_context_get_on_available_counter_clientd(aeron_context_t *context);
 ```
 """
 function aeron_context_get_on_available_counter_clientd(context)
-    @ccall Aeron.aeron_context_get_on_available_counter_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
+    @ccall libaeron.aeron_context_get_on_available_counter_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
 end
 
 """
@@ -1608,7 +1608,7 @@ int aeron_context_set_on_unavailable_counter( aeron_context_t *context, aeron_on
 ```
 """
 function aeron_context_set_on_unavailable_counter(context, handler, clientd)
-    @ccall Aeron.aeron_context_set_on_unavailable_counter(context::Ptr{aeron_context_t}, handler::aeron_on_unavailable_counter_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_context_set_on_unavailable_counter(context::Ptr{aeron_context_t}, handler::aeron_on_unavailable_counter_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -1620,7 +1620,7 @@ aeron_on_unavailable_counter_t aeron_context_get_on_unavailable_counter(aeron_co
 ```
 """
 function aeron_context_get_on_unavailable_counter(context)
-    @ccall Aeron.aeron_context_get_on_unavailable_counter(context::Ptr{aeron_context_t})::aeron_on_unavailable_counter_t
+    @ccall libaeron.aeron_context_get_on_unavailable_counter(context::Ptr{aeron_context_t})::aeron_on_unavailable_counter_t
 end
 
 """
@@ -1632,7 +1632,7 @@ void *aeron_context_get_on_unavailable_counter_clientd(aeron_context_t *context)
 ```
 """
 function aeron_context_get_on_unavailable_counter_clientd(context)
-    @ccall Aeron.aeron_context_get_on_unavailable_counter_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
+    @ccall libaeron.aeron_context_get_on_unavailable_counter_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
 end
 
 """
@@ -1644,7 +1644,7 @@ int aeron_context_set_on_close_client( aeron_context_t *context, aeron_on_close_
 ```
 """
 function aeron_context_set_on_close_client(context, handler, clientd)
-    @ccall Aeron.aeron_context_set_on_close_client(context::Ptr{aeron_context_t}, handler::aeron_on_close_client_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_context_set_on_close_client(context::Ptr{aeron_context_t}, handler::aeron_on_close_client_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -1656,7 +1656,7 @@ aeron_on_close_client_t aeron_context_get_on_close_client(aeron_context_t *conte
 ```
 """
 function aeron_context_get_on_close_client(context)
-    @ccall Aeron.aeron_context_get_on_close_client(context::Ptr{aeron_context_t})::aeron_on_close_client_t
+    @ccall libaeron.aeron_context_get_on_close_client(context::Ptr{aeron_context_t})::aeron_on_close_client_t
 end
 
 """
@@ -1668,7 +1668,7 @@ void *aeron_context_get_on_close_client_clientd(aeron_context_t *context);
 ```
 """
 function aeron_context_get_on_close_client_clientd(context)
-    @ccall Aeron.aeron_context_get_on_close_client_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
+    @ccall libaeron.aeron_context_get_on_close_client_clientd(context::Ptr{aeron_context_t})::Ptr{Cvoid}
 end
 
 """
@@ -1682,7 +1682,7 @@ int aeron_context_set_use_conductor_agent_invoker(aeron_context_t *context, bool
 ```
 """
 function aeron_context_set_use_conductor_agent_invoker(context, value)
-    @ccall Aeron.aeron_context_set_use_conductor_agent_invoker(context::Ptr{aeron_context_t}, value::Bool)::Cint
+    @ccall libaeron.aeron_context_set_use_conductor_agent_invoker(context::Ptr{aeron_context_t}, value::Bool)::Cint
 end
 
 """
@@ -1694,7 +1694,7 @@ bool aeron_context_get_use_conductor_agent_invoker(aeron_context_t *context);
 ```
 """
 function aeron_context_get_use_conductor_agent_invoker(context)
-    @ccall Aeron.aeron_context_get_use_conductor_agent_invoker(context::Ptr{aeron_context_t})::Bool
+    @ccall libaeron.aeron_context_get_use_conductor_agent_invoker(context::Ptr{aeron_context_t})::Bool
 end
 
 """
@@ -1706,7 +1706,7 @@ int aeron_context_set_agent_on_start_function( aeron_context_t *context, aeron_a
 ```
 """
 function aeron_context_set_agent_on_start_function(context, value, state)
-    @ccall Aeron.aeron_context_set_agent_on_start_function(context::Ptr{aeron_context_t}, value::aeron_agent_on_start_func_t, state::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_context_set_agent_on_start_function(context::Ptr{aeron_context_t}, value::aeron_agent_on_start_func_t, state::Ptr{Cvoid})::Cint
 end
 
 """
@@ -1718,7 +1718,7 @@ aeron_agent_on_start_func_t aeron_context_get_agent_on_start_function(aeron_cont
 ```
 """
 function aeron_context_get_agent_on_start_function(context)
-    @ccall Aeron.aeron_context_get_agent_on_start_function(context::Ptr{aeron_context_t})::aeron_agent_on_start_func_t
+    @ccall libaeron.aeron_context_get_agent_on_start_function(context::Ptr{aeron_context_t})::aeron_agent_on_start_func_t
 end
 
 """
@@ -1730,7 +1730,7 @@ void *aeron_context_get_agent_on_start_state(aeron_context_t *context);
 ```
 """
 function aeron_context_get_agent_on_start_state(context)
-    @ccall Aeron.aeron_context_get_agent_on_start_state(context::Ptr{aeron_context_t})::Ptr{Cvoid}
+    @ccall libaeron.aeron_context_get_agent_on_start_state(context::Ptr{aeron_context_t})::Ptr{Cvoid}
 end
 
 """
@@ -1748,7 +1748,7 @@ int aeron_context_init(aeron_context_t **context);
 ```
 """
 function aeron_context_init(context)
-    @ccall Aeron.aeron_context_init(context::Ptr{Ptr{aeron_context_t}})::Cint
+    @ccall libaeron.aeron_context_init(context::Ptr{Ptr{aeron_context_t}})::Cint
 end
 
 """
@@ -1766,7 +1766,7 @@ int aeron_context_close(aeron_context_t *context);
 ```
 """
 function aeron_context_close(context)
-    @ccall Aeron.aeron_context_close(context::Ptr{aeron_context_t})::Cint
+    @ccall libaeron.aeron_context_close(context::Ptr{aeron_context_t})::Cint
 end
 
 """
@@ -1787,7 +1787,7 @@ int aeron_init(aeron_t **client, aeron_context_t *context);
 ```
 """
 function aeron_init(client, context)
-    @ccall Aeron.aeron_init(client::Ptr{Ptr{aeron_t}}, context::Ptr{aeron_context_t})::Cint
+    @ccall libaeron.aeron_init(client::Ptr{Ptr{aeron_t}}, context::Ptr{aeron_context_t})::Cint
 end
 
 """
@@ -1805,7 +1805,7 @@ int aeron_start(aeron_t *client);
 ```
 """
 function aeron_start(client)
-    @ccall Aeron.aeron_start(client::Ptr{aeron_t})::Cint
+    @ccall libaeron.aeron_start(client::Ptr{aeron_t})::Cint
 end
 
 """
@@ -1825,7 +1825,7 @@ int aeron_main_do_work(aeron_t *client);
 ```
 """
 function aeron_main_do_work(client)
-    @ccall Aeron.aeron_main_do_work(client::Ptr{aeron_t})::Cint
+    @ccall libaeron.aeron_main_do_work(client::Ptr{aeron_t})::Cint
 end
 
 """
@@ -1842,7 +1842,7 @@ void aeron_main_idle_strategy(aeron_t *client, int work_count);
 ```
 """
 function aeron_main_idle_strategy(client, work_count)
-    @ccall Aeron.aeron_main_idle_strategy(client::Ptr{aeron_t}, work_count::Cint)::Cvoid
+    @ccall libaeron.aeron_main_idle_strategy(client::Ptr{aeron_t}, work_count::Cint)::Cvoid
 end
 
 """
@@ -1860,7 +1860,7 @@ int aeron_close(aeron_t *client);
 ```
 """
 function aeron_close(client)
-    @ccall Aeron.aeron_close(client::Ptr{aeron_t})::Cint
+    @ccall libaeron.aeron_close(client::Ptr{aeron_t})::Cint
 end
 
 """
@@ -1878,7 +1878,7 @@ bool aeron_is_closed(aeron_t *client);
 ```
 """
 function aeron_is_closed(client)
-    @ccall Aeron.aeron_is_closed(client::Ptr{aeron_t})::Bool
+    @ccall libaeron.aeron_is_closed(client::Ptr{aeron_t})::Bool
 end
 
 """
@@ -1895,7 +1895,7 @@ void aeron_print_counters(aeron_t *client, void (*stream_out)(const char *));
 ```
 """
 function aeron_print_counters(client, stream_out)
-    @ccall Aeron.aeron_print_counters(client::Ptr{aeron_t}, stream_out::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_print_counters(client::Ptr{aeron_t}, stream_out::Ptr{Cvoid})::Cvoid
 end
 
 """
@@ -1913,7 +1913,7 @@ aeron_context_t *aeron_context(aeron_t *client);
 ```
 """
 function aeron_context(client)
-    @ccall Aeron.aeron_context(client::Ptr{aeron_t})::Ptr{aeron_context_t}
+    @ccall libaeron.aeron_context(client::Ptr{aeron_t})::Ptr{aeron_context_t}
 end
 
 """
@@ -1931,7 +1931,7 @@ int64_t aeron_client_id(aeron_t *client);
 ```
 """
 function aeron_client_id(client)
-    @ccall Aeron.aeron_client_id(client::Ptr{aeron_t})::Int64
+    @ccall libaeron.aeron_client_id(client::Ptr{aeron_t})::Int64
 end
 
 """
@@ -1949,7 +1949,7 @@ int64_t aeron_next_correlation_id(aeron_t *client);
 ```
 """
 function aeron_next_correlation_id(client)
-    @ccall Aeron.aeron_next_correlation_id(client::Ptr{aeron_t})::Int64
+    @ccall libaeron.aeron_next_correlation_id(client::Ptr{aeron_t})::Int64
 end
 
 """
@@ -1970,7 +1970,7 @@ int aeron_async_add_publication( aeron_async_add_publication_t **async, aeron_t 
 ```
 """
 function aeron_async_add_publication(async, client, uri, stream_id)
-    @ccall Aeron.aeron_async_add_publication(async::Ptr{Ptr{aeron_async_add_publication_t}}, client::Ptr{aeron_t}, uri::Cstring, stream_id::Int32)::Cint
+    @ccall libaeron.aeron_async_add_publication(async::Ptr{Ptr{aeron_async_add_publication_t}}, client::Ptr{aeron_t}, uri::Cstring, stream_id::Int32)::Cint
 end
 
 """
@@ -1989,7 +1989,7 @@ int aeron_async_add_publication_poll(aeron_publication_t **publication, aeron_as
 ```
 """
 function aeron_async_add_publication_poll(publication, async)
-    @ccall Aeron.aeron_async_add_publication_poll(publication::Ptr{Ptr{aeron_publication_t}}, async::Ptr{aeron_async_add_publication_t})::Cint
+    @ccall libaeron.aeron_async_add_publication_poll(publication::Ptr{Ptr{aeron_publication_t}}, async::Ptr{aeron_async_add_publication_t})::Cint
 end
 
 """
@@ -2010,7 +2010,7 @@ int aeron_async_add_exclusive_publication( aeron_async_add_exclusive_publication
 ```
 """
 function aeron_async_add_exclusive_publication(async, client, uri, stream_id)
-    @ccall Aeron.aeron_async_add_exclusive_publication(async::Ptr{Ptr{aeron_async_add_exclusive_publication_t}}, client::Ptr{aeron_t}, uri::Cstring, stream_id::Int32)::Cint
+    @ccall libaeron.aeron_async_add_exclusive_publication(async::Ptr{Ptr{aeron_async_add_exclusive_publication_t}}, client::Ptr{aeron_t}, uri::Cstring, stream_id::Int32)::Cint
 end
 
 """
@@ -2029,7 +2029,7 @@ int aeron_async_add_exclusive_publication_poll( aeron_exclusive_publication_t **
 ```
 """
 function aeron_async_add_exclusive_publication_poll(publication, async)
-    @ccall Aeron.aeron_async_add_exclusive_publication_poll(publication::Ptr{Ptr{aeron_exclusive_publication_t}}, async::Ptr{aeron_async_add_exclusive_publication_t})::Cint
+    @ccall libaeron.aeron_async_add_exclusive_publication_poll(publication::Ptr{Ptr{aeron_exclusive_publication_t}}, async::Ptr{aeron_async_add_exclusive_publication_t})::Cint
 end
 
 """
@@ -2054,7 +2054,7 @@ int aeron_async_add_subscription( aeron_async_add_subscription_t **async, aeron_
 ```
 """
 function aeron_async_add_subscription(async, client, uri, stream_id, on_available_image_handler, on_available_image_clientd, on_unavailable_image_handler, on_unavailable_image_clientd)
-    @ccall Aeron.aeron_async_add_subscription(async::Ptr{Ptr{aeron_async_add_subscription_t}}, client::Ptr{aeron_t}, uri::Cstring, stream_id::Int32, on_available_image_handler::aeron_on_available_image_t, on_available_image_clientd::Ptr{Cvoid}, on_unavailable_image_handler::aeron_on_unavailable_image_t, on_unavailable_image_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_async_add_subscription(async::Ptr{Ptr{aeron_async_add_subscription_t}}, client::Ptr{aeron_t}, uri::Cstring, stream_id::Int32, on_available_image_handler::aeron_on_available_image_t, on_available_image_clientd::Ptr{Cvoid}, on_unavailable_image_handler::aeron_on_unavailable_image_t, on_unavailable_image_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -2073,7 +2073,7 @@ int aeron_async_add_subscription_poll(aeron_subscription_t **subscription, aeron
 ```
 """
 function aeron_async_add_subscription_poll(subscription, async)
-    @ccall Aeron.aeron_async_add_subscription_poll(subscription::Ptr{Ptr{aeron_subscription_t}}, async::Ptr{aeron_async_add_subscription_t})::Cint
+    @ccall libaeron.aeron_async_add_subscription_poll(subscription::Ptr{Ptr{aeron_subscription_t}}, async::Ptr{aeron_async_add_subscription_t})::Cint
 end
 
 """
@@ -2093,7 +2093,7 @@ aeron_counters_reader_t *aeron_counters_reader(aeron_t *client);
 ```
 """
 function aeron_counters_reader(client)
-    @ccall Aeron.aeron_counters_reader(client::Ptr{aeron_t})::Ptr{aeron_counters_reader_t}
+    @ccall libaeron.aeron_counters_reader(client::Ptr{aeron_t})::Ptr{aeron_counters_reader_t}
 end
 
 """
@@ -2117,7 +2117,7 @@ int aeron_async_add_counter( aeron_async_add_counter_t **async, aeron_t *client,
 ```
 """
 function aeron_async_add_counter(async, client, type_id, key_buffer, key_buffer_length, label_buffer, label_buffer_length)
-    @ccall Aeron.aeron_async_add_counter(async::Ptr{Ptr{aeron_async_add_counter_t}}, client::Ptr{aeron_t}, type_id::Int32, key_buffer::Ptr{UInt8}, key_buffer_length::Csize_t, label_buffer::Cstring, label_buffer_length::Csize_t)::Cint
+    @ccall libaeron.aeron_async_add_counter(async::Ptr{Ptr{aeron_async_add_counter_t}}, client::Ptr{aeron_t}, type_id::Int32, key_buffer::Ptr{UInt8}, key_buffer_length::Csize_t, label_buffer::Cstring, label_buffer_length::Csize_t)::Cint
 end
 
 """
@@ -2136,7 +2136,7 @@ int aeron_async_add_counter_poll(aeron_counter_t **counter, aeron_async_add_coun
 ```
 """
 function aeron_async_add_counter_poll(counter, async)
-    @ccall Aeron.aeron_async_add_counter_poll(counter::Ptr{Ptr{aeron_counter_t}}, async::Ptr{aeron_async_add_counter_t})::Cint
+    @ccall libaeron.aeron_async_add_counter_poll(counter::Ptr{Ptr{aeron_counter_t}}, async::Ptr{aeron_async_add_counter_t})::Cint
 end
 
 """
@@ -2157,7 +2157,7 @@ int aeron_add_available_counter_handler(aeron_t *client, aeron_on_available_coun
 ```
 """
 function aeron_add_available_counter_handler(client, pair)
-    @ccall Aeron.aeron_add_available_counter_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_available_counter_pair_t})::Cint
+    @ccall libaeron.aeron_add_available_counter_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_available_counter_pair_t})::Cint
 end
 
 """
@@ -2178,7 +2178,7 @@ int aeron_remove_available_counter_handler(aeron_t *client, aeron_on_available_c
 ```
 """
 function aeron_remove_available_counter_handler(client, pair)
-    @ccall Aeron.aeron_remove_available_counter_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_available_counter_pair_t})::Cint
+    @ccall libaeron.aeron_remove_available_counter_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_available_counter_pair_t})::Cint
 end
 
 """
@@ -2199,7 +2199,7 @@ int aeron_add_unavailable_counter_handler(aeron_t *client, aeron_on_unavailable_
 ```
 """
 function aeron_add_unavailable_counter_handler(client, pair)
-    @ccall Aeron.aeron_add_unavailable_counter_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_unavailable_counter_pair_t})::Cint
+    @ccall libaeron.aeron_add_unavailable_counter_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_unavailable_counter_pair_t})::Cint
 end
 
 """
@@ -2220,7 +2220,7 @@ int aeron_remove_unavailable_counter_handler(aeron_t *client, aeron_on_unavailab
 ```
 """
 function aeron_remove_unavailable_counter_handler(client, pair)
-    @ccall Aeron.aeron_remove_unavailable_counter_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_unavailable_counter_pair_t})::Cint
+    @ccall libaeron.aeron_remove_unavailable_counter_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_unavailable_counter_pair_t})::Cint
 end
 
 """
@@ -2241,7 +2241,7 @@ int aeron_add_close_handler(aeron_t *client, aeron_on_close_client_pair_t *pair)
 ```
 """
 function aeron_add_close_handler(client, pair)
-    @ccall Aeron.aeron_add_close_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_close_client_pair_t})::Cint
+    @ccall libaeron.aeron_add_close_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_close_client_pair_t})::Cint
 end
 
 """
@@ -2262,7 +2262,7 @@ int aeron_remove_close_handler(aeron_t *client, aeron_on_close_client_pair_t *pa
 ```
 """
 function aeron_remove_close_handler(client, pair)
-    @ccall Aeron.aeron_remove_close_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_close_client_pair_t})::Cint
+    @ccall libaeron.aeron_remove_close_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_close_client_pair_t})::Cint
 end
 
 mutable struct aeron_counters_reader_buffers_stct
@@ -2291,7 +2291,7 @@ int aeron_counters_reader_get_buffers(aeron_counters_reader_t *reader, aeron_cou
 ```
 """
 function aeron_counters_reader_get_buffers(reader, buffers)
-    @ccall Aeron.aeron_counters_reader_get_buffers(reader::Ptr{aeron_counters_reader_t}, buffers::Ptr{aeron_counters_reader_buffers_t})::Cint
+    @ccall libaeron.aeron_counters_reader_get_buffers(reader::Ptr{aeron_counters_reader_t}, buffers::Ptr{aeron_counters_reader_buffers_t})::Cint
 end
 
 # typedef void ( * aeron_counters_reader_foreach_counter_func_t ) ( int64_t value , int32_t id , int32_t type_id , const uint8_t * key , size_t key_length , const char * label , size_t label_length , void * clientd )
@@ -2322,7 +2322,7 @@ void aeron_counters_reader_foreach_counter( aeron_counters_reader_t *counters_re
 ```
 """
 function aeron_counters_reader_foreach_counter(counters_reader, func, clientd)
-    @ccall Aeron.aeron_counters_reader_foreach_counter(counters_reader::Ptr{aeron_counters_reader_t}, func::aeron_counters_reader_foreach_counter_func_t, clientd::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_counters_reader_foreach_counter(counters_reader::Ptr{aeron_counters_reader_t}, func::aeron_counters_reader_foreach_counter_func_t, clientd::Ptr{Cvoid})::Cvoid
 end
 
 """
@@ -2340,7 +2340,7 @@ int32_t aeron_counters_reader_max_counter_id(aeron_counters_reader_t *reader);
 ```
 """
 function aeron_counters_reader_max_counter_id(reader)
-    @ccall Aeron.aeron_counters_reader_max_counter_id(reader::Ptr{aeron_counters_reader_t})::Int32
+    @ccall libaeron.aeron_counters_reader_max_counter_id(reader::Ptr{aeron_counters_reader_t})::Int32
 end
 
 """
@@ -2359,7 +2359,7 @@ int64_t *aeron_counters_reader_addr(aeron_counters_reader_t *counters_reader, in
 ```
 """
 function aeron_counters_reader_addr(counters_reader, counter_id)
-    @ccall Aeron.aeron_counters_reader_addr(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32)::Ptr{Int64}
+    @ccall libaeron.aeron_counters_reader_addr(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32)::Ptr{Int64}
 end
 
 """
@@ -2379,7 +2379,7 @@ int aeron_counters_reader_counter_registration_id( aeron_counters_reader_t *coun
 ```
 """
 function aeron_counters_reader_counter_registration_id(counters_reader, counter_id, registration_id)
-    @ccall Aeron.aeron_counters_reader_counter_registration_id(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, registration_id::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_counters_reader_counter_registration_id(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, registration_id::Ptr{Int64})::Cint
 end
 
 """
@@ -2399,7 +2399,7 @@ int aeron_counters_reader_counter_owner_id( aeron_counters_reader_t *counters_re
 ```
 """
 function aeron_counters_reader_counter_owner_id(counters_reader, counter_id, owner_id)
-    @ccall Aeron.aeron_counters_reader_counter_owner_id(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, owner_id::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_counters_reader_counter_owner_id(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, owner_id::Ptr{Int64})::Cint
 end
 
 """
@@ -2419,7 +2419,7 @@ int aeron_counters_reader_counter_state(aeron_counters_reader_t *counters_reader
 ```
 """
 function aeron_counters_reader_counter_state(counters_reader, counter_id, state)
-    @ccall Aeron.aeron_counters_reader_counter_state(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, state::Ptr{Int32})::Cint
+    @ccall libaeron.aeron_counters_reader_counter_state(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, state::Ptr{Int32})::Cint
 end
 
 """
@@ -2439,7 +2439,7 @@ int aeron_counters_reader_counter_type_id( aeron_counters_reader_t *counters_rea
 ```
 """
 function aeron_counters_reader_counter_type_id(counters_reader, counter_id, type_id)
-    @ccall Aeron.aeron_counters_reader_counter_type_id(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, type_id::Ptr{Int32})::Cint
+    @ccall libaeron.aeron_counters_reader_counter_type_id(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, type_id::Ptr{Int32})::Cint
 end
 
 """
@@ -2460,7 +2460,7 @@ int aeron_counters_reader_counter_label( aeron_counters_reader_t *counters_reade
 ```
 """
 function aeron_counters_reader_counter_label(counters_reader, counter_id, buffer, buffer_length)
-    @ccall Aeron.aeron_counters_reader_counter_label(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, buffer::Cstring, buffer_length::Csize_t)::Cint
+    @ccall libaeron.aeron_counters_reader_counter_label(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, buffer::Cstring, buffer_length::Csize_t)::Cint
 end
 
 """
@@ -2480,7 +2480,7 @@ int aeron_counters_reader_free_for_reuse_deadline_ms( aeron_counters_reader_t *c
 ```
 """
 function aeron_counters_reader_free_for_reuse_deadline_ms(counters_reader, counter_id, deadline_ms)
-    @ccall Aeron.aeron_counters_reader_free_for_reuse_deadline_ms(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, deadline_ms::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_counters_reader_free_for_reuse_deadline_ms(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, deadline_ms::Ptr{Int64})::Cint
 end
 
 # typedef int64_t ( * aeron_reserved_value_supplier_t ) ( void * clientd , uint8_t * buffer , size_t frame_length )
@@ -2517,7 +2517,7 @@ int aeron_buffer_claim_commit(aeron_buffer_claim_t *buffer_claim);
 ```
 """
 function aeron_buffer_claim_commit(buffer_claim)
-    @ccall Aeron.aeron_buffer_claim_commit(buffer_claim::Ptr{aeron_buffer_claim_t})::Cint
+    @ccall libaeron.aeron_buffer_claim_commit(buffer_claim::Ptr{aeron_buffer_claim_t})::Cint
 end
 
 """
@@ -2535,7 +2535,7 @@ int aeron_buffer_claim_abort(aeron_buffer_claim_t *buffer_claim);
 ```
 """
 function aeron_buffer_claim_abort(buffer_claim)
-    @ccall Aeron.aeron_buffer_claim_abort(buffer_claim::Ptr{aeron_buffer_claim_t})::Cint
+    @ccall libaeron.aeron_buffer_claim_abort(buffer_claim::Ptr{aeron_buffer_claim_t})::Cint
 end
 
 """
@@ -2584,7 +2584,7 @@ int64_t aeron_publication_offer( aeron_publication_t *publication, const uint8_t
 ```
 """
 function aeron_publication_offer(publication, buffer, length, reserved_value_supplier, clientd)
-    @ccall Aeron.aeron_publication_offer(publication::Ptr{aeron_publication_t}, buffer::Ptr{UInt8}, length::Csize_t, reserved_value_supplier::aeron_reserved_value_supplier_t, clientd::Ptr{Cvoid})::Int64
+    @ccall libaeron.aeron_publication_offer(publication::Ptr{aeron_publication_t}, buffer::Ptr{UInt8}, length::Csize_t, reserved_value_supplier::aeron_reserved_value_supplier_t, clientd::Ptr{Cvoid})::Int64
 end
 
 """
@@ -2606,7 +2606,7 @@ int64_t aeron_publication_offerv( aeron_publication_t *publication, aeron_iovec_
 ```
 """
 function aeron_publication_offerv(publication, iov, iovcnt, reserved_value_supplier, clientd)
-    @ccall Aeron.aeron_publication_offerv(publication::Ptr{aeron_publication_t}, iov::Ptr{aeron_iovec_t}, iovcnt::Csize_t, reserved_value_supplier::aeron_reserved_value_supplier_t, clientd::Ptr{Cvoid})::Int64
+    @ccall libaeron.aeron_publication_offerv(publication::Ptr{aeron_publication_t}, iov::Ptr{aeron_iovec_t}, iovcnt::Csize_t, reserved_value_supplier::aeron_reserved_value_supplier_t, clientd::Ptr{Cvoid})::Int64
 end
 
 """
@@ -2635,7 +2635,7 @@ int64_t aeron_publication_try_claim( aeron_publication_t *publication, size_t le
 ```
 """
 function aeron_publication_try_claim(publication, length, buffer_claim)
-    @ccall Aeron.aeron_publication_try_claim(publication::Ptr{aeron_publication_t}, length::Csize_t, buffer_claim::Ptr{aeron_buffer_claim_t})::Int64
+    @ccall libaeron.aeron_publication_try_claim(publication::Ptr{aeron_publication_t}, length::Csize_t, buffer_claim::Ptr{aeron_buffer_claim_t})::Int64
 end
 
 """
@@ -2653,7 +2653,7 @@ int64_t aeron_publication_channel_status(aeron_publication_t *publication);
 ```
 """
 function aeron_publication_channel_status(publication)
-    @ccall Aeron.aeron_publication_channel_status(publication::Ptr{aeron_publication_t})::Int64
+    @ccall libaeron.aeron_publication_channel_status(publication::Ptr{aeron_publication_t})::Int64
 end
 
 """
@@ -2671,7 +2671,7 @@ bool aeron_publication_is_closed(aeron_publication_t *publication);
 ```
 """
 function aeron_publication_is_closed(publication)
-    @ccall Aeron.aeron_publication_is_closed(publication::Ptr{aeron_publication_t})::Bool
+    @ccall libaeron.aeron_publication_is_closed(publication::Ptr{aeron_publication_t})::Bool
 end
 
 """
@@ -2689,7 +2689,7 @@ bool aeron_publication_is_connected(aeron_publication_t *publication);
 ```
 """
 function aeron_publication_is_connected(publication)
-    @ccall Aeron.aeron_publication_is_connected(publication::Ptr{aeron_publication_t})::Bool
+    @ccall libaeron.aeron_publication_is_connected(publication::Ptr{aeron_publication_t})::Bool
 end
 
 """
@@ -2708,7 +2708,7 @@ int aeron_publication_constants(aeron_publication_t *publication, aeron_publicat
 ```
 """
 function aeron_publication_constants(publication, constants)
-    @ccall Aeron.aeron_publication_constants(publication::Ptr{aeron_publication_t}, constants::Ptr{aeron_publication_constants_t})::Cint
+    @ccall libaeron.aeron_publication_constants(publication::Ptr{aeron_publication_t}, constants::Ptr{aeron_publication_constants_t})::Cint
 end
 
 """
@@ -2726,7 +2726,7 @@ int64_t aeron_publication_position(aeron_publication_t *publication);
 ```
 """
 function aeron_publication_position(publication)
-    @ccall Aeron.aeron_publication_position(publication::Ptr{aeron_publication_t})::Int64
+    @ccall libaeron.aeron_publication_position(publication::Ptr{aeron_publication_t})::Int64
 end
 
 """
@@ -2746,7 +2746,7 @@ int64_t aeron_publication_position_limit(aeron_publication_t *publication);
 ```
 """
 function aeron_publication_position_limit(publication)
-    @ccall Aeron.aeron_publication_position_limit(publication::Ptr{aeron_publication_t})::Int64
+    @ccall libaeron.aeron_publication_position_limit(publication::Ptr{aeron_publication_t})::Int64
 end
 
 """
@@ -2766,7 +2766,7 @@ int aeron_publication_async_add_destination( aeron_async_destination_t **async, 
 ```
 """
 function aeron_publication_async_add_destination(async, client, publication, uri)
-    @ccall Aeron.aeron_publication_async_add_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, publication::Ptr{aeron_publication_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_publication_async_add_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, publication::Ptr{aeron_publication_t}, uri::Cstring)::Cint
 end
 
 """
@@ -2786,7 +2786,7 @@ int aeron_publication_async_remove_destination( aeron_async_destination_t **asyn
 ```
 """
 function aeron_publication_async_remove_destination(async, client, publication, uri)
-    @ccall Aeron.aeron_publication_async_remove_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, publication::Ptr{aeron_publication_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_publication_async_remove_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, publication::Ptr{aeron_publication_t}, uri::Cstring)::Cint
 end
 
 """
@@ -2804,7 +2804,7 @@ int aeron_publication_async_destination_poll(aeron_async_destination_t *async);
 ```
 """
 function aeron_publication_async_destination_poll(async)
-    @ccall Aeron.aeron_publication_async_destination_poll(async::Ptr{aeron_async_destination_t})::Cint
+    @ccall libaeron.aeron_publication_async_destination_poll(async::Ptr{aeron_async_destination_t})::Cint
 end
 
 """
@@ -2824,7 +2824,7 @@ int aeron_exclusive_publication_async_add_destination( aeron_async_destination_t
 ```
 """
 function aeron_exclusive_publication_async_add_destination(async, client, publication, uri)
-    @ccall Aeron.aeron_exclusive_publication_async_add_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, publication::Ptr{aeron_exclusive_publication_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_exclusive_publication_async_add_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, publication::Ptr{aeron_exclusive_publication_t}, uri::Cstring)::Cint
 end
 
 """
@@ -2844,7 +2844,7 @@ int aeron_exclusive_publication_async_remove_destination( aeron_async_destinatio
 ```
 """
 function aeron_exclusive_publication_async_remove_destination(async, client, publication, uri)
-    @ccall Aeron.aeron_exclusive_publication_async_remove_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, publication::Ptr{aeron_exclusive_publication_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_exclusive_publication_async_remove_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, publication::Ptr{aeron_exclusive_publication_t}, uri::Cstring)::Cint
 end
 
 """
@@ -2862,7 +2862,7 @@ int aeron_exclusive_publication_async_destination_poll(aeron_async_destination_t
 ```
 """
 function aeron_exclusive_publication_async_destination_poll(async)
-    @ccall Aeron.aeron_exclusive_publication_async_destination_poll(async::Ptr{aeron_async_destination_t})::Cint
+    @ccall libaeron.aeron_exclusive_publication_async_destination_poll(async::Ptr{aeron_async_destination_t})::Cint
 end
 
 """
@@ -2882,7 +2882,7 @@ int aeron_publication_close( aeron_publication_t *publication, aeron_notificatio
 ```
 """
 function aeron_publication_close(publication, on_close_complete, on_close_complete_clientd)
-    @ccall Aeron.aeron_publication_close(publication::Ptr{aeron_publication_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_publication_close(publication::Ptr{aeron_publication_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -2900,7 +2900,7 @@ const char *aeron_publication_channel(aeron_publication_t *publication);
 ```
 """
 function aeron_publication_channel(publication)
-    @ccall Aeron.aeron_publication_channel(publication::Ptr{aeron_publication_t})::Cstring
+    @ccall libaeron.aeron_publication_channel(publication::Ptr{aeron_publication_t})::Cstring
 end
 
 """
@@ -2918,7 +2918,7 @@ int32_t aeron_publication_stream_id(aeron_publication_t *publication);
 ```
 """
 function aeron_publication_stream_id(publication)
-    @ccall Aeron.aeron_publication_stream_id(publication::Ptr{aeron_publication_t})::Int32
+    @ccall libaeron.aeron_publication_stream_id(publication::Ptr{aeron_publication_t})::Int32
 end
 
 """
@@ -2936,7 +2936,7 @@ int32_t aeron_publication_session_id(aeron_publication_t *publication);
 ```
 """
 function aeron_publication_session_id(publication)
-    @ccall Aeron.aeron_publication_session_id(publication::Ptr{aeron_publication_t})::Int32
+    @ccall libaeron.aeron_publication_session_id(publication::Ptr{aeron_publication_t})::Int32
 end
 
 """
@@ -2959,7 +2959,7 @@ int aeron_publication_local_sockaddrs( aeron_publication_t *publication, aeron_i
 ```
 """
 function aeron_publication_local_sockaddrs(publication, address_vec, address_vec_len)
-    @ccall Aeron.aeron_publication_local_sockaddrs(publication::Ptr{aeron_publication_t}, address_vec::Ptr{aeron_iovec_t}, address_vec_len::Csize_t)::Cint
+    @ccall libaeron.aeron_publication_local_sockaddrs(publication::Ptr{aeron_publication_t}, address_vec::Ptr{aeron_iovec_t}, address_vec_len::Csize_t)::Cint
 end
 
 """
@@ -2981,7 +2981,7 @@ int64_t aeron_exclusive_publication_offer( aeron_exclusive_publication_t *public
 ```
 """
 function aeron_exclusive_publication_offer(publication, buffer, length, reserved_value_supplier, clientd)
-    @ccall Aeron.aeron_exclusive_publication_offer(publication::Ptr{aeron_exclusive_publication_t}, buffer::Ptr{UInt8}, length::Csize_t, reserved_value_supplier::aeron_reserved_value_supplier_t, clientd::Ptr{Cvoid})::Int64
+    @ccall libaeron.aeron_exclusive_publication_offer(publication::Ptr{aeron_exclusive_publication_t}, buffer::Ptr{UInt8}, length::Csize_t, reserved_value_supplier::aeron_reserved_value_supplier_t, clientd::Ptr{Cvoid})::Int64
 end
 
 """
@@ -3003,7 +3003,7 @@ int64_t aeron_exclusive_publication_offerv( aeron_exclusive_publication_t *publi
 ```
 """
 function aeron_exclusive_publication_offerv(publication, iov, iovcnt, reserved_value_supplier, clientd)
-    @ccall Aeron.aeron_exclusive_publication_offerv(publication::Ptr{aeron_exclusive_publication_t}, iov::Ptr{aeron_iovec_t}, iovcnt::Csize_t, reserved_value_supplier::aeron_reserved_value_supplier_t, clientd::Ptr{Cvoid})::Int64
+    @ccall libaeron.aeron_exclusive_publication_offerv(publication::Ptr{aeron_exclusive_publication_t}, iov::Ptr{aeron_iovec_t}, iovcnt::Csize_t, reserved_value_supplier::aeron_reserved_value_supplier_t, clientd::Ptr{Cvoid})::Int64
 end
 
 """
@@ -3032,7 +3032,7 @@ int64_t aeron_exclusive_publication_try_claim( aeron_exclusive_publication_t *pu
 ```
 """
 function aeron_exclusive_publication_try_claim(publication, length, buffer_claim)
-    @ccall Aeron.aeron_exclusive_publication_try_claim(publication::Ptr{aeron_exclusive_publication_t}, length::Csize_t, buffer_claim::Ptr{aeron_buffer_claim_t})::Int64
+    @ccall libaeron.aeron_exclusive_publication_try_claim(publication::Ptr{aeron_exclusive_publication_t}, length::Csize_t, buffer_claim::Ptr{aeron_buffer_claim_t})::Int64
 end
 
 """
@@ -3050,7 +3050,7 @@ int64_t aeron_exclusive_publication_append_padding(aeron_exclusive_publication_t
 ```
 """
 function aeron_exclusive_publication_append_padding(publication, length)
-    @ccall Aeron.aeron_exclusive_publication_append_padding(publication::Ptr{aeron_exclusive_publication_t}, length::Csize_t)::Int64
+    @ccall libaeron.aeron_exclusive_publication_append_padding(publication::Ptr{aeron_exclusive_publication_t}, length::Csize_t)::Int64
 end
 
 """
@@ -3070,7 +3070,7 @@ int64_t aeron_exclusive_publication_offer_block( aeron_exclusive_publication_t *
 ```
 """
 function aeron_exclusive_publication_offer_block(publication, buffer, length)
-    @ccall Aeron.aeron_exclusive_publication_offer_block(publication::Ptr{aeron_exclusive_publication_t}, buffer::Ptr{UInt8}, length::Csize_t)::Int64
+    @ccall libaeron.aeron_exclusive_publication_offer_block(publication::Ptr{aeron_exclusive_publication_t}, buffer::Ptr{UInt8}, length::Csize_t)::Int64
 end
 
 """
@@ -3088,7 +3088,7 @@ int64_t aeron_exclusive_publication_channel_status(aeron_exclusive_publication_t
 ```
 """
 function aeron_exclusive_publication_channel_status(publication)
-    @ccall Aeron.aeron_exclusive_publication_channel_status(publication::Ptr{aeron_exclusive_publication_t})::Int64
+    @ccall libaeron.aeron_exclusive_publication_channel_status(publication::Ptr{aeron_exclusive_publication_t})::Int64
 end
 
 """
@@ -3107,7 +3107,7 @@ int aeron_exclusive_publication_constants( aeron_exclusive_publication_t *public
 ```
 """
 function aeron_exclusive_publication_constants(publication, constants)
-    @ccall Aeron.aeron_exclusive_publication_constants(publication::Ptr{aeron_exclusive_publication_t}, constants::Ptr{aeron_publication_constants_t})::Cint
+    @ccall libaeron.aeron_exclusive_publication_constants(publication::Ptr{aeron_exclusive_publication_t}, constants::Ptr{aeron_publication_constants_t})::Cint
 end
 
 """
@@ -3125,7 +3125,7 @@ int64_t aeron_exclusive_publication_position(aeron_exclusive_publication_t *publ
 ```
 """
 function aeron_exclusive_publication_position(publication)
-    @ccall Aeron.aeron_exclusive_publication_position(publication::Ptr{aeron_exclusive_publication_t})::Int64
+    @ccall libaeron.aeron_exclusive_publication_position(publication::Ptr{aeron_exclusive_publication_t})::Int64
 end
 
 """
@@ -3145,7 +3145,7 @@ int64_t aeron_exclusive_publication_position_limit(aeron_exclusive_publication_t
 ```
 """
 function aeron_exclusive_publication_position_limit(publication)
-    @ccall Aeron.aeron_exclusive_publication_position_limit(publication::Ptr{aeron_exclusive_publication_t})::Int64
+    @ccall libaeron.aeron_exclusive_publication_position_limit(publication::Ptr{aeron_exclusive_publication_t})::Int64
 end
 
 """
@@ -3163,7 +3163,7 @@ int aeron_exclusive_publication_close( aeron_exclusive_publication_t *publicatio
 ```
 """
 function aeron_exclusive_publication_close(publication, on_close_complete, on_close_complete_clientd)
-    @ccall Aeron.aeron_exclusive_publication_close(publication::Ptr{aeron_exclusive_publication_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_exclusive_publication_close(publication::Ptr{aeron_exclusive_publication_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -3181,7 +3181,7 @@ bool aeron_exclusive_publication_is_closed(aeron_exclusive_publication_t *public
 ```
 """
 function aeron_exclusive_publication_is_closed(publication)
-    @ccall Aeron.aeron_exclusive_publication_is_closed(publication::Ptr{aeron_exclusive_publication_t})::Bool
+    @ccall libaeron.aeron_exclusive_publication_is_closed(publication::Ptr{aeron_exclusive_publication_t})::Bool
 end
 
 """
@@ -3199,7 +3199,7 @@ bool aeron_exclusive_publication_is_connected(aeron_exclusive_publication_t *pub
 ```
 """
 function aeron_exclusive_publication_is_connected(publication)
-    @ccall Aeron.aeron_exclusive_publication_is_connected(publication::Ptr{aeron_exclusive_publication_t})::Bool
+    @ccall libaeron.aeron_exclusive_publication_is_connected(publication::Ptr{aeron_exclusive_publication_t})::Bool
 end
 
 """
@@ -3222,7 +3222,7 @@ int aeron_exclusive_publication_local_sockaddrs( aeron_exclusive_publication_t *
 ```
 """
 function aeron_exclusive_publication_local_sockaddrs(publication, address_vec, address_vec_len)
-    @ccall Aeron.aeron_exclusive_publication_local_sockaddrs(publication::Ptr{aeron_exclusive_publication_t}, address_vec::Ptr{aeron_iovec_t}, address_vec_len::Csize_t)::Cint
+    @ccall libaeron.aeron_exclusive_publication_local_sockaddrs(publication::Ptr{aeron_exclusive_publication_t}, address_vec::Ptr{aeron_iovec_t}, address_vec_len::Csize_t)::Cint
 end
 
 @cenum aeron_controlled_fragment_handler_action_en::UInt32 begin
@@ -3264,7 +3264,7 @@ int aeron_header_values(aeron_header_t *header, aeron_header_values_t *values);
 ```
 """
 function aeron_header_values(header, values)
-    @ccall Aeron.aeron_header_values(header::Ptr{aeron_header_t}, values::Ptr{aeron_header_values_t})::Cint
+    @ccall libaeron.aeron_header_values(header::Ptr{aeron_header_t}, values::Ptr{aeron_header_values_t})::Cint
 end
 
 """
@@ -3282,7 +3282,7 @@ int64_t aeron_header_position(aeron_header_t *header);
 ```
 """
 function aeron_header_position(header)
-    @ccall Aeron.aeron_header_position(header::Ptr{aeron_header_t})::Int64
+    @ccall libaeron.aeron_header_position(header::Ptr{aeron_header_t})::Int64
 end
 
 """
@@ -3298,7 +3298,7 @@ size_t aeron_header_position_bits_to_shift(aeron_header_t *header);
 ```
 """
 function aeron_header_position_bits_to_shift(header)
-    @ccall Aeron.aeron_header_position_bits_to_shift(header::Ptr{aeron_header_t})::Csize_t
+    @ccall libaeron.aeron_header_position_bits_to_shift(header::Ptr{aeron_header_t})::Csize_t
 end
 
 mutable struct aeron_subscription_constants_stct
@@ -3330,7 +3330,7 @@ int aeron_subscription_poll( aeron_subscription_t *subscription, aeron_fragment_
 ```
 """
 function aeron_subscription_poll(subscription, handler, clientd, fragment_limit)
-    @ccall Aeron.aeron_subscription_poll(subscription::Ptr{aeron_subscription_t}, handler::aeron_fragment_handler_t, clientd::Ptr{Cvoid}, fragment_limit::Csize_t)::Cint
+    @ccall libaeron.aeron_subscription_poll(subscription::Ptr{aeron_subscription_t}, handler::aeron_fragment_handler_t, clientd::Ptr{Cvoid}, fragment_limit::Csize_t)::Cint
 end
 
 """
@@ -3350,7 +3350,7 @@ int aeron_subscription_controlled_poll( aeron_subscription_t *subscription, aero
 ```
 """
 function aeron_subscription_controlled_poll(subscription, handler, clientd, fragment_limit)
-    @ccall Aeron.aeron_subscription_controlled_poll(subscription::Ptr{aeron_subscription_t}, handler::aeron_controlled_fragment_handler_t, clientd::Ptr{Cvoid}, fragment_limit::Csize_t)::Cint
+    @ccall libaeron.aeron_subscription_controlled_poll(subscription::Ptr{aeron_subscription_t}, handler::aeron_controlled_fragment_handler_t, clientd::Ptr{Cvoid}, fragment_limit::Csize_t)::Cint
 end
 
 """
@@ -3370,7 +3370,7 @@ long aeron_subscription_block_poll( aeron_subscription_t *subscription, aeron_bl
 ```
 """
 function aeron_subscription_block_poll(subscription, handler, clientd, block_length_limit)
-    @ccall Aeron.aeron_subscription_block_poll(subscription::Ptr{aeron_subscription_t}, handler::aeron_block_handler_t, clientd::Ptr{Cvoid}, block_length_limit::Csize_t)::Clong
+    @ccall libaeron.aeron_subscription_block_poll(subscription::Ptr{aeron_subscription_t}, handler::aeron_block_handler_t, clientd::Ptr{Cvoid}, block_length_limit::Csize_t)::Clong
 end
 
 """
@@ -3388,7 +3388,7 @@ bool aeron_subscription_is_connected(aeron_subscription_t *subscription);
 ```
 """
 function aeron_subscription_is_connected(subscription)
-    @ccall Aeron.aeron_subscription_is_connected(subscription::Ptr{aeron_subscription_t})::Bool
+    @ccall libaeron.aeron_subscription_is_connected(subscription::Ptr{aeron_subscription_t})::Bool
 end
 
 """
@@ -3407,7 +3407,7 @@ int aeron_subscription_constants(aeron_subscription_t *subscription, aeron_subsc
 ```
 """
 function aeron_subscription_constants(subscription, constants)
-    @ccall Aeron.aeron_subscription_constants(subscription::Ptr{aeron_subscription_t}, constants::Ptr{aeron_subscription_constants_t})::Cint
+    @ccall libaeron.aeron_subscription_constants(subscription::Ptr{aeron_subscription_t}, constants::Ptr{aeron_subscription_constants_t})::Cint
 end
 
 """
@@ -3425,7 +3425,7 @@ int aeron_subscription_image_count(aeron_subscription_t *subscription);
 ```
 """
 function aeron_subscription_image_count(subscription)
-    @ccall Aeron.aeron_subscription_image_count(subscription::Ptr{aeron_subscription_t})::Cint
+    @ccall libaeron.aeron_subscription_image_count(subscription::Ptr{aeron_subscription_t})::Cint
 end
 
 """
@@ -3446,7 +3446,7 @@ aeron_image_t *aeron_subscription_image_by_session_id(aeron_subscription_t *subs
 ```
 """
 function aeron_subscription_image_by_session_id(subscription, session_id)
-    @ccall Aeron.aeron_subscription_image_by_session_id(subscription::Ptr{aeron_subscription_t}, session_id::Int32)::Ptr{aeron_image_t}
+    @ccall libaeron.aeron_subscription_image_by_session_id(subscription::Ptr{aeron_subscription_t}, session_id::Int32)::Ptr{aeron_image_t}
 end
 
 """
@@ -3467,7 +3467,7 @@ aeron_image_t *aeron_subscription_image_at_index(aeron_subscription_t *subscript
 ```
 """
 function aeron_subscription_image_at_index(subscription, index)
-    @ccall Aeron.aeron_subscription_image_at_index(subscription::Ptr{aeron_subscription_t}, index::Csize_t)::Ptr{aeron_image_t}
+    @ccall libaeron.aeron_subscription_image_at_index(subscription::Ptr{aeron_subscription_t}, index::Csize_t)::Ptr{aeron_image_t}
 end
 
 """
@@ -3484,7 +3484,7 @@ void aeron_subscription_for_each_image( aeron_subscription_t *subscription, void
 ```
 """
 function aeron_subscription_for_each_image(subscription, handler, clientd)
-    @ccall Aeron.aeron_subscription_for_each_image(subscription::Ptr{aeron_subscription_t}, handler::Ptr{Cvoid}, clientd::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_subscription_for_each_image(subscription::Ptr{aeron_subscription_t}, handler::Ptr{Cvoid}, clientd::Ptr{Cvoid})::Cvoid
 end
 
 """
@@ -3505,7 +3505,7 @@ int aeron_subscription_image_retain(aeron_subscription_t *subscription, aeron_im
 ```
 """
 function aeron_subscription_image_retain(subscription, image)
-    @ccall Aeron.aeron_subscription_image_retain(subscription::Ptr{aeron_subscription_t}, image::Ptr{aeron_image_t})::Cint
+    @ccall libaeron.aeron_subscription_image_retain(subscription::Ptr{aeron_subscription_t}, image::Ptr{aeron_image_t})::Cint
 end
 
 """
@@ -3526,7 +3526,7 @@ int aeron_subscription_image_release(aeron_subscription_t *subscription, aeron_i
 ```
 """
 function aeron_subscription_image_release(subscription, image)
-    @ccall Aeron.aeron_subscription_image_release(subscription::Ptr{aeron_subscription_t}, image::Ptr{aeron_image_t})::Cint
+    @ccall libaeron.aeron_subscription_image_release(subscription::Ptr{aeron_subscription_t}, image::Ptr{aeron_image_t})::Cint
 end
 
 """
@@ -3544,7 +3544,7 @@ bool aeron_subscription_is_closed(aeron_subscription_t *subscription);
 ```
 """
 function aeron_subscription_is_closed(subscription)
-    @ccall Aeron.aeron_subscription_is_closed(subscription::Ptr{aeron_subscription_t})::Bool
+    @ccall libaeron.aeron_subscription_is_closed(subscription::Ptr{aeron_subscription_t})::Bool
 end
 
 """
@@ -3562,7 +3562,7 @@ int64_t aeron_subscription_channel_status(aeron_subscription_t *subscription);
 ```
 """
 function aeron_subscription_channel_status(subscription)
-    @ccall Aeron.aeron_subscription_channel_status(subscription::Ptr{aeron_subscription_t})::Int64
+    @ccall libaeron.aeron_subscription_channel_status(subscription::Ptr{aeron_subscription_t})::Int64
 end
 
 """
@@ -3582,7 +3582,7 @@ int aeron_subscription_async_add_destination( aeron_async_destination_t **async,
 ```
 """
 function aeron_subscription_async_add_destination(async, client, subscription, uri)
-    @ccall Aeron.aeron_subscription_async_add_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, subscription::Ptr{aeron_subscription_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_subscription_async_add_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, subscription::Ptr{aeron_subscription_t}, uri::Cstring)::Cint
 end
 
 """
@@ -3602,7 +3602,7 @@ int aeron_subscription_async_remove_destination( aeron_async_destination_t **asy
 ```
 """
 function aeron_subscription_async_remove_destination(async, client, subscription, uri)
-    @ccall Aeron.aeron_subscription_async_remove_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, subscription::Ptr{aeron_subscription_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_subscription_async_remove_destination(async::Ptr{Ptr{aeron_async_destination_t}}, client::Ptr{aeron_t}, subscription::Ptr{aeron_subscription_t}, uri::Cstring)::Cint
 end
 
 """
@@ -3620,7 +3620,7 @@ int aeron_subscription_async_destination_poll(aeron_async_destination_t *async);
 ```
 """
 function aeron_subscription_async_destination_poll(async)
-    @ccall Aeron.aeron_subscription_async_destination_poll(async::Ptr{aeron_async_destination_t})::Cint
+    @ccall libaeron.aeron_subscription_async_destination_poll(async::Ptr{aeron_async_destination_t})::Cint
 end
 
 """
@@ -3640,7 +3640,7 @@ int aeron_subscription_close( aeron_subscription_t *subscription, aeron_notifica
 ```
 """
 function aeron_subscription_close(subscription, on_close_complete, on_close_complete_clientd)
-    @ccall Aeron.aeron_subscription_close(subscription::Ptr{aeron_subscription_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_subscription_close(subscription::Ptr{aeron_subscription_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -3662,7 +3662,7 @@ int aeron_subscription_local_sockaddrs( aeron_subscription_t *subscription, aero
 ```
 """
 function aeron_subscription_local_sockaddrs(subscription, address_vec, address_vec_len)
-    @ccall Aeron.aeron_subscription_local_sockaddrs(subscription::Ptr{aeron_subscription_t}, address_vec::Ptr{aeron_iovec_t}, address_vec_len::Csize_t)::Cint
+    @ccall libaeron.aeron_subscription_local_sockaddrs(subscription::Ptr{aeron_subscription_t}, address_vec::Ptr{aeron_iovec_t}, address_vec_len::Csize_t)::Cint
 end
 
 """
@@ -3685,7 +3685,7 @@ int aeron_subscription_resolved_endpoint(aeron_subscription_t *subscription, con
 ```
 """
 function aeron_subscription_resolved_endpoint(subscription, address, address_len)
-    @ccall Aeron.aeron_subscription_resolved_endpoint(subscription::Ptr{aeron_subscription_t}, address::Cstring, address_len::Csize_t)::Cint
+    @ccall libaeron.aeron_subscription_resolved_endpoint(subscription::Ptr{aeron_subscription_t}, address::Cstring, address_len::Csize_t)::Cint
 end
 
 """
@@ -3705,7 +3705,7 @@ int aeron_subscription_try_resolve_channel_endpoint_port( aeron_subscription_t *
 ```
 """
 function aeron_subscription_try_resolve_channel_endpoint_port(subscription, uri, uri_len)
-    @ccall Aeron.aeron_subscription_try_resolve_channel_endpoint_port(subscription::Ptr{aeron_subscription_t}, uri::Cstring, uri_len::Csize_t)::Cint
+    @ccall libaeron.aeron_subscription_try_resolve_channel_endpoint_port(subscription::Ptr{aeron_subscription_t}, uri::Cstring, uri_len::Csize_t)::Cint
 end
 
 """
@@ -3748,7 +3748,7 @@ int aeron_image_constants(aeron_image_t *image, aeron_image_constants_t *constan
 ```
 """
 function aeron_image_constants(image, constants)
-    @ccall Aeron.aeron_image_constants(image::Ptr{aeron_image_t}, constants::Ptr{aeron_image_constants_t})::Cint
+    @ccall libaeron.aeron_image_constants(image::Ptr{aeron_image_t}, constants::Ptr{aeron_image_constants_t})::Cint
 end
 
 """
@@ -3766,7 +3766,7 @@ int64_t aeron_image_position(aeron_image_t *image);
 ```
 """
 function aeron_image_position(image)
-    @ccall Aeron.aeron_image_position(image::Ptr{aeron_image_t})::Int64
+    @ccall libaeron.aeron_image_position(image::Ptr{aeron_image_t})::Int64
 end
 
 """
@@ -3783,7 +3783,7 @@ int aeron_image_set_position(aeron_image_t *image, int64_t position);
 ```
 """
 function aeron_image_set_position(image, position)
-    @ccall Aeron.aeron_image_set_position(image::Ptr{aeron_image_t}, position::Int64)::Cint
+    @ccall libaeron.aeron_image_set_position(image::Ptr{aeron_image_t}, position::Int64)::Cint
 end
 
 """
@@ -3801,7 +3801,7 @@ bool aeron_image_is_end_of_stream(aeron_image_t *image);
 ```
 """
 function aeron_image_is_end_of_stream(image)
-    @ccall Aeron.aeron_image_is_end_of_stream(image::Ptr{aeron_image_t})::Bool
+    @ccall libaeron.aeron_image_is_end_of_stream(image::Ptr{aeron_image_t})::Bool
 end
 
 """
@@ -3821,7 +3821,7 @@ int aeron_image_active_transport_count(aeron_image_t *image);
 ```
 """
 function aeron_image_active_transport_count(image)
-    @ccall Aeron.aeron_image_active_transport_count(image::Ptr{aeron_image_t})::Cint
+    @ccall libaeron.aeron_image_active_transport_count(image::Ptr{aeron_image_t})::Cint
 end
 
 """
@@ -3842,7 +3842,7 @@ int aeron_image_poll(aeron_image_t *image, aeron_fragment_handler_t handler, voi
 ```
 """
 function aeron_image_poll(image, handler, clientd, fragment_limit)
-    @ccall Aeron.aeron_image_poll(image::Ptr{aeron_image_t}, handler::aeron_fragment_handler_t, clientd::Ptr{Cvoid}, fragment_limit::Csize_t)::Cint
+    @ccall libaeron.aeron_image_poll(image::Ptr{aeron_image_t}, handler::aeron_fragment_handler_t, clientd::Ptr{Cvoid}, fragment_limit::Csize_t)::Cint
 end
 
 """
@@ -3863,7 +3863,7 @@ int aeron_image_controlled_poll( aeron_image_t *image, aeron_controlled_fragment
 ```
 """
 function aeron_image_controlled_poll(image, handler, clientd, fragment_limit)
-    @ccall Aeron.aeron_image_controlled_poll(image::Ptr{aeron_image_t}, handler::aeron_controlled_fragment_handler_t, clientd::Ptr{Cvoid}, fragment_limit::Csize_t)::Cint
+    @ccall libaeron.aeron_image_controlled_poll(image::Ptr{aeron_image_t}, handler::aeron_controlled_fragment_handler_t, clientd::Ptr{Cvoid}, fragment_limit::Csize_t)::Cint
 end
 
 """
@@ -3885,7 +3885,7 @@ int aeron_image_bounded_poll( aeron_image_t *image, aeron_fragment_handler_t han
 ```
 """
 function aeron_image_bounded_poll(image, handler, clientd, limit_position, fragment_limit)
-    @ccall Aeron.aeron_image_bounded_poll(image::Ptr{aeron_image_t}, handler::aeron_fragment_handler_t, clientd::Ptr{Cvoid}, limit_position::Int64, fragment_limit::Csize_t)::Cint
+    @ccall libaeron.aeron_image_bounded_poll(image::Ptr{aeron_image_t}, handler::aeron_fragment_handler_t, clientd::Ptr{Cvoid}, limit_position::Int64, fragment_limit::Csize_t)::Cint
 end
 
 """
@@ -3907,7 +3907,7 @@ int aeron_image_bounded_controlled_poll( aeron_image_t *image, aeron_controlled_
 ```
 """
 function aeron_image_bounded_controlled_poll(image, handler, clientd, limit_position, fragment_limit)
-    @ccall Aeron.aeron_image_bounded_controlled_poll(image::Ptr{aeron_image_t}, handler::aeron_controlled_fragment_handler_t, clientd::Ptr{Cvoid}, limit_position::Int64, fragment_limit::Csize_t)::Cint
+    @ccall libaeron.aeron_image_bounded_controlled_poll(image::Ptr{aeron_image_t}, handler::aeron_controlled_fragment_handler_t, clientd::Ptr{Cvoid}, limit_position::Int64, fragment_limit::Csize_t)::Cint
 end
 
 """
@@ -3929,7 +3929,7 @@ int64_t aeron_image_controlled_peek( aeron_image_t *image, int64_t initial_posit
 ```
 """
 function aeron_image_controlled_peek(image, initial_position, handler, clientd, limit_position)
-    @ccall Aeron.aeron_image_controlled_peek(image::Ptr{aeron_image_t}, initial_position::Int64, handler::aeron_controlled_fragment_handler_t, clientd::Ptr{Cvoid}, limit_position::Int64)::Int64
+    @ccall libaeron.aeron_image_controlled_peek(image::Ptr{aeron_image_t}, initial_position::Int64, handler::aeron_controlled_fragment_handler_t, clientd::Ptr{Cvoid}, limit_position::Int64)::Int64
 end
 
 """
@@ -3950,7 +3950,7 @@ int aeron_image_block_poll( aeron_image_t *image, aeron_block_handler_t handler,
 ```
 """
 function aeron_image_block_poll(image, handler, clientd, block_length_limit)
-    @ccall Aeron.aeron_image_block_poll(image::Ptr{aeron_image_t}, handler::aeron_block_handler_t, clientd::Ptr{Cvoid}, block_length_limit::Csize_t)::Cint
+    @ccall libaeron.aeron_image_block_poll(image::Ptr{aeron_image_t}, handler::aeron_block_handler_t, clientd::Ptr{Cvoid}, block_length_limit::Csize_t)::Cint
 end
 
 """
@@ -3962,7 +3962,7 @@ bool aeron_image_is_closed(aeron_image_t *image);
 ```
 """
 function aeron_image_is_closed(image)
-    @ccall Aeron.aeron_image_is_closed(image::Ptr{aeron_image_t})::Bool
+    @ccall libaeron.aeron_image_is_closed(image::Ptr{aeron_image_t})::Bool
 end
 
 """
@@ -3982,7 +3982,7 @@ int aeron_image_fragment_assembler_create( aeron_image_fragment_assembler_t **as
 ```
 """
 function aeron_image_fragment_assembler_create(assembler, delegate, delegate_clientd)
-    @ccall Aeron.aeron_image_fragment_assembler_create(assembler::Ptr{Ptr{aeron_image_fragment_assembler_t}}, delegate::aeron_fragment_handler_t, delegate_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_image_fragment_assembler_create(assembler::Ptr{Ptr{aeron_image_fragment_assembler_t}}, delegate::aeron_fragment_handler_t, delegate_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -4000,7 +4000,7 @@ int aeron_image_fragment_assembler_delete(aeron_image_fragment_assembler_t *asse
 ```
 """
 function aeron_image_fragment_assembler_delete(assembler)
-    @ccall Aeron.aeron_image_fragment_assembler_delete(assembler::Ptr{aeron_image_fragment_assembler_t})::Cint
+    @ccall libaeron.aeron_image_fragment_assembler_delete(assembler::Ptr{aeron_image_fragment_assembler_t})::Cint
 end
 
 """
@@ -4019,7 +4019,7 @@ void aeron_image_fragment_assembler_handler( void *clientd, const uint8_t *buffe
 ```
 """
 function aeron_image_fragment_assembler_handler(clientd, buffer, length, header)
-    @ccall Aeron.aeron_image_fragment_assembler_handler(clientd::Ptr{Cvoid}, buffer::Ptr{UInt8}, length::Csize_t, header::Ptr{aeron_header_t})::Cvoid
+    @ccall libaeron.aeron_image_fragment_assembler_handler(clientd::Ptr{Cvoid}, buffer::Ptr{UInt8}, length::Csize_t, header::Ptr{aeron_header_t})::Cvoid
 end
 
 """
@@ -4039,7 +4039,7 @@ int aeron_image_controlled_fragment_assembler_create( aeron_image_controlled_fra
 ```
 """
 function aeron_image_controlled_fragment_assembler_create(assembler, delegate, delegate_clientd)
-    @ccall Aeron.aeron_image_controlled_fragment_assembler_create(assembler::Ptr{Ptr{aeron_image_controlled_fragment_assembler_t}}, delegate::aeron_controlled_fragment_handler_t, delegate_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_image_controlled_fragment_assembler_create(assembler::Ptr{Ptr{aeron_image_controlled_fragment_assembler_t}}, delegate::aeron_controlled_fragment_handler_t, delegate_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -4057,7 +4057,7 @@ int aeron_image_controlled_fragment_assembler_delete(aeron_image_controlled_frag
 ```
 """
 function aeron_image_controlled_fragment_assembler_delete(assembler)
-    @ccall Aeron.aeron_image_controlled_fragment_assembler_delete(assembler::Ptr{aeron_image_controlled_fragment_assembler_t})::Cint
+    @ccall libaeron.aeron_image_controlled_fragment_assembler_delete(assembler::Ptr{aeron_image_controlled_fragment_assembler_t})::Cint
 end
 
 """
@@ -4078,7 +4078,7 @@ aeron_controlled_fragment_handler_action_t aeron_controlled_image_fragment_assem
 ```
 """
 function aeron_controlled_image_fragment_assembler_handler(clientd, buffer, length, header)
-    @ccall Aeron.aeron_controlled_image_fragment_assembler_handler(clientd::Ptr{Cvoid}, buffer::Ptr{UInt8}, length::Csize_t, header::Ptr{aeron_header_t})::aeron_controlled_fragment_handler_action_t
+    @ccall libaeron.aeron_controlled_image_fragment_assembler_handler(clientd::Ptr{Cvoid}, buffer::Ptr{UInt8}, length::Csize_t, header::Ptr{aeron_header_t})::aeron_controlled_fragment_handler_action_t
 end
 
 """
@@ -4098,7 +4098,7 @@ int aeron_fragment_assembler_create( aeron_fragment_assembler_t **assembler, aer
 ```
 """
 function aeron_fragment_assembler_create(assembler, delegate, delegate_clientd)
-    @ccall Aeron.aeron_fragment_assembler_create(assembler::Ptr{Ptr{aeron_fragment_assembler_t}}, delegate::aeron_fragment_handler_t, delegate_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_fragment_assembler_create(assembler::Ptr{Ptr{aeron_fragment_assembler_t}}, delegate::aeron_fragment_handler_t, delegate_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -4116,7 +4116,7 @@ int aeron_fragment_assembler_delete(aeron_fragment_assembler_t *assembler);
 ```
 """
 function aeron_fragment_assembler_delete(assembler)
-    @ccall Aeron.aeron_fragment_assembler_delete(assembler::Ptr{aeron_fragment_assembler_t})::Cint
+    @ccall libaeron.aeron_fragment_assembler_delete(assembler::Ptr{aeron_fragment_assembler_t})::Cint
 end
 
 """
@@ -4135,7 +4135,7 @@ void aeron_fragment_assembler_handler( void *clientd, const uint8_t *buffer, siz
 ```
 """
 function aeron_fragment_assembler_handler(clientd, buffer, length, header)
-    @ccall Aeron.aeron_fragment_assembler_handler(clientd::Ptr{Cvoid}, buffer::Ptr{UInt8}, length::Csize_t, header::Ptr{aeron_header_t})::Cvoid
+    @ccall libaeron.aeron_fragment_assembler_handler(clientd::Ptr{Cvoid}, buffer::Ptr{UInt8}, length::Csize_t, header::Ptr{aeron_header_t})::Cvoid
 end
 
 """
@@ -4155,7 +4155,7 @@ int aeron_controlled_fragment_assembler_create( aeron_controlled_fragment_assemb
 ```
 """
 function aeron_controlled_fragment_assembler_create(assembler, delegate, delegate_clientd)
-    @ccall Aeron.aeron_controlled_fragment_assembler_create(assembler::Ptr{Ptr{aeron_controlled_fragment_assembler_t}}, delegate::aeron_controlled_fragment_handler_t, delegate_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_controlled_fragment_assembler_create(assembler::Ptr{Ptr{aeron_controlled_fragment_assembler_t}}, delegate::aeron_controlled_fragment_handler_t, delegate_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -4173,7 +4173,7 @@ int aeron_controlled_fragment_assembler_delete(aeron_controlled_fragment_assembl
 ```
 """
 function aeron_controlled_fragment_assembler_delete(assembler)
-    @ccall Aeron.aeron_controlled_fragment_assembler_delete(assembler::Ptr{aeron_controlled_fragment_assembler_t})::Cint
+    @ccall libaeron.aeron_controlled_fragment_assembler_delete(assembler::Ptr{aeron_controlled_fragment_assembler_t})::Cint
 end
 
 """
@@ -4194,7 +4194,7 @@ aeron_controlled_fragment_handler_action_t aeron_controlled_fragment_assembler_h
 ```
 """
 function aeron_controlled_fragment_assembler_handler(clientd, buffer, length, header)
-    @ccall Aeron.aeron_controlled_fragment_assembler_handler(clientd::Ptr{Cvoid}, buffer::Ptr{UInt8}, length::Csize_t, header::Ptr{aeron_header_t})::aeron_controlled_fragment_handler_action_t
+    @ccall libaeron.aeron_controlled_fragment_assembler_handler(clientd::Ptr{Cvoid}, buffer::Ptr{UInt8}, length::Csize_t, header::Ptr{aeron_header_t})::aeron_controlled_fragment_handler_action_t
 end
 
 """
@@ -4212,7 +4212,7 @@ int64_t *aeron_counter_addr(aeron_counter_t *counter);
 ```
 """
 function aeron_counter_addr(counter)
-    @ccall Aeron.aeron_counter_addr(counter::Ptr{aeron_counter_t})::Ptr{Int64}
+    @ccall libaeron.aeron_counter_addr(counter::Ptr{aeron_counter_t})::Ptr{Int64}
 end
 
 """
@@ -4247,7 +4247,7 @@ int aeron_counter_constants(aeron_counter_t *counter, aeron_counter_constants_t 
 ```
 """
 function aeron_counter_constants(counter, constants)
-    @ccall Aeron.aeron_counter_constants(counter::Ptr{aeron_counter_t}, constants::Ptr{aeron_counter_constants_t})::Cint
+    @ccall libaeron.aeron_counter_constants(counter::Ptr{aeron_counter_t}, constants::Ptr{aeron_counter_constants_t})::Cint
 end
 
 """
@@ -4265,7 +4265,7 @@ int aeron_counter_close( aeron_counter_t *counter, aeron_notification_t on_close
 ```
 """
 function aeron_counter_close(counter, on_close_complete, on_close_complete_clientd)
-    @ccall Aeron.aeron_counter_close(counter::Ptr{aeron_counter_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_counter_close(counter::Ptr{aeron_counter_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -4283,7 +4283,7 @@ bool aeron_counter_is_closed(aeron_counter_t *counter);
 ```
 """
 function aeron_counter_is_closed(counter)
-    @ccall Aeron.aeron_counter_is_closed(counter::Ptr{aeron_counter_t})::Bool
+    @ccall libaeron.aeron_counter_is_closed(counter::Ptr{aeron_counter_t})::Bool
 end
 
 """
@@ -4299,7 +4299,7 @@ const char *aeron_version_full(void);
 ```
 """
 function aeron_version_full()
-    @ccall Aeron.aeron_version_full()::Cstring
+    @ccall libaeron.aeron_version_full()::Cstring
 end
 
 """
@@ -4315,7 +4315,7 @@ int aeron_version_major(void);
 ```
 """
 function aeron_version_major()
-    @ccall Aeron.aeron_version_major()::Cint
+    @ccall libaeron.aeron_version_major()::Cint
 end
 
 """
@@ -4331,7 +4331,7 @@ int aeron_version_minor(void);
 ```
 """
 function aeron_version_minor()
-    @ccall Aeron.aeron_version_minor()::Cint
+    @ccall libaeron.aeron_version_minor()::Cint
 end
 
 """
@@ -4347,7 +4347,7 @@ int aeron_version_patch(void);
 ```
 """
 function aeron_version_patch()
-    @ccall Aeron.aeron_version_patch()::Cint
+    @ccall libaeron.aeron_version_patch()::Cint
 end
 
 """
@@ -4363,7 +4363,7 @@ int64_t aeron_nano_clock(void);
 ```
 """
 function aeron_nano_clock()
-    @ccall Aeron.aeron_nano_clock()::Int64
+    @ccall libaeron.aeron_nano_clock()::Int64
 end
 
 """
@@ -4379,7 +4379,7 @@ int64_t aeron_epoch_clock(void);
 ```
 """
 function aeron_epoch_clock()
-    @ccall Aeron.aeron_epoch_clock()::Int64
+    @ccall libaeron.aeron_epoch_clock()::Int64
 end
 
 # typedef void ( * aeron_log_func_t ) ( const char * )
@@ -4405,7 +4405,7 @@ bool aeron_is_driver_active(const char *dirname, int64_t timeout_ms, aeron_log_f
 ```
 """
 function aeron_is_driver_active(dirname, timeout_ms, log_func)
-    @ccall Aeron.aeron_is_driver_active(dirname::Cstring, timeout_ms::Int64, log_func::aeron_log_func_t)::Bool
+    @ccall libaeron.aeron_is_driver_active(dirname::Cstring, timeout_ms::Int64, log_func::aeron_log_func_t)::Bool
 end
 
 """
@@ -4423,7 +4423,7 @@ int aeron_properties_buffer_load(const char *buffer);
 ```
 """
 function aeron_properties_buffer_load(buffer)
-    @ccall Aeron.aeron_properties_buffer_load(buffer::Cstring)::Cint
+    @ccall libaeron.aeron_properties_buffer_load(buffer::Cstring)::Cint
 end
 
 """
@@ -4441,7 +4441,7 @@ int aeron_properties_file_load(const char *filename);
 ```
 """
 function aeron_properties_file_load(filename)
-    @ccall Aeron.aeron_properties_file_load(filename::Cstring)::Cint
+    @ccall libaeron.aeron_properties_file_load(filename::Cstring)::Cint
 end
 
 """
@@ -4459,7 +4459,7 @@ int aeron_properties_http_load(const char *url);
 ```
 """
 function aeron_properties_http_load(url)
-    @ccall Aeron.aeron_properties_http_load(url::Cstring)::Cint
+    @ccall libaeron.aeron_properties_http_load(url::Cstring)::Cint
 end
 
 """
@@ -4477,7 +4477,7 @@ int aeron_properties_load(const char *url_or_filename);
 ```
 """
 function aeron_properties_load(url_or_filename)
-    @ccall Aeron.aeron_properties_load(url_or_filename::Cstring)::Cint
+    @ccall libaeron.aeron_properties_load(url_or_filename::Cstring)::Cint
 end
 
 """
@@ -4493,7 +4493,7 @@ int aeron_errcode(void);
 ```
 """
 function aeron_errcode()
-    @ccall Aeron.aeron_errcode()::Cint
+    @ccall libaeron.aeron_errcode()::Cint
 end
 
 """
@@ -4509,7 +4509,7 @@ const char *aeron_errmsg(void);
 ```
 """
 function aeron_errmsg()
-    @ccall Aeron.aeron_errmsg()::Cstring
+    @ccall libaeron.aeron_errmsg()::Cstring
 end
 
 """
@@ -4528,7 +4528,7 @@ int aeron_default_path(char *path, size_t path_length);
 ```
 """
 function aeron_default_path(path, path_length)
-    @ccall Aeron.aeron_default_path(path::Cstring, path_length::Csize_t)::Cint
+    @ccall libaeron.aeron_default_path(path::Cstring, path_length::Csize_t)::Cint
 end
 
 """
@@ -4546,7 +4546,7 @@ int64_t aeron_async_add_counter_get_registration_id(aeron_async_add_counter_t *a
 ```
 """
 function aeron_async_add_counter_get_registration_id(add_counter)
-    @ccall Aeron.aeron_async_add_counter_get_registration_id(add_counter::Ptr{aeron_async_add_counter_t})::Int64
+    @ccall libaeron.aeron_async_add_counter_get_registration_id(add_counter::Ptr{aeron_async_add_counter_t})::Int64
 end
 
 """
@@ -4564,7 +4564,7 @@ int64_t aeron_async_add_publication_get_registration_id(aeron_async_add_publicat
 ```
 """
 function aeron_async_add_publication_get_registration_id(add_publication)
-    @ccall Aeron.aeron_async_add_publication_get_registration_id(add_publication::Ptr{aeron_async_add_publication_t})::Int64
+    @ccall libaeron.aeron_async_add_publication_get_registration_id(add_publication::Ptr{aeron_async_add_publication_t})::Int64
 end
 
 """
@@ -4582,7 +4582,7 @@ int64_t aeron_async_add_exclusive_exclusive_publication_get_registration_id( aer
 ```
 """
 function aeron_async_add_exclusive_exclusive_publication_get_registration_id(add_exclusive_publication)
-    @ccall Aeron.aeron_async_add_exclusive_exclusive_publication_get_registration_id(add_exclusive_publication::Ptr{aeron_async_add_exclusive_publication_t})::Int64
+    @ccall libaeron.aeron_async_add_exclusive_exclusive_publication_get_registration_id(add_exclusive_publication::Ptr{aeron_async_add_exclusive_publication_t})::Int64
 end
 
 """
@@ -4600,7 +4600,7 @@ int64_t aeron_async_add_subscription_get_registration_id(aeron_async_add_subscri
 ```
 """
 function aeron_async_add_subscription_get_registration_id(add_subscription)
-    @ccall Aeron.aeron_async_add_subscription_get_registration_id(add_subscription::Ptr{aeron_async_add_subscription_t})::Int64
+    @ccall libaeron.aeron_async_add_subscription_get_registration_id(add_subscription::Ptr{aeron_async_add_subscription_t})::Int64
 end
 
 """
@@ -4618,7 +4618,7 @@ int64_t aeron_async_destination_get_registration_id(aeron_async_destination_t *a
 ```
 """
 function aeron_async_destination_get_registration_id(async_destination)
-    @ccall Aeron.aeron_async_destination_get_registration_id(async_destination::Ptr{aeron_async_destination_t})::Int64
+    @ccall libaeron.aeron_async_destination_get_registration_id(async_destination::Ptr{aeron_async_destination_t})::Int64
 end
 
 """
@@ -4638,7 +4638,7 @@ int aeron_context_request_driver_termination(const char *directory, const uint8_
 ```
 """
 function aeron_context_request_driver_termination(directory, token_buffer, token_length)
-    @ccall Aeron.aeron_context_request_driver_termination(directory::Cstring, token_buffer::Ptr{UInt8}, token_length::Csize_t)::Cint
+    @ccall libaeron.aeron_context_request_driver_termination(directory::Cstring, token_buffer::Ptr{UInt8}, token_length::Csize_t)::Cint
 end
 
 mutable struct aeron_cnc_stct end
@@ -4692,7 +4692,7 @@ int aeron_cnc_init(aeron_cnc_t **aeron_cnc, const char *base_path, int64_t timeo
 ```
 """
 function aeron_cnc_init(aeron_cnc, base_path, timeout_ms)
-    @ccall Aeron.aeron_cnc_init(aeron_cnc::Ptr{Ptr{aeron_cnc_t}}, base_path::Cstring, timeout_ms::Int64)::Cint
+    @ccall libaeron.aeron_cnc_init(aeron_cnc::Ptr{Ptr{aeron_cnc_t}}, base_path::Cstring, timeout_ms::Int64)::Cint
 end
 
 """
@@ -4711,7 +4711,7 @@ int aeron_cnc_constants(aeron_cnc_t *aeron_cnc, aeron_cnc_constants_t *constants
 ```
 """
 function aeron_cnc_constants(aeron_cnc, constants)
-    @ccall Aeron.aeron_cnc_constants(aeron_cnc::Ptr{aeron_cnc_t}, constants::Ptr{aeron_cnc_constants_t})::Cint
+    @ccall libaeron.aeron_cnc_constants(aeron_cnc::Ptr{aeron_cnc_t}, constants::Ptr{aeron_cnc_constants_t})::Cint
 end
 
 """
@@ -4729,7 +4729,7 @@ const char *aeron_cnc_filename(aeron_cnc_t *aeron_cnc);
 ```
 """
 function aeron_cnc_filename(aeron_cnc)
-    @ccall Aeron.aeron_cnc_filename(aeron_cnc::Ptr{aeron_cnc_t})::Cstring
+    @ccall libaeron.aeron_cnc_filename(aeron_cnc::Ptr{aeron_cnc_t})::Cstring
 end
 
 """
@@ -4747,7 +4747,7 @@ int64_t aeron_cnc_to_driver_heartbeat(aeron_cnc_t *aeron_cnc);
 ```
 """
 function aeron_cnc_to_driver_heartbeat(aeron_cnc)
-    @ccall Aeron.aeron_cnc_to_driver_heartbeat(aeron_cnc::Ptr{aeron_cnc_t})::Int64
+    @ccall libaeron.aeron_cnc_to_driver_heartbeat(aeron_cnc::Ptr{aeron_cnc_t})::Int64
 end
 
 # typedef void ( * aeron_error_log_reader_func_t ) ( int32_t observation_count , int64_t first_observation_timestamp , int64_t last_observation_timestamp , const char * error , size_t error_length , void * clientd )
@@ -4771,7 +4771,7 @@ size_t aeron_cnc_error_log_read( aeron_cnc_t *aeron_cnc, aeron_error_log_reader_
 ```
 """
 function aeron_cnc_error_log_read(aeron_cnc, callback, clientd, since_timestamp)
-    @ccall Aeron.aeron_cnc_error_log_read(aeron_cnc::Ptr{aeron_cnc_t}, callback::aeron_error_log_reader_func_t, clientd::Ptr{Cvoid}, since_timestamp::Int64)::Csize_t
+    @ccall libaeron.aeron_cnc_error_log_read(aeron_cnc::Ptr{aeron_cnc_t}, callback::aeron_error_log_reader_func_t, clientd::Ptr{Cvoid}, since_timestamp::Int64)::Csize_t
 end
 
 """
@@ -4789,7 +4789,7 @@ aeron_counters_reader_t *aeron_cnc_counters_reader(aeron_cnc_t *aeron_cnc);
 ```
 """
 function aeron_cnc_counters_reader(aeron_cnc)
-    @ccall Aeron.aeron_cnc_counters_reader(aeron_cnc::Ptr{aeron_cnc_t})::Ptr{aeron_counters_reader_t}
+    @ccall libaeron.aeron_cnc_counters_reader(aeron_cnc::Ptr{aeron_cnc_t})::Ptr{aeron_counters_reader_t}
 end
 
 # typedef void ( * aeron_loss_reporter_read_entry_func_t ) ( void * clientd , int64_t observation_count , int64_t total_bytes_lost , int64_t first_observation_timestamp , int64_t last_observation_timestamp , int32_t session_id , int32_t stream_id , const char * channel , int32_t channel_length , const char * source , int32_t source_length )
@@ -4812,7 +4812,7 @@ int aeron_cnc_loss_reporter_read( aeron_cnc_t *aeron_cnc, aeron_loss_reporter_re
 ```
 """
 function aeron_cnc_loss_reporter_read(aeron_cnc, entry_func, clientd)
-    @ccall Aeron.aeron_cnc_loss_reporter_read(aeron_cnc::Ptr{aeron_cnc_t}, entry_func::aeron_loss_reporter_read_entry_func_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_cnc_loss_reporter_read(aeron_cnc::Ptr{aeron_cnc_t}, entry_func::aeron_loss_reporter_read_entry_func_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -4828,7 +4828,7 @@ void aeron_cnc_close(aeron_cnc_t *aeron_cnc);
 ```
 """
 function aeron_cnc_close(aeron_cnc)
-    @ccall Aeron.aeron_cnc_close(aeron_cnc::Ptr{aeron_cnc_t})::Cvoid
+    @ccall libaeron.aeron_cnc_close(aeron_cnc::Ptr{aeron_cnc_t})::Cvoid
 end
 
 """
@@ -4840,7 +4840,7 @@ inline uint8_t *aeron_cache_line_align_buffer(uint8_t *buffer);
 ```
 """
 function aeron_cache_line_align_buffer(buffer)
-    @ccall Aeron.aeron_cache_line_align_buffer(buffer::Ptr{UInt8})::Ptr{UInt8}
+    @ccall libaeron.aeron_cache_line_align_buffer(buffer::Ptr{UInt8})::Ptr{UInt8}
 end
 
 """
@@ -4852,7 +4852,7 @@ inline int aeron_number_of_trailing_zeroes(int32_t value);
 ```
 """
 function aeron_number_of_trailing_zeroes(value)
-    @ccall Aeron.aeron_number_of_trailing_zeroes(value::Int32)::Cint
+    @ccall libaeron.aeron_number_of_trailing_zeroes(value::Int32)::Cint
 end
 
 """
@@ -4864,7 +4864,7 @@ inline int aeron_number_of_trailing_zeroes_u64(uint64_t value);
 ```
 """
 function aeron_number_of_trailing_zeroes_u64(value)
-    @ccall Aeron.aeron_number_of_trailing_zeroes_u64(value::UInt64)::Cint
+    @ccall libaeron.aeron_number_of_trailing_zeroes_u64(value::UInt64)::Cint
 end
 
 """
@@ -4876,7 +4876,7 @@ inline int aeron_number_of_leading_zeroes(int32_t value);
 ```
 """
 function aeron_number_of_leading_zeroes(value)
-    @ccall Aeron.aeron_number_of_leading_zeroes(value::Int32)::Cint
+    @ccall libaeron.aeron_number_of_leading_zeroes(value::Int32)::Cint
 end
 
 """
@@ -4888,7 +4888,7 @@ inline int32_t aeron_find_next_power_of_two(int32_t value);
 ```
 """
 function aeron_find_next_power_of_two(value)
-    @ccall Aeron.aeron_find_next_power_of_two(value::Int32)::Int32
+    @ccall libaeron.aeron_find_next_power_of_two(value::Int32)::Int32
 end
 
 """
@@ -4900,7 +4900,7 @@ int32_t aeron_randomised_int32(void);
 ```
 """
 function aeron_randomised_int32()
-    @ccall Aeron.aeron_randomised_int32()::Int32
+    @ccall libaeron.aeron_randomised_int32()::Int32
 end
 
 struct aeron_clock_cache_stct
@@ -4927,7 +4927,7 @@ void aeron_clock_update_cached_time(aeron_clock_cache_t *cached_clock, int64_t e
 ```
 """
 function aeron_clock_update_cached_time(cached_clock, epoch_time, nano_time)
-    @ccall Aeron.aeron_clock_update_cached_time(cached_clock::Ptr{aeron_clock_cache_t}, epoch_time::Int64, nano_time::Int64)::Cvoid
+    @ccall libaeron.aeron_clock_update_cached_time(cached_clock::Ptr{aeron_clock_cache_t}, epoch_time::Int64, nano_time::Int64)::Cvoid
 end
 
 """
@@ -4944,7 +4944,7 @@ void aeron_clock_update_cached_epoch_time(aeron_clock_cache_t *cached_clock, int
 ```
 """
 function aeron_clock_update_cached_epoch_time(cached_clock, epoch_time)
-    @ccall Aeron.aeron_clock_update_cached_epoch_time(cached_clock::Ptr{aeron_clock_cache_t}, epoch_time::Int64)::Cvoid
+    @ccall libaeron.aeron_clock_update_cached_epoch_time(cached_clock::Ptr{aeron_clock_cache_t}, epoch_time::Int64)::Cvoid
 end
 
 """
@@ -4961,7 +4961,7 @@ void aeron_clock_update_cached_nano_time(aeron_clock_cache_t *cached_clock, int6
 ```
 """
 function aeron_clock_update_cached_nano_time(cached_clock, nano_time)
-    @ccall Aeron.aeron_clock_update_cached_nano_time(cached_clock::Ptr{aeron_clock_cache_t}, nano_time::Int64)::Cvoid
+    @ccall libaeron.aeron_clock_update_cached_nano_time(cached_clock::Ptr{aeron_clock_cache_t}, nano_time::Int64)::Cvoid
 end
 
 """
@@ -4979,7 +4979,7 @@ int64_t aeron_clock_cached_epoch_time(aeron_clock_cache_t *cached_clock);
 ```
 """
 function aeron_clock_cached_epoch_time(cached_clock)
-    @ccall Aeron.aeron_clock_cached_epoch_time(cached_clock::Ptr{aeron_clock_cache_t})::Int64
+    @ccall libaeron.aeron_clock_cached_epoch_time(cached_clock::Ptr{aeron_clock_cache_t})::Int64
 end
 
 """
@@ -4997,7 +4997,7 @@ int64_t aeron_clock_cached_nano_time(aeron_clock_cache_t *cached_clock);
 ```
 """
 function aeron_clock_cached_nano_time(cached_clock)
-    @ccall Aeron.aeron_clock_cached_nano_time(cached_clock::Ptr{aeron_clock_cache_t})::Int64
+    @ccall libaeron.aeron_clock_cached_nano_time(cached_clock::Ptr{aeron_clock_cache_t})::Int64
 end
 
 """
@@ -5015,7 +5015,7 @@ int aeron_clock_cache_alloc(aeron_clock_cache_t **cached_clock);
 ```
 """
 function aeron_clock_cache_alloc(cached_clock)
-    @ccall Aeron.aeron_clock_cache_alloc(cached_clock::Ptr{Ptr{aeron_clock_cache_t}})::Cint
+    @ccall libaeron.aeron_clock_cache_alloc(cached_clock::Ptr{Ptr{aeron_clock_cache_t}})::Cint
 end
 
 """
@@ -5033,7 +5033,7 @@ int aeron_clock_gettime_realtime(struct timespec *time);
 ```
 """
 function aeron_clock_gettime_realtime(time)
-    @ccall Aeron.aeron_clock_gettime_realtime(time::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_clock_gettime_realtime(time::Ptr{Cvoid})::Cint
 end
 
 """
@@ -5045,7 +5045,7 @@ void aeron_thread_set_name(const char *role_name);
 ```
 """
 function aeron_thread_set_name(role_name)
-    @ccall Aeron.aeron_thread_set_name(role_name::Cstring)::Cvoid
+    @ccall libaeron.aeron_thread_set_name(role_name::Cstring)::Cvoid
 end
 
 """
@@ -5057,7 +5057,7 @@ void aeron_nano_sleep(uint64_t nanoseconds);
 ```
 """
 function aeron_nano_sleep(nanoseconds)
-    @ccall Aeron.aeron_nano_sleep(nanoseconds::UInt64)::Cvoid
+    @ccall libaeron.aeron_nano_sleep(nanoseconds::UInt64)::Cvoid
 end
 
 """
@@ -5069,7 +5069,7 @@ void aeron_micro_sleep(unsigned int microseconds);
 ```
 """
 function aeron_micro_sleep(microseconds)
-    @ccall Aeron.aeron_micro_sleep(microseconds::Cuint)::Cvoid
+    @ccall libaeron.aeron_micro_sleep(microseconds::Cuint)::Cvoid
 end
 
 """
@@ -5081,7 +5081,7 @@ int aeron_thread_set_affinity(const char *role_name, uint8_t cpu_affinity_no);
 ```
 """
 function aeron_thread_set_affinity(role_name, cpu_affinity_no)
-    @ccall Aeron.aeron_thread_set_affinity(role_name::Cstring, cpu_affinity_no::UInt8)::Cint
+    @ccall libaeron.aeron_thread_set_affinity(role_name::Cstring, cpu_affinity_no::UInt8)::Cint
 end
 
 const aeron_mutex_t = pthread_mutex_t
@@ -5095,7 +5095,7 @@ void proc_yield(void);
 ```
 """
 function proc_yield()
-    @ccall Aeron.proc_yield()::Cvoid
+    @ccall libaeron.proc_yield()::Cvoid
 end
 
 """
@@ -5107,7 +5107,7 @@ inline bool aeron_cas_int64(volatile int64_t *dst, int64_t expected, int64_t des
 ```
 """
 function aeron_cas_int64(dst, expected, desired)
-    @ccall Aeron.aeron_cas_int64(dst::Ptr{Int64}, expected::Int64, desired::Int64)::Bool
+    @ccall libaeron.aeron_cas_int64(dst::Ptr{Int64}, expected::Int64, desired::Int64)::Bool
 end
 
 """
@@ -5119,7 +5119,7 @@ inline bool aeron_cas_uint64(volatile uint64_t *dst, uint64_t expected, uint64_t
 ```
 """
 function aeron_cas_uint64(dst, expected, desired)
-    @ccall Aeron.aeron_cas_uint64(dst::Ptr{UInt64}, expected::UInt64, desired::UInt64)::Bool
+    @ccall libaeron.aeron_cas_uint64(dst::Ptr{UInt64}, expected::UInt64, desired::UInt64)::Bool
 end
 
 """
@@ -5131,7 +5131,7 @@ inline bool aeron_cas_int32(volatile int32_t *dst, int32_t expected, int32_t des
 ```
 """
 function aeron_cas_int32(dst, expected, desired)
-    @ccall Aeron.aeron_cas_int32(dst::Ptr{Int32}, expected::Int32, desired::Int32)::Bool
+    @ccall libaeron.aeron_cas_int32(dst::Ptr{Int32}, expected::Int32, desired::Int32)::Bool
 end
 
 """
@@ -5143,7 +5143,7 @@ inline void aeron_acquire(void);
 ```
 """
 function aeron_acquire()
-    @ccall Aeron.aeron_acquire()::Cvoid
+    @ccall libaeron.aeron_acquire()::Cvoid
 end
 
 """
@@ -5155,7 +5155,7 @@ inline void aeron_release(void);
 ```
 """
 function aeron_release()
-    @ccall Aeron.aeron_release()::Cvoid
+    @ccall libaeron.aeron_release()::Cvoid
 end
 
 struct aeron_distinct_observation_stct
@@ -5195,7 +5195,7 @@ int aeron_distinct_error_log_init( aeron_distinct_error_log_t *log, uint8_t *buf
 ```
 """
 function aeron_distinct_error_log_init(log, buffer, buffer_size, clock)
-    @ccall Aeron.aeron_distinct_error_log_init(log::Ptr{aeron_distinct_error_log_t}, buffer::Ptr{UInt8}, buffer_size::Csize_t, clock::aeron_clock_func_t)::Cint
+    @ccall libaeron.aeron_distinct_error_log_init(log::Ptr{aeron_distinct_error_log_t}, buffer::Ptr{UInt8}, buffer_size::Csize_t, clock::aeron_clock_func_t)::Cint
 end
 
 """
@@ -5207,7 +5207,7 @@ void aeron_distinct_error_log_close(aeron_distinct_error_log_t *log);
 ```
 """
 function aeron_distinct_error_log_close(log)
-    @ccall Aeron.aeron_distinct_error_log_close(log::Ptr{aeron_distinct_error_log_t})::Cvoid
+    @ccall libaeron.aeron_distinct_error_log_close(log::Ptr{aeron_distinct_error_log_t})::Cvoid
 end
 
 """
@@ -5219,7 +5219,7 @@ int aeron_distinct_error_log_record(aeron_distinct_error_log_t *log, int error_c
 ```
 """
 function aeron_distinct_error_log_record(log, error_code, description)
-    @ccall Aeron.aeron_distinct_error_log_record(log::Ptr{aeron_distinct_error_log_t}, error_code::Cint, description::Cstring)::Cint
+    @ccall libaeron.aeron_distinct_error_log_record(log::Ptr{aeron_distinct_error_log_t}, error_code::Cint, description::Cstring)::Cint
 end
 
 """
@@ -5231,7 +5231,7 @@ bool aeron_error_log_exists(const uint8_t *buffer, size_t buffer_size);
 ```
 """
 function aeron_error_log_exists(buffer, buffer_size)
-    @ccall Aeron.aeron_error_log_exists(buffer::Ptr{UInt8}, buffer_size::Csize_t)::Bool
+    @ccall libaeron.aeron_error_log_exists(buffer::Ptr{UInt8}, buffer_size::Csize_t)::Bool
 end
 
 """
@@ -5243,7 +5243,7 @@ size_t aeron_error_log_read( const uint8_t *buffer, size_t buffer_size, aeron_er
 ```
 """
 function aeron_error_log_read(buffer, buffer_size, reader, clientd, since_timestamp)
-    @ccall Aeron.aeron_error_log_read(buffer::Ptr{UInt8}, buffer_size::Csize_t, reader::aeron_error_log_reader_func_t, clientd::Ptr{Cvoid}, since_timestamp::Int64)::Csize_t
+    @ccall libaeron.aeron_error_log_read(buffer::Ptr{UInt8}, buffer_size::Csize_t, reader::aeron_error_log_reader_func_t, clientd::Ptr{Cvoid}, since_timestamp::Int64)::Csize_t
 end
 
 """
@@ -5255,7 +5255,7 @@ size_t aeron_distinct_error_log_num_observations(aeron_distinct_error_log_t *log
 ```
 """
 function aeron_distinct_error_log_num_observations(log)
-    @ccall Aeron.aeron_distinct_error_log_num_observations(log::Ptr{aeron_distinct_error_log_t})::Csize_t
+    @ccall libaeron.aeron_distinct_error_log_num_observations(log::Ptr{aeron_distinct_error_log_t})::Csize_t
 end
 
 # typedef int ( * aeron_idle_strategy_init_func_t ) ( void * * state , const char * env_var , const char * init_args )
@@ -5270,7 +5270,7 @@ int32_t aeron_semantic_version_compose(uint8_t major, uint8_t minor, uint8_t pat
 ```
 """
 function aeron_semantic_version_compose(major, minor, patch)
-    @ccall Aeron.aeron_semantic_version_compose(major::UInt8, minor::UInt8, patch::UInt8)::Int32
+    @ccall libaeron.aeron_semantic_version_compose(major::UInt8, minor::UInt8, patch::UInt8)::Int32
 end
 
 """
@@ -5282,7 +5282,7 @@ uint8_t aeron_semantic_version_major(int32_t version);
 ```
 """
 function aeron_semantic_version_major(version)
-    @ccall Aeron.aeron_semantic_version_major(version::Int32)::UInt8
+    @ccall libaeron.aeron_semantic_version_major(version::Int32)::UInt8
 end
 
 """
@@ -5294,7 +5294,7 @@ uint8_t aeron_semantic_version_minor(int32_t version);
 ```
 """
 function aeron_semantic_version_minor(version)
-    @ccall Aeron.aeron_semantic_version_minor(version::Int32)::UInt8
+    @ccall libaeron.aeron_semantic_version_minor(version::Int32)::UInt8
 end
 
 """
@@ -5306,7 +5306,7 @@ uint8_t aeron_semantic_version_patch(int32_t version);
 ```
 """
 function aeron_semantic_version_patch(version)
-    @ccall Aeron.aeron_semantic_version_patch(version::Int32)::UInt8
+    @ccall libaeron.aeron_semantic_version_patch(version::Int32)::UInt8
 end
 
 # typedef void ( * aeron_fptr_t ) ( void )
@@ -5330,7 +5330,7 @@ void aeron_set_errno(int errcode);
 ```
 """
 function aeron_set_errno(errcode)
-    @ccall Aeron.aeron_set_errno(errcode::Cint)::Cvoid
+    @ccall libaeron.aeron_set_errno(errcode::Cint)::Cvoid
 end
 
 """
@@ -5342,7 +5342,7 @@ const char *aeron_error_code_str(int errcode);
 ```
 """
 function aeron_error_code_str(errcode)
-    @ccall Aeron.aeron_error_code_str(errcode::Cint)::Cstring
+    @ccall libaeron.aeron_error_code_str(errcode::Cint)::Cstring
 end
 
 """
@@ -5354,7 +5354,7 @@ void aeron_err_clear(void);
 ```
 """
 function aeron_err_clear()
-    @ccall Aeron.aeron_err_clear()::Cvoid
+    @ccall libaeron.aeron_err_clear()::Cvoid
 end
 
 mutable struct aeron_bit_set_stct
@@ -5375,7 +5375,7 @@ inline int aeron_bit_set_init(aeron_bit_set_t *bit_set, bool initial_value);
 ```
 """
 function aeron_bit_set_init(bit_set, initial_value)
-    @ccall Aeron.aeron_bit_set_init(bit_set::Ptr{aeron_bit_set_t}, initial_value::Bool)::Cint
+    @ccall libaeron.aeron_bit_set_init(bit_set::Ptr{aeron_bit_set_t}, initial_value::Bool)::Cint
 end
 
 """
@@ -5387,7 +5387,7 @@ inline int aeron_bit_set_stack_alloc( size_t bit_set_length, uint64_t *static_ar
 ```
 """
 function aeron_bit_set_stack_alloc(bit_set_length, static_array, static_array_len, bit_set)
-    @ccall Aeron.aeron_bit_set_stack_alloc(bit_set_length::Csize_t, static_array::Ptr{UInt64}, static_array_len::Csize_t, bit_set::Ptr{aeron_bit_set_t})::Cint
+    @ccall libaeron.aeron_bit_set_stack_alloc(bit_set_length::Csize_t, static_array::Ptr{UInt64}, static_array_len::Csize_t, bit_set::Ptr{aeron_bit_set_t})::Cint
 end
 
 """
@@ -5399,7 +5399,7 @@ inline int aeron_bit_set_heap_alloc(size_t bit_set_length, aeron_bit_set_t **bit
 ```
 """
 function aeron_bit_set_heap_alloc(bit_set_length, bit_set)
-    @ccall Aeron.aeron_bit_set_heap_alloc(bit_set_length::Csize_t, bit_set::Ptr{Ptr{aeron_bit_set_t}})::Cint
+    @ccall libaeron.aeron_bit_set_heap_alloc(bit_set_length::Csize_t, bit_set::Ptr{Ptr{aeron_bit_set_t}})::Cint
 end
 
 """
@@ -5411,7 +5411,7 @@ inline int aeron_bit_set_stack_init( size_t bit_set_length, uint64_t *static_arr
 ```
 """
 function aeron_bit_set_stack_init(bit_set_length, static_array, static_array_len, initial_value, bit_set)
-    @ccall Aeron.aeron_bit_set_stack_init(bit_set_length::Csize_t, static_array::Ptr{UInt64}, static_array_len::Csize_t, initial_value::Bool, bit_set::Ptr{aeron_bit_set_t})::Cint
+    @ccall libaeron.aeron_bit_set_stack_init(bit_set_length::Csize_t, static_array::Ptr{UInt64}, static_array_len::Csize_t, initial_value::Bool, bit_set::Ptr{aeron_bit_set_t})::Cint
 end
 
 """
@@ -5423,7 +5423,7 @@ inline int aeron_bit_set_heap_init(size_t bit_set_length, bool initial_value, ae
 ```
 """
 function aeron_bit_set_heap_init(bit_set_length, initial_value, bit_set)
-    @ccall Aeron.aeron_bit_set_heap_init(bit_set_length::Csize_t, initial_value::Bool, bit_set::Ptr{Ptr{aeron_bit_set_t}})::Cint
+    @ccall libaeron.aeron_bit_set_heap_init(bit_set_length::Csize_t, initial_value::Bool, bit_set::Ptr{Ptr{aeron_bit_set_t}})::Cint
 end
 
 """
@@ -5435,7 +5435,7 @@ inline void aeron_bit_set_stack_free(aeron_bit_set_t *bit_set);
 ```
 """
 function aeron_bit_set_stack_free(bit_set)
-    @ccall Aeron.aeron_bit_set_stack_free(bit_set::Ptr{aeron_bit_set_t})::Cvoid
+    @ccall libaeron.aeron_bit_set_stack_free(bit_set::Ptr{aeron_bit_set_t})::Cvoid
 end
 
 """
@@ -5447,7 +5447,7 @@ inline void aeron_bit_set_heap_free(aeron_bit_set_t *bit_set);
 ```
 """
 function aeron_bit_set_heap_free(bit_set)
-    @ccall Aeron.aeron_bit_set_heap_free(bit_set::Ptr{aeron_bit_set_t})::Cvoid
+    @ccall libaeron.aeron_bit_set_heap_free(bit_set::Ptr{aeron_bit_set_t})::Cvoid
 end
 
 """
@@ -5459,7 +5459,7 @@ inline int aeron_bit_set_get(aeron_bit_set_t *bit_set, size_t bit_index, bool *v
 ```
 """
 function aeron_bit_set_get(bit_set, bit_index, value)
-    @ccall Aeron.aeron_bit_set_get(bit_set::Ptr{aeron_bit_set_t}, bit_index::Csize_t, value::Ptr{Bool})::Cint
+    @ccall libaeron.aeron_bit_set_get(bit_set::Ptr{aeron_bit_set_t}, bit_index::Csize_t, value::Ptr{Bool})::Cint
 end
 
 """
@@ -5471,7 +5471,7 @@ inline int aeron_bit_set_set(aeron_bit_set_t *bit_set, size_t bit_index, bool va
 ```
 """
 function aeron_bit_set_set(bit_set, bit_index, value)
-    @ccall Aeron.aeron_bit_set_set(bit_set::Ptr{aeron_bit_set_t}, bit_index::Csize_t, value::Bool)::Cint
+    @ccall libaeron.aeron_bit_set_set(bit_set::Ptr{aeron_bit_set_t}, bit_index::Csize_t, value::Bool)::Cint
 end
 
 """
@@ -5483,7 +5483,7 @@ inline int aeron_bit_set_find_first(aeron_bit_set_t *bit_set, bool value, size_t
 ```
 """
 function aeron_bit_set_find_first(bit_set, value, bit_index)
-    @ccall Aeron.aeron_bit_set_find_first(bit_set::Ptr{aeron_bit_set_t}, value::Bool, bit_index::Ptr{Csize_t})::Cint
+    @ccall libaeron.aeron_bit_set_find_first(bit_set::Ptr{aeron_bit_set_t}, value::Bool, bit_index::Ptr{Csize_t})::Cint
 end
 
 struct aeron_setup_header_stct
@@ -5725,7 +5725,7 @@ int aeron_udp_protocol_group_tag(aeron_status_message_header_t *sm, int64_t *gro
 ```
 """
 function aeron_udp_protocol_group_tag(sm, group_tag)
-    @ccall Aeron.aeron_udp_protocol_group_tag(sm::Ptr{aeron_status_message_header_t}, group_tag::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_udp_protocol_group_tag(sm::Ptr{aeron_status_message_header_t}, group_tag::Ptr{Int64})::Cint
 end
 
 """
@@ -5737,7 +5737,7 @@ inline size_t aeron_res_header_address_length(int8_t res_type);
 ```
 """
 function aeron_res_header_address_length(res_type)
-    @ccall Aeron.aeron_res_header_address_length(res_type::Int8)::Csize_t
+    @ccall libaeron.aeron_res_header_address_length(res_type::Int8)::Csize_t
 end
 
 """
@@ -5749,7 +5749,7 @@ inline size_t aeron_compute_max_message_length(size_t term_length);
 ```
 """
 function aeron_compute_max_message_length(term_length)
-    @ccall Aeron.aeron_compute_max_message_length(term_length::Csize_t)::Csize_t
+    @ccall libaeron.aeron_compute_max_message_length(term_length::Csize_t)::Csize_t
 end
 
 """
@@ -5761,7 +5761,7 @@ size_t aeron_res_header_entry_length_ipv4(aeron_resolution_header_ipv4_t *header
 ```
 """
 function aeron_res_header_entry_length_ipv4(header)
-    @ccall Aeron.aeron_res_header_entry_length_ipv4(header::Ptr{aeron_resolution_header_ipv4_t})::Csize_t
+    @ccall libaeron.aeron_res_header_entry_length_ipv4(header::Ptr{aeron_resolution_header_ipv4_t})::Csize_t
 end
 
 """
@@ -5773,7 +5773,7 @@ size_t aeron_res_header_entry_length_ipv6(aeron_resolution_header_ipv6_t *header
 ```
 """
 function aeron_res_header_entry_length_ipv6(header)
-    @ccall Aeron.aeron_res_header_entry_length_ipv6(header::Ptr{aeron_resolution_header_ipv6_t})::Csize_t
+    @ccall libaeron.aeron_res_header_entry_length_ipv6(header::Ptr{aeron_resolution_header_ipv6_t})::Csize_t
 end
 
 """
@@ -5785,7 +5785,7 @@ int aeron_res_header_entry_length(void *res, size_t remaining);
 ```
 """
 function aeron_res_header_entry_length(res, remaining)
-    @ccall Aeron.aeron_res_header_entry_length(res::Ptr{Cvoid}, remaining::Csize_t)::Cint
+    @ccall libaeron.aeron_res_header_entry_length(res::Ptr{Cvoid}, remaining::Csize_t)::Cint
 end
 
 """
@@ -5797,7 +5797,7 @@ inline int32_t aeron_add_wrap_i32(int32_t a, int32_t b);
 ```
 """
 function aeron_add_wrap_i32(a, b)
-    @ccall Aeron.aeron_add_wrap_i32(a::Int32, b::Int32)::Int32
+    @ccall libaeron.aeron_add_wrap_i32(a::Int32, b::Int32)::Int32
 end
 
 """
@@ -5809,7 +5809,7 @@ inline int32_t aeron_sub_wrap_i32(int32_t a, int32_t b);
 ```
 """
 function aeron_sub_wrap_i32(a, b)
-    @ccall Aeron.aeron_sub_wrap_i32(a::Int32, b::Int32)::Int32
+    @ccall libaeron.aeron_sub_wrap_i32(a::Int32, b::Int32)::Int32
 end
 
 """
@@ -5821,7 +5821,7 @@ inline int32_t aeron_mul_wrap_i32(int32_t a, int32_t b);
 ```
 """
 function aeron_mul_wrap_i32(a, b)
-    @ccall Aeron.aeron_mul_wrap_i32(a::Int32, b::Int32)::Int32
+    @ccall libaeron.aeron_mul_wrap_i32(a::Int32, b::Int32)::Int32
 end
 
 """
@@ -5833,7 +5833,7 @@ int aeron_logbuffer_check_term_length(uint64_t term_length);
 ```
 """
 function aeron_logbuffer_check_term_length(term_length)
-    @ccall Aeron.aeron_logbuffer_check_term_length(term_length::UInt64)::Cint
+    @ccall libaeron.aeron_logbuffer_check_term_length(term_length::UInt64)::Cint
 end
 
 """
@@ -5845,7 +5845,7 @@ int aeron_logbuffer_check_page_size(uint64_t page_size);
 ```
 """
 function aeron_logbuffer_check_page_size(page_size)
-    @ccall Aeron.aeron_logbuffer_check_page_size(page_size::UInt64)::Cint
+    @ccall libaeron.aeron_logbuffer_check_page_size(page_size::UInt64)::Cint
 end
 
 """
@@ -5857,7 +5857,7 @@ inline uint64_t aeron_logbuffer_compute_log_length(uint64_t term_length, uint64_
 ```
 """
 function aeron_logbuffer_compute_log_length(term_length, page_size)
-    @ccall Aeron.aeron_logbuffer_compute_log_length(term_length::UInt64, page_size::UInt64)::UInt64
+    @ccall libaeron.aeron_logbuffer_compute_log_length(term_length::UInt64, page_size::UInt64)::UInt64
 end
 
 """
@@ -5869,7 +5869,7 @@ inline int32_t aeron_logbuffer_term_offset(int64_t raw_tail, int32_t term_length
 ```
 """
 function aeron_logbuffer_term_offset(raw_tail, term_length)
-    @ccall Aeron.aeron_logbuffer_term_offset(raw_tail::Int64, term_length::Int32)::Int32
+    @ccall libaeron.aeron_logbuffer_term_offset(raw_tail::Int64, term_length::Int32)::Int32
 end
 
 """
@@ -5881,7 +5881,7 @@ inline int32_t aeron_logbuffer_term_id(int64_t raw_tail);
 ```
 """
 function aeron_logbuffer_term_id(raw_tail)
-    @ccall Aeron.aeron_logbuffer_term_id(raw_tail::Int64)::Int32
+    @ccall libaeron.aeron_logbuffer_term_id(raw_tail::Int64)::Int32
 end
 
 """
@@ -5893,7 +5893,7 @@ inline int32_t aeron_logbuffer_compute_term_count(int32_t term_id, int32_t initi
 ```
 """
 function aeron_logbuffer_compute_term_count(term_id, initial_term_id)
-    @ccall Aeron.aeron_logbuffer_compute_term_count(term_id::Int32, initial_term_id::Int32)::Int32
+    @ccall libaeron.aeron_logbuffer_compute_term_count(term_id::Int32, initial_term_id::Int32)::Int32
 end
 
 """
@@ -5905,7 +5905,7 @@ inline size_t aeron_logbuffer_index_by_position(int64_t position, size_t positio
 ```
 """
 function aeron_logbuffer_index_by_position(position, position_bits_to_shift)
-    @ccall Aeron.aeron_logbuffer_index_by_position(position::Int64, position_bits_to_shift::Csize_t)::Csize_t
+    @ccall libaeron.aeron_logbuffer_index_by_position(position::Int64, position_bits_to_shift::Csize_t)::Csize_t
 end
 
 """
@@ -5917,7 +5917,7 @@ inline size_t aeron_logbuffer_index_by_term(int32_t initial_term_id, int32_t act
 ```
 """
 function aeron_logbuffer_index_by_term(initial_term_id, active_term_id)
-    @ccall Aeron.aeron_logbuffer_index_by_term(initial_term_id::Int32, active_term_id::Int32)::Csize_t
+    @ccall libaeron.aeron_logbuffer_index_by_term(initial_term_id::Int32, active_term_id::Int32)::Csize_t
 end
 
 """
@@ -5929,7 +5929,7 @@ inline size_t aeron_logbuffer_index_by_term_count(int32_t term_count);
 ```
 """
 function aeron_logbuffer_index_by_term_count(term_count)
-    @ccall Aeron.aeron_logbuffer_index_by_term_count(term_count::Int32)::Csize_t
+    @ccall libaeron.aeron_logbuffer_index_by_term_count(term_count::Int32)::Csize_t
 end
 
 """
@@ -5941,7 +5941,7 @@ inline int64_t aeron_logbuffer_compute_position( int32_t active_term_id, int32_t
 ```
 """
 function aeron_logbuffer_compute_position(active_term_id, term_offset, position_bits_to_shift, initial_term_id)
-    @ccall Aeron.aeron_logbuffer_compute_position(active_term_id::Int32, term_offset::Int32, position_bits_to_shift::Csize_t, initial_term_id::Int32)::Int64
+    @ccall libaeron.aeron_logbuffer_compute_position(active_term_id::Int32, term_offset::Int32, position_bits_to_shift::Csize_t, initial_term_id::Int32)::Int64
 end
 
 """
@@ -5953,7 +5953,7 @@ inline int64_t aeron_logbuffer_compute_term_begin_position( int32_t active_term_
 ```
 """
 function aeron_logbuffer_compute_term_begin_position(active_term_id, position_bits_to_shift, initial_term_id)
-    @ccall Aeron.aeron_logbuffer_compute_term_begin_position(active_term_id::Int32, position_bits_to_shift::Csize_t, initial_term_id::Int32)::Int64
+    @ccall libaeron.aeron_logbuffer_compute_term_begin_position(active_term_id::Int32, position_bits_to_shift::Csize_t, initial_term_id::Int32)::Int64
 end
 
 """
@@ -5965,7 +5965,7 @@ inline int32_t aeron_logbuffer_compute_term_id_from_position( int64_t position, 
 ```
 """
 function aeron_logbuffer_compute_term_id_from_position(position, position_bits_to_shift, initial_term_id)
-    @ccall Aeron.aeron_logbuffer_compute_term_id_from_position(position::Int64, position_bits_to_shift::Csize_t, initial_term_id::Int32)::Int32
+    @ccall libaeron.aeron_logbuffer_compute_term_id_from_position(position::Int64, position_bits_to_shift::Csize_t, initial_term_id::Int32)::Int32
 end
 
 """
@@ -5977,7 +5977,7 @@ inline int32_t aeron_logbuffer_compute_term_offset_from_position(int64_t positio
 ```
 """
 function aeron_logbuffer_compute_term_offset_from_position(position, position_bits_to_shift)
-    @ccall Aeron.aeron_logbuffer_compute_term_offset_from_position(position::Int64, position_bits_to_shift::Csize_t)::Int32
+    @ccall libaeron.aeron_logbuffer_compute_term_offset_from_position(position::Int64, position_bits_to_shift::Csize_t)::Int32
 end
 
 """
@@ -5989,7 +5989,7 @@ inline bool aeron_logbuffer_cas_raw_tail( aeron_logbuffer_metadata_t *log_meta_d
 ```
 """
 function aeron_logbuffer_cas_raw_tail(log_meta_data, partition_index, expected_raw_tail, update_raw_tail)
-    @ccall Aeron.aeron_logbuffer_cas_raw_tail(log_meta_data::Ptr{aeron_logbuffer_metadata_t}, partition_index::Csize_t, expected_raw_tail::Int64, update_raw_tail::Int64)::Bool
+    @ccall libaeron.aeron_logbuffer_cas_raw_tail(log_meta_data::Ptr{aeron_logbuffer_metadata_t}, partition_index::Csize_t, expected_raw_tail::Int64, update_raw_tail::Int64)::Bool
 end
 
 """
@@ -6001,7 +6001,7 @@ inline int32_t aeron_logbuffer_active_term_count(aeron_logbuffer_metadata_t *log
 ```
 """
 function aeron_logbuffer_active_term_count(log_meta_data)
-    @ccall Aeron.aeron_logbuffer_active_term_count(log_meta_data::Ptr{aeron_logbuffer_metadata_t})::Int32
+    @ccall libaeron.aeron_logbuffer_active_term_count(log_meta_data::Ptr{aeron_logbuffer_metadata_t})::Int32
 end
 
 """
@@ -6013,7 +6013,7 @@ inline bool aeron_logbuffer_cas_active_term_count( aeron_logbuffer_metadata_t *l
 ```
 """
 function aeron_logbuffer_cas_active_term_count(log_meta_data, expected_term_count, update_term_count)
-    @ccall Aeron.aeron_logbuffer_cas_active_term_count(log_meta_data::Ptr{aeron_logbuffer_metadata_t}, expected_term_count::Int32, update_term_count::Int32)::Bool
+    @ccall libaeron.aeron_logbuffer_cas_active_term_count(log_meta_data::Ptr{aeron_logbuffer_metadata_t}, expected_term_count::Int32, update_term_count::Int32)::Bool
 end
 
 """
@@ -6025,7 +6025,7 @@ inline bool aeron_logbuffer_rotate_log( aeron_logbuffer_metadata_t *log_meta_dat
 ```
 """
 function aeron_logbuffer_rotate_log(log_meta_data, current_term_count, current_term_id)
-    @ccall Aeron.aeron_logbuffer_rotate_log(log_meta_data::Ptr{aeron_logbuffer_metadata_t}, current_term_count::Int32, current_term_id::Int32)::Bool
+    @ccall libaeron.aeron_logbuffer_rotate_log(log_meta_data::Ptr{aeron_logbuffer_metadata_t}, current_term_count::Int32, current_term_id::Int32)::Bool
 end
 
 """
@@ -6037,7 +6037,7 @@ inline void aeron_logbuffer_fill_default_header( uint8_t *log_meta_data_buffer, 
 ```
 """
 function aeron_logbuffer_fill_default_header(log_meta_data_buffer, session_id, stream_id, initial_term_id)
-    @ccall Aeron.aeron_logbuffer_fill_default_header(log_meta_data_buffer::Ptr{UInt8}, session_id::Int32, stream_id::Int32, initial_term_id::Int32)::Cvoid
+    @ccall libaeron.aeron_logbuffer_fill_default_header(log_meta_data_buffer::Ptr{UInt8}, session_id::Int32, stream_id::Int32, initial_term_id::Int32)::Cvoid
 end
 
 """
@@ -6049,7 +6049,7 @@ inline void aeron_logbuffer_apply_default_header(uint8_t *log_meta_data_buffer, 
 ```
 """
 function aeron_logbuffer_apply_default_header(log_meta_data_buffer, buffer)
-    @ccall Aeron.aeron_logbuffer_apply_default_header(log_meta_data_buffer::Ptr{UInt8}, buffer::Ptr{UInt8})::Cvoid
+    @ccall libaeron.aeron_logbuffer_apply_default_header(log_meta_data_buffer::Ptr{UInt8}, buffer::Ptr{UInt8})::Cvoid
 end
 
 """
@@ -6061,7 +6061,7 @@ bool aeron_term_gap_filler_try_fill_gap( aeron_logbuffer_metadata_t *log_meta_da
 ```
 """
 function aeron_term_gap_filler_try_fill_gap(log_meta_data, buffer, term_id, gap_offset, gap_length)
-    @ccall Aeron.aeron_term_gap_filler_try_fill_gap(log_meta_data::Ptr{aeron_logbuffer_metadata_t}, buffer::Ptr{UInt8}, term_id::Int32, gap_offset::Int32, gap_length::Int32)::Bool
+    @ccall libaeron.aeron_term_gap_filler_try_fill_gap(log_meta_data::Ptr{aeron_logbuffer_metadata_t}, buffer::Ptr{UInt8}, term_id::Int32, gap_offset::Int32, gap_length::Int32)::Bool
 end
 
 """
@@ -6073,7 +6073,7 @@ inline uint64_t aeron_hash_code(uint64_t value);
 ```
 """
 function aeron_hash_code(value)
-    @ccall Aeron.aeron_hash_code(value::UInt64)::UInt64
+    @ccall libaeron.aeron_hash_code(value::UInt64)::UInt64
 end
 
 """
@@ -6085,7 +6085,7 @@ inline size_t aeron_hash(uint64_t value, size_t mask);
 ```
 """
 function aeron_hash(value, mask)
-    @ccall Aeron.aeron_hash(value::UInt64, mask::Csize_t)::Csize_t
+    @ccall libaeron.aeron_hash(value::UInt64, mask::Csize_t)::Csize_t
 end
 
 """
@@ -6097,7 +6097,7 @@ inline size_t aeron_even_hash(uint64_t value, size_t mask);
 ```
 """
 function aeron_even_hash(value, mask)
-    @ccall Aeron.aeron_even_hash(value::UInt64, mask::Csize_t)::Csize_t
+    @ccall libaeron.aeron_even_hash(value::UInt64, mask::Csize_t)::Csize_t
 end
 
 """
@@ -6109,7 +6109,7 @@ inline int64_t aeron_map_compound_key(int32_t high, int32_t low);
 ```
 """
 function aeron_map_compound_key(high, low)
-    @ccall Aeron.aeron_map_compound_key(high::Int32, low::Int32)::Int64
+    @ccall libaeron.aeron_map_compound_key(high::Int32, low::Int32)::Int64
 end
 
 mutable struct aeron_int64_counter_map_stct
@@ -6133,7 +6133,7 @@ inline size_t aeron_int64_counter_map_hash_key(int64_t key, size_t mask);
 ```
 """
 function aeron_int64_counter_map_hash_key(key, mask)
-    @ccall Aeron.aeron_int64_counter_map_hash_key(key::Int64, mask::Csize_t)::Csize_t
+    @ccall libaeron.aeron_int64_counter_map_hash_key(key::Int64, mask::Csize_t)::Csize_t
 end
 
 """
@@ -6145,7 +6145,7 @@ inline int aeron_int64_counter_map_init( aeron_int64_counter_map_t *map, int64_t
 ```
 """
 function aeron_int64_counter_map_init(map, initial_value, initial_capacity, load_factor)
-    @ccall Aeron.aeron_int64_counter_map_init(map::Ptr{aeron_int64_counter_map_t}, initial_value::Int64, initial_capacity::Csize_t, load_factor::Cfloat)::Cint
+    @ccall libaeron.aeron_int64_counter_map_init(map::Ptr{aeron_int64_counter_map_t}, initial_value::Int64, initial_capacity::Csize_t, load_factor::Cfloat)::Cint
 end
 
 """
@@ -6157,7 +6157,7 @@ inline void aeron_int64_counter_map_delete(aeron_int64_counter_map_t *map);
 ```
 """
 function aeron_int64_counter_map_delete(map)
-    @ccall Aeron.aeron_int64_counter_map_delete(map::Ptr{aeron_int64_counter_map_t})::Cvoid
+    @ccall libaeron.aeron_int64_counter_map_delete(map::Ptr{aeron_int64_counter_map_t})::Cvoid
 end
 
 """
@@ -6169,7 +6169,7 @@ inline int aeron_int64_counter_map_rehash(aeron_int64_counter_map_t *map, size_t
 ```
 """
 function aeron_int64_counter_map_rehash(map, new_entries_length)
-    @ccall Aeron.aeron_int64_counter_map_rehash(map::Ptr{aeron_int64_counter_map_t}, new_entries_length::Csize_t)::Cint
+    @ccall libaeron.aeron_int64_counter_map_rehash(map::Ptr{aeron_int64_counter_map_t}, new_entries_length::Csize_t)::Cint
 end
 
 """
@@ -6181,7 +6181,7 @@ inline void aeron_int64_counter_map_compact_chain(aeron_int64_counter_map_t *map
 ```
 """
 function aeron_int64_counter_map_compact_chain(map, delete_index)
-    @ccall Aeron.aeron_int64_counter_map_compact_chain(map::Ptr{aeron_int64_counter_map_t}, delete_index::Csize_t)::Cvoid
+    @ccall libaeron.aeron_int64_counter_map_compact_chain(map::Ptr{aeron_int64_counter_map_t}, delete_index::Csize_t)::Cvoid
 end
 
 """
@@ -6193,7 +6193,7 @@ inline int64_t aeron_int64_counter_map_remove(aeron_int64_counter_map_t *map, in
 ```
 """
 function aeron_int64_counter_map_remove(map, key)
-    @ccall Aeron.aeron_int64_counter_map_remove(map::Ptr{aeron_int64_counter_map_t}, key::Int64)::Int64
+    @ccall libaeron.aeron_int64_counter_map_remove(map::Ptr{aeron_int64_counter_map_t}, key::Int64)::Int64
 end
 
 """
@@ -6205,7 +6205,7 @@ inline int aeron_int64_counter_map_put( aeron_int64_counter_map_t *map, const in
 ```
 """
 function aeron_int64_counter_map_put(map, key, value, existing_value)
-    @ccall Aeron.aeron_int64_counter_map_put(map::Ptr{aeron_int64_counter_map_t}, key::Int64, value::Int64, existing_value::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_int64_counter_map_put(map::Ptr{aeron_int64_counter_map_t}, key::Int64, value::Int64, existing_value::Ptr{Int64})::Cint
 end
 
 """
@@ -6217,7 +6217,7 @@ inline int64_t aeron_int64_counter_map_get(aeron_int64_counter_map_t *map, const
 ```
 """
 function aeron_int64_counter_map_get(map, key)
-    @ccall Aeron.aeron_int64_counter_map_get(map::Ptr{aeron_int64_counter_map_t}, key::Int64)::Int64
+    @ccall libaeron.aeron_int64_counter_map_get(map::Ptr{aeron_int64_counter_map_t}, key::Int64)::Int64
 end
 
 """
@@ -6229,7 +6229,7 @@ inline int aeron_int64_counter_map_get_and_add( aeron_int64_counter_map_t *map, 
 ```
 """
 function aeron_int64_counter_map_get_and_add(map, key, delta, value)
-    @ccall Aeron.aeron_int64_counter_map_get_and_add(map::Ptr{aeron_int64_counter_map_t}, key::Int64, delta::Int64, value::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_int64_counter_map_get_and_add(map::Ptr{aeron_int64_counter_map_t}, key::Int64, delta::Int64, value::Ptr{Int64})::Cint
 end
 
 """
@@ -6241,7 +6241,7 @@ inline int aeron_int64_counter_map_add_and_get( aeron_int64_counter_map_t *map, 
 ```
 """
 function aeron_int64_counter_map_add_and_get(map, key, delta, value)
-    @ccall Aeron.aeron_int64_counter_map_add_and_get(map::Ptr{aeron_int64_counter_map_t}, key::Int64, delta::Int64, value::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_int64_counter_map_add_and_get(map::Ptr{aeron_int64_counter_map_t}, key::Int64, delta::Int64, value::Ptr{Int64})::Cint
 end
 
 """
@@ -6253,7 +6253,7 @@ inline int aeron_int64_counter_map_inc_and_get(aeron_int64_counter_map_t *map, c
 ```
 """
 function aeron_int64_counter_map_inc_and_get(map, key, value)
-    @ccall Aeron.aeron_int64_counter_map_inc_and_get(map::Ptr{aeron_int64_counter_map_t}, key::Int64, value::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_int64_counter_map_inc_and_get(map::Ptr{aeron_int64_counter_map_t}, key::Int64, value::Ptr{Int64})::Cint
 end
 
 """
@@ -6265,7 +6265,7 @@ inline int aeron_int64_counter_map_dec_and_get(aeron_int64_counter_map_t *map, c
 ```
 """
 function aeron_int64_counter_map_dec_and_get(map, key, value)
-    @ccall Aeron.aeron_int64_counter_map_dec_and_get(map::Ptr{aeron_int64_counter_map_t}, key::Int64, value::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_int64_counter_map_dec_and_get(map::Ptr{aeron_int64_counter_map_t}, key::Int64, value::Ptr{Int64})::Cint
 end
 
 """
@@ -6277,7 +6277,7 @@ inline int aeron_int64_counter_map_get_and_inc(aeron_int64_counter_map_t *map, c
 ```
 """
 function aeron_int64_counter_map_get_and_inc(map, key, value)
-    @ccall Aeron.aeron_int64_counter_map_get_and_inc(map::Ptr{aeron_int64_counter_map_t}, key::Int64, value::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_int64_counter_map_get_and_inc(map::Ptr{aeron_int64_counter_map_t}, key::Int64, value::Ptr{Int64})::Cint
 end
 
 """
@@ -6289,7 +6289,7 @@ inline int aeron_int64_counter_map_get_and_dec(aeron_int64_counter_map_t *map, c
 ```
 """
 function aeron_int64_counter_map_get_and_dec(map, key, value)
-    @ccall Aeron.aeron_int64_counter_map_get_and_dec(map::Ptr{aeron_int64_counter_map_t}, key::Int64, value::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_int64_counter_map_get_and_dec(map::Ptr{aeron_int64_counter_map_t}, key::Int64, value::Ptr{Int64})::Cint
 end
 
 # typedef void ( * aeron_int64_counter_map_for_each_func_t ) ( void * clientd , int64_t key , int64_t value )
@@ -6304,7 +6304,7 @@ inline void aeron_int64_counter_map_for_each( aeron_int64_counter_map_t *map, ae
 ```
 """
 function aeron_int64_counter_map_for_each(map, func, clientd)
-    @ccall Aeron.aeron_int64_counter_map_for_each(map::Ptr{aeron_int64_counter_map_t}, func::aeron_int64_counter_map_for_each_func_t, clientd::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_int64_counter_map_for_each(map::Ptr{aeron_int64_counter_map_t}, func::aeron_int64_counter_map_for_each_func_t, clientd::Ptr{Cvoid})::Cvoid
 end
 
 mutable struct aeron_properties_parser_state_stct
@@ -6328,7 +6328,7 @@ inline void aeron_properties_parse_init(aeron_properties_parser_state_t *state);
 ```
 """
 function aeron_properties_parse_init(state)
-    @ccall Aeron.aeron_properties_parse_init(state::Ptr{aeron_properties_parser_state_t})::Cvoid
+    @ccall libaeron.aeron_properties_parse_init(state::Ptr{aeron_properties_parser_state_t})::Cvoid
 end
 
 """
@@ -6340,7 +6340,7 @@ int aeron_properties_parse_line( aeron_properties_parser_state_t *state, const c
 ```
 """
 function aeron_properties_parse_line(state, line, length, handler, clientd)
-    @ccall Aeron.aeron_properties_parse_line(state::Ptr{aeron_properties_parser_state_t}, line::Cstring, length::Csize_t, handler::aeron_properties_file_handler_func_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_properties_parse_line(state::Ptr{aeron_properties_parser_state_t}, line::Cstring, length::Csize_t, handler::aeron_properties_file_handler_func_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -6352,7 +6352,7 @@ int aeron_properties_parse_file(const char *filename, aeron_properties_file_hand
 ```
 """
 function aeron_properties_parse_file(filename, handler, clientd)
-    @ccall Aeron.aeron_properties_parse_file(filename::Cstring, handler::aeron_properties_file_handler_func_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_properties_parse_file(filename::Cstring, handler::aeron_properties_file_handler_func_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -6364,7 +6364,7 @@ int aeron_properties_setenv(const char *name, const char *value);
 ```
 """
 function aeron_properties_setenv(name, value)
-    @ccall Aeron.aeron_properties_setenv(name::Cstring, value::Cstring)::Cint
+    @ccall libaeron.aeron_properties_setenv(name::Cstring, value::Cstring)::Cint
 end
 
 struct aeron_loss_reporter_entry_stct
@@ -6414,7 +6414,7 @@ int aeron_loss_reporter_init(aeron_loss_reporter_t *reporter, uint8_t *buffer, s
 ```
 """
 function aeron_loss_reporter_init(reporter, buffer, length)
-    @ccall Aeron.aeron_loss_reporter_init(reporter::Ptr{aeron_loss_reporter_t}, buffer::Ptr{UInt8}, length::Csize_t)::Cint
+    @ccall libaeron.aeron_loss_reporter_init(reporter::Ptr{aeron_loss_reporter_t}, buffer::Ptr{UInt8}, length::Csize_t)::Cint
 end
 
 """
@@ -6426,7 +6426,7 @@ aeron_loss_reporter_entry_offset_t aeron_loss_reporter_create_entry( aeron_loss_
 ```
 """
 function aeron_loss_reporter_create_entry(reporter, initial_bytes_lost, timestamp_ms, session_id, stream_id, channel, channel_length, source, source_length)
-    @ccall Aeron.aeron_loss_reporter_create_entry(reporter::Ptr{aeron_loss_reporter_t}, initial_bytes_lost::Int64, timestamp_ms::Int64, session_id::Int32, stream_id::Int32, channel::Cstring, channel_length::Csize_t, source::Cstring, source_length::Csize_t)::aeron_loss_reporter_entry_offset_t
+    @ccall libaeron.aeron_loss_reporter_create_entry(reporter::Ptr{aeron_loss_reporter_t}, initial_bytes_lost::Int64, timestamp_ms::Int64, session_id::Int32, stream_id::Int32, channel::Cstring, channel_length::Csize_t, source::Cstring, source_length::Csize_t)::aeron_loss_reporter_entry_offset_t
 end
 
 """
@@ -6438,7 +6438,7 @@ inline void aeron_loss_reporter_record_observation( aeron_loss_reporter_t *repor
 ```
 """
 function aeron_loss_reporter_record_observation(reporter, offset, bytes_lost, timestamp_ms)
-    @ccall Aeron.aeron_loss_reporter_record_observation(reporter::Ptr{aeron_loss_reporter_t}, offset::aeron_loss_reporter_entry_offset_t, bytes_lost::Int64, timestamp_ms::Int64)::Cvoid
+    @ccall libaeron.aeron_loss_reporter_record_observation(reporter::Ptr{aeron_loss_reporter_t}, offset::aeron_loss_reporter_entry_offset_t, bytes_lost::Int64, timestamp_ms::Int64)::Cvoid
 end
 
 """
@@ -6450,7 +6450,7 @@ int aeron_loss_reporter_resolve_filename(const char *directory, char *filename_b
 ```
 """
 function aeron_loss_reporter_resolve_filename(directory, filename_buffer, filename_buffer_length)
-    @ccall Aeron.aeron_loss_reporter_resolve_filename(directory::Cstring, filename_buffer::Cstring, filename_buffer_length::Csize_t)::Cint
+    @ccall libaeron.aeron_loss_reporter_resolve_filename(directory::Cstring, filename_buffer::Cstring, filename_buffer_length::Csize_t)::Cint
 end
 
 """
@@ -6462,7 +6462,7 @@ size_t aeron_loss_reporter_read( const uint8_t *buffer, size_t capacity, aeron_l
 ```
 """
 function aeron_loss_reporter_read(buffer, capacity, entry_func, clientd)
-    @ccall Aeron.aeron_loss_reporter_read(buffer::Ptr{UInt8}, capacity::Csize_t, entry_func::aeron_loss_reporter_read_entry_func_t, clientd::Ptr{Cvoid})::Csize_t
+    @ccall libaeron.aeron_loss_reporter_read(buffer::Ptr{UInt8}, capacity::Csize_t, entry_func::aeron_loss_reporter_read_entry_func_t, clientd::Ptr{Cvoid})::Csize_t
 end
 
 """
@@ -6474,7 +6474,7 @@ const char *aeron_dlinfo(const void *, char *buffer, size_t max_buffer_length);
 ```
 """
 function aeron_dlinfo(arg1, buffer, max_buffer_length)
-    @ccall Aeron.aeron_dlinfo(arg1::Ptr{Cvoid}, buffer::Cstring, max_buffer_length::Csize_t)::Cstring
+    @ccall libaeron.aeron_dlinfo(arg1::Ptr{Cvoid}, buffer::Cstring, max_buffer_length::Csize_t)::Cstring
 end
 
 """
@@ -6486,7 +6486,7 @@ const char *aeron_dlinfo_func(void (*func)(void), char *buffer, size_t max_buffe
 ```
 """
 function aeron_dlinfo_func(func, buffer, max_buffer_length)
-    @ccall Aeron.aeron_dlinfo_func(func::Ptr{Cvoid}, buffer::Cstring, max_buffer_length::Csize_t)::Cstring
+    @ccall libaeron.aeron_dlinfo_func(func::Ptr{Cvoid}, buffer::Cstring, max_buffer_length::Csize_t)::Cstring
 end
 
 struct aeron_dl_loaded_lib_state_stct
@@ -6512,7 +6512,7 @@ int aeron_dl_load_libs(aeron_dl_loaded_libs_state_t **state, const char *libs);
 ```
 """
 function aeron_dl_load_libs(state, libs)
-    @ccall Aeron.aeron_dl_load_libs(state::Ptr{Ptr{aeron_dl_loaded_libs_state_t}}, libs::Cstring)::Cint
+    @ccall libaeron.aeron_dl_load_libs(state::Ptr{Ptr{aeron_dl_loaded_libs_state_t}}, libs::Cstring)::Cint
 end
 
 """
@@ -6524,7 +6524,7 @@ int aeron_dl_load_libs_delete(aeron_dl_loaded_libs_state_t *state);
 ```
 """
 function aeron_dl_load_libs_delete(state)
-    @ccall Aeron.aeron_dl_load_libs_delete(state::Ptr{aeron_dl_loaded_libs_state_t})::Cint
+    @ccall libaeron.aeron_dl_load_libs_delete(state::Ptr{aeron_dl_loaded_libs_state_t})::Cint
 end
 
 """
@@ -6536,7 +6536,7 @@ int aeron_local_sockaddr_find_addrs( aeron_counters_reader_t *reader, int32_t ch
 ```
 """
 function aeron_local_sockaddr_find_addrs(reader, channel_status_indicator_id, address_vec, address_vec_len)
-    @ccall Aeron.aeron_local_sockaddr_find_addrs(reader::Ptr{aeron_counters_reader_t}, channel_status_indicator_id::Int32, address_vec::Ptr{aeron_iovec_t}, address_vec_len::Csize_t)::Cint
+    @ccall libaeron.aeron_local_sockaddr_find_addrs(reader::Ptr{aeron_counters_reader_t}, channel_status_indicator_id::Int32, address_vec::Ptr{aeron_iovec_t}, address_vec_len::Csize_t)::Cint
 end
 
 struct aeron_broadcast_record_descriptor_stct
@@ -6602,7 +6602,7 @@ void aeron_idle_strategy_sleeping_idle(void *state, int work_count);
 ```
 """
 function aeron_idle_strategy_sleeping_idle(state, work_count)
-    @ccall Aeron.aeron_idle_strategy_sleeping_idle(state::Ptr{Cvoid}, work_count::Cint)::Cvoid
+    @ccall libaeron.aeron_idle_strategy_sleeping_idle(state::Ptr{Cvoid}, work_count::Cint)::Cvoid
 end
 
 """
@@ -6614,7 +6614,7 @@ void aeron_idle_strategy_yielding_idle(void *state, int work_count);
 ```
 """
 function aeron_idle_strategy_yielding_idle(state, work_count)
-    @ccall Aeron.aeron_idle_strategy_yielding_idle(state::Ptr{Cvoid}, work_count::Cint)::Cvoid
+    @ccall libaeron.aeron_idle_strategy_yielding_idle(state::Ptr{Cvoid}, work_count::Cint)::Cvoid
 end
 
 """
@@ -6626,7 +6626,7 @@ void aeron_idle_strategy_busy_spinning_idle(void *state, int work_count);
 ```
 """
 function aeron_idle_strategy_busy_spinning_idle(state, work_count)
-    @ccall Aeron.aeron_idle_strategy_busy_spinning_idle(state::Ptr{Cvoid}, work_count::Cint)::Cvoid
+    @ccall libaeron.aeron_idle_strategy_busy_spinning_idle(state::Ptr{Cvoid}, work_count::Cint)::Cvoid
 end
 
 """
@@ -6638,7 +6638,7 @@ void aeron_idle_strategy_noop_idle(void *state, int work_count);
 ```
 """
 function aeron_idle_strategy_noop_idle(state, work_count)
-    @ccall Aeron.aeron_idle_strategy_noop_idle(state::Ptr{Cvoid}, work_count::Cint)::Cvoid
+    @ccall libaeron.aeron_idle_strategy_noop_idle(state::Ptr{Cvoid}, work_count::Cint)::Cvoid
 end
 
 """
@@ -6650,7 +6650,7 @@ void aeron_idle_strategy_backoff_idle(void *state, int work_count);
 ```
 """
 function aeron_idle_strategy_backoff_idle(state, work_count)
-    @ccall Aeron.aeron_idle_strategy_backoff_idle(state::Ptr{Cvoid}, work_count::Cint)::Cvoid
+    @ccall libaeron.aeron_idle_strategy_backoff_idle(state::Ptr{Cvoid}, work_count::Cint)::Cvoid
 end
 
 """
@@ -6662,7 +6662,7 @@ int aeron_idle_strategy_backoff_state_init( void **state, uint64_t max_spins, ui
 ```
 """
 function aeron_idle_strategy_backoff_state_init(state, max_spins, max_yields, min_park_period_ns, max_park_period_ns)
-    @ccall Aeron.aeron_idle_strategy_backoff_state_init(state::Ptr{Ptr{Cvoid}}, max_spins::UInt64, max_yields::UInt64, min_park_period_ns::UInt64, max_park_period_ns::UInt64)::Cint
+    @ccall libaeron.aeron_idle_strategy_backoff_state_init(state::Ptr{Ptr{Cvoid}}, max_spins::UInt64, max_yields::UInt64, min_park_period_ns::UInt64, max_park_period_ns::UInt64)::Cint
 end
 
 """
@@ -6674,7 +6674,7 @@ int aeron_idle_strategy_init_null(void **state, const char *env_var, const char 
 ```
 """
 function aeron_idle_strategy_init_null(state, env_var, load_args)
-    @ccall Aeron.aeron_idle_strategy_init_null(state::Ptr{Ptr{Cvoid}}, env_var::Cstring, load_args::Cstring)::Cint
+    @ccall libaeron.aeron_idle_strategy_init_null(state::Ptr{Ptr{Cvoid}}, env_var::Cstring, load_args::Cstring)::Cint
 end
 
 """
@@ -6686,7 +6686,7 @@ aeron_idle_strategy_func_t aeron_idle_strategy_load( const char *idle_strategy_n
 ```
 """
 function aeron_idle_strategy_load(idle_strategy_name, idle_strategy_state, env_var, load_args)
-    @ccall Aeron.aeron_idle_strategy_load(idle_strategy_name::Cstring, idle_strategy_state::Ptr{Ptr{Cvoid}}, env_var::Cstring, load_args::Cstring)::aeron_idle_strategy_func_t
+    @ccall libaeron.aeron_idle_strategy_load(idle_strategy_name::Cstring, idle_strategy_state::Ptr{Ptr{Cvoid}}, env_var::Cstring, load_args::Cstring)::aeron_idle_strategy_func_t
 end
 
 """
@@ -6698,7 +6698,7 @@ aeron_agent_on_start_func_t aeron_agent_on_start_load(const char *name);
 ```
 """
 function aeron_agent_on_start_load(name)
-    @ccall Aeron.aeron_agent_on_start_load(name::Cstring)::aeron_agent_on_start_func_t
+    @ccall libaeron.aeron_agent_on_start_load(name::Cstring)::aeron_agent_on_start_func_t
 end
 
 """
@@ -6710,7 +6710,7 @@ int aeron_agent_init( aeron_agent_runner_t *runner, const char *role_name, void 
 ```
 """
 function aeron_agent_init(runner, role_name, state, on_start, on_start_state, do_work, on_close, idle_strategy_func, idle_strategy_state)
-    @ccall Aeron.aeron_agent_init(runner::Ptr{aeron_agent_runner_t}, role_name::Cstring, state::Ptr{Cvoid}, on_start::aeron_agent_on_start_func_t, on_start_state::Ptr{Cvoid}, do_work::aeron_agent_do_work_func_t, on_close::aeron_agent_on_close_func_t, idle_strategy_func::aeron_idle_strategy_func_t, idle_strategy_state::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_agent_init(runner::Ptr{aeron_agent_runner_t}, role_name::Cstring, state::Ptr{Cvoid}, on_start::aeron_agent_on_start_func_t, on_start_state::Ptr{Cvoid}, do_work::aeron_agent_do_work_func_t, on_close::aeron_agent_on_close_func_t, idle_strategy_func::aeron_idle_strategy_func_t, idle_strategy_state::Ptr{Cvoid})::Cint
 end
 
 """
@@ -6722,7 +6722,7 @@ int aeron_agent_start(aeron_agent_runner_t *runner);
 ```
 """
 function aeron_agent_start(runner)
-    @ccall Aeron.aeron_agent_start(runner::Ptr{aeron_agent_runner_t})::Cint
+    @ccall libaeron.aeron_agent_start(runner::Ptr{aeron_agent_runner_t})::Cint
 end
 
 """
@@ -6734,7 +6734,7 @@ inline int aeron_agent_do_work(aeron_agent_runner_t *runner);
 ```
 """
 function aeron_agent_do_work(runner)
-    @ccall Aeron.aeron_agent_do_work(runner::Ptr{aeron_agent_runner_t})::Cint
+    @ccall libaeron.aeron_agent_do_work(runner::Ptr{aeron_agent_runner_t})::Cint
 end
 
 """
@@ -6746,7 +6746,7 @@ inline bool aeron_agent_is_running(aeron_agent_runner_t *runner);
 ```
 """
 function aeron_agent_is_running(runner)
-    @ccall Aeron.aeron_agent_is_running(runner::Ptr{aeron_agent_runner_t})::Bool
+    @ccall libaeron.aeron_agent_is_running(runner::Ptr{aeron_agent_runner_t})::Bool
 end
 
 """
@@ -6758,7 +6758,7 @@ inline void aeron_agent_idle(aeron_agent_runner_t *runner, int work_count);
 ```
 """
 function aeron_agent_idle(runner, work_count)
-    @ccall Aeron.aeron_agent_idle(runner::Ptr{aeron_agent_runner_t}, work_count::Cint)::Cvoid
+    @ccall libaeron.aeron_agent_idle(runner::Ptr{aeron_agent_runner_t}, work_count::Cint)::Cvoid
 end
 
 """
@@ -6770,7 +6770,7 @@ int aeron_agent_stop(aeron_agent_runner_t *runner);
 ```
 """
 function aeron_agent_stop(runner)
-    @ccall Aeron.aeron_agent_stop(runner::Ptr{aeron_agent_runner_t})::Cint
+    @ccall libaeron.aeron_agent_stop(runner::Ptr{aeron_agent_runner_t})::Cint
 end
 
 """
@@ -6782,7 +6782,7 @@ int aeron_agent_close(aeron_agent_runner_t *runner);
 ```
 """
 function aeron_agent_close(runner)
-    @ccall Aeron.aeron_agent_close(runner::Ptr{aeron_agent_runner_t})::Cint
+    @ccall libaeron.aeron_agent_close(runner::Ptr{aeron_agent_runner_t})::Cint
 end
 
 """
@@ -6794,7 +6794,7 @@ int aeron_is_directory(const char *path);
 ```
 """
 function aeron_is_directory(path)
-    @ccall Aeron.aeron_is_directory(path::Cstring)::Cint
+    @ccall libaeron.aeron_is_directory(path::Cstring)::Cint
 end
 
 """
@@ -6806,7 +6806,7 @@ int aeron_delete_directory(const char *directory);
 ```
 """
 function aeron_delete_directory(directory)
-    @ccall Aeron.aeron_delete_directory(directory::Cstring)::Cint
+    @ccall libaeron.aeron_delete_directory(directory::Cstring)::Cint
 end
 
 """
@@ -6818,7 +6818,7 @@ int aeron_map_new_file(aeron_mapped_file_t *mapped_file, const char *path, bool 
 ```
 """
 function aeron_map_new_file(mapped_file, path, fill_with_zeroes)
-    @ccall Aeron.aeron_map_new_file(mapped_file::Ptr{aeron_mapped_file_t}, path::Cstring, fill_with_zeroes::Bool)::Cint
+    @ccall libaeron.aeron_map_new_file(mapped_file::Ptr{aeron_mapped_file_t}, path::Cstring, fill_with_zeroes::Bool)::Cint
 end
 
 """
@@ -6830,7 +6830,7 @@ int aeron_map_existing_file(aeron_mapped_file_t *mapped_file, const char *path);
 ```
 """
 function aeron_map_existing_file(mapped_file, path)
-    @ccall Aeron.aeron_map_existing_file(mapped_file::Ptr{aeron_mapped_file_t}, path::Cstring)::Cint
+    @ccall libaeron.aeron_map_existing_file(mapped_file::Ptr{aeron_mapped_file_t}, path::Cstring)::Cint
 end
 
 """
@@ -6842,7 +6842,7 @@ int aeron_unmap(aeron_mapped_file_t *mapped_file);
 ```
 """
 function aeron_unmap(mapped_file)
-    @ccall Aeron.aeron_unmap(mapped_file::Ptr{aeron_mapped_file_t})::Cint
+    @ccall libaeron.aeron_unmap(mapped_file::Ptr{aeron_mapped_file_t})::Cint
 end
 
 # typedef uint64_t ( * aeron_usable_fs_space_func_t ) ( const char * path )
@@ -6857,7 +6857,7 @@ int64_t aeron_file_length(const char *path);
 ```
 """
 function aeron_file_length(path)
-    @ccall Aeron.aeron_file_length(path::Cstring)::Int64
+    @ccall libaeron.aeron_file_length(path::Cstring)::Int64
 end
 
 """
@@ -6869,7 +6869,7 @@ uint64_t aeron_usable_fs_space(const char *path);
 ```
 """
 function aeron_usable_fs_space(path)
-    @ccall Aeron.aeron_usable_fs_space(path::Cstring)::UInt64
+    @ccall libaeron.aeron_usable_fs_space(path::Cstring)::UInt64
 end
 
 """
@@ -6881,7 +6881,7 @@ uint64_t aeron_usable_fs_space_disabled(const char *path);
 ```
 """
 function aeron_usable_fs_space_disabled(path)
-    @ccall Aeron.aeron_usable_fs_space_disabled(path::Cstring)::UInt64
+    @ccall libaeron.aeron_usable_fs_space_disabled(path::Cstring)::UInt64
 end
 
 """
@@ -6893,7 +6893,7 @@ int aeron_ipc_publication_location(char *dst, size_t length, const char *aeron_d
 ```
 """
 function aeron_ipc_publication_location(dst, length, aeron_dir, correlation_id)
-    @ccall Aeron.aeron_ipc_publication_location(dst::Cstring, length::Csize_t, aeron_dir::Cstring, correlation_id::Int64)::Cint
+    @ccall libaeron.aeron_ipc_publication_location(dst::Cstring, length::Csize_t, aeron_dir::Cstring, correlation_id::Int64)::Cint
 end
 
 """
@@ -6905,7 +6905,7 @@ int aeron_network_publication_location(char *dst, size_t length, const char *aer
 ```
 """
 function aeron_network_publication_location(dst, length, aeron_dir, correlation_id)
-    @ccall Aeron.aeron_network_publication_location(dst::Cstring, length::Csize_t, aeron_dir::Cstring, correlation_id::Int64)::Cint
+    @ccall libaeron.aeron_network_publication_location(dst::Cstring, length::Csize_t, aeron_dir::Cstring, correlation_id::Int64)::Cint
 end
 
 """
@@ -6917,7 +6917,7 @@ int aeron_publication_image_location(char *dst, size_t length, const char *aeron
 ```
 """
 function aeron_publication_image_location(dst, length, aeron_dir, correlation_id)
-    @ccall Aeron.aeron_publication_image_location(dst::Cstring, length::Csize_t, aeron_dir::Cstring, correlation_id::Int64)::Cint
+    @ccall libaeron.aeron_publication_image_location(dst::Cstring, length::Csize_t, aeron_dir::Cstring, correlation_id::Int64)::Cint
 end
 
 """
@@ -6929,7 +6929,7 @@ size_t aeron_temp_filename(char *filename, size_t length);
 ```
 """
 function aeron_temp_filename(filename, length)
-    @ccall Aeron.aeron_temp_filename(filename::Cstring, length::Csize_t)::Csize_t
+    @ccall libaeron.aeron_temp_filename(filename::Cstring, length::Csize_t)::Csize_t
 end
 
 # typedef int ( * aeron_raw_log_map_func_t ) ( aeron_mapped_raw_log_t * , const char * , bool , uint64_t , uint64_t )
@@ -6950,7 +6950,7 @@ int aeron_raw_log_map( aeron_mapped_raw_log_t *mapped_raw_log, const char *path,
 ```
 """
 function aeron_raw_log_map(mapped_raw_log, path, use_sparse_files, term_length, page_size)
-    @ccall Aeron.aeron_raw_log_map(mapped_raw_log::Ptr{aeron_mapped_raw_log_t}, path::Cstring, use_sparse_files::Bool, term_length::UInt64, page_size::UInt64)::Cint
+    @ccall libaeron.aeron_raw_log_map(mapped_raw_log::Ptr{aeron_mapped_raw_log_t}, path::Cstring, use_sparse_files::Bool, term_length::UInt64, page_size::UInt64)::Cint
 end
 
 """
@@ -6962,7 +6962,7 @@ int aeron_raw_log_map_existing(aeron_mapped_raw_log_t *mapped_raw_log, const cha
 ```
 """
 function aeron_raw_log_map_existing(mapped_raw_log, path, pre_touch)
-    @ccall Aeron.aeron_raw_log_map_existing(mapped_raw_log::Ptr{aeron_mapped_raw_log_t}, path::Cstring, pre_touch::Bool)::Cint
+    @ccall libaeron.aeron_raw_log_map_existing(mapped_raw_log::Ptr{aeron_mapped_raw_log_t}, path::Cstring, pre_touch::Bool)::Cint
 end
 
 """
@@ -6974,7 +6974,7 @@ int aeron_raw_log_close(aeron_mapped_raw_log_t *mapped_raw_log, const char *file
 ```
 """
 function aeron_raw_log_close(mapped_raw_log, filename)
-    @ccall Aeron.aeron_raw_log_close(mapped_raw_log::Ptr{aeron_mapped_raw_log_t}, filename::Cstring)::Cint
+    @ccall libaeron.aeron_raw_log_close(mapped_raw_log::Ptr{aeron_mapped_raw_log_t}, filename::Cstring)::Cint
 end
 
 """
@@ -6986,7 +6986,7 @@ bool aeron_raw_log_free(aeron_mapped_raw_log_t *mapped_raw_log, const char *file
 ```
 """
 function aeron_raw_log_free(mapped_raw_log, filename)
-    @ccall Aeron.aeron_raw_log_free(mapped_raw_log::Ptr{aeron_mapped_raw_log_t}, filename::Cstring)::Bool
+    @ccall libaeron.aeron_raw_log_free(mapped_raw_log::Ptr{aeron_mapped_raw_log_t}, filename::Cstring)::Bool
 end
 
 """
@@ -6998,7 +6998,7 @@ int aeron_file_resolve(const char *parent, const char *child, char *buffer, size
 ```
 """
 function aeron_file_resolve(parent, child, buffer, buffer_len)
-    @ccall Aeron.aeron_file_resolve(parent::Cstring, child::Cstring, buffer::Cstring, buffer_len::Csize_t)::Cint
+    @ccall libaeron.aeron_file_resolve(parent::Cstring, child::Cstring, buffer::Cstring, buffer_len::Csize_t)::Cint
 end
 
 @cenum aeron_queue_offer_result_stct::Int32 begin
@@ -7021,7 +7021,7 @@ int aeron_mpsc_concurrent_array_queue_init(aeron_mpsc_concurrent_array_queue_t *
 ```
 """
 function aeron_mpsc_concurrent_array_queue_init(queue, length)
-    @ccall Aeron.aeron_mpsc_concurrent_array_queue_init(queue::Ptr{aeron_mpsc_concurrent_array_queue_t}, length::Csize_t)::Cint
+    @ccall libaeron.aeron_mpsc_concurrent_array_queue_init(queue::Ptr{aeron_mpsc_concurrent_array_queue_t}, length::Csize_t)::Cint
 end
 
 """
@@ -7033,7 +7033,7 @@ int aeron_mpsc_concurrent_array_queue_close(aeron_mpsc_concurrent_array_queue_t 
 ```
 """
 function aeron_mpsc_concurrent_array_queue_close(queue)
-    @ccall Aeron.aeron_mpsc_concurrent_array_queue_close(queue::Ptr{aeron_mpsc_concurrent_array_queue_t})::Cint
+    @ccall libaeron.aeron_mpsc_concurrent_array_queue_close(queue::Ptr{aeron_mpsc_concurrent_array_queue_t})::Cint
 end
 
 """
@@ -7045,7 +7045,7 @@ inline aeron_queue_offer_result_t aeron_mpsc_concurrent_array_queue_offer( aeron
 ```
 """
 function aeron_mpsc_concurrent_array_queue_offer(queue, element)
-    @ccall Aeron.aeron_mpsc_concurrent_array_queue_offer(queue::Ptr{aeron_mpsc_concurrent_array_queue_t}, element::Ptr{Cvoid})::aeron_queue_offer_result_t
+    @ccall libaeron.aeron_mpsc_concurrent_array_queue_offer(queue::Ptr{aeron_mpsc_concurrent_array_queue_t}, element::Ptr{Cvoid})::aeron_queue_offer_result_t
 end
 
 """
@@ -7057,7 +7057,7 @@ inline size_t aeron_mpsc_concurrent_array_queue_drain( aeron_mpsc_concurrent_arr
 ```
 """
 function aeron_mpsc_concurrent_array_queue_drain(queue, func, clientd, limit)
-    @ccall Aeron.aeron_mpsc_concurrent_array_queue_drain(queue::Ptr{aeron_mpsc_concurrent_array_queue_t}, func::aeron_queue_drain_func_t, clientd::Ptr{Cvoid}, limit::Csize_t)::Csize_t
+    @ccall libaeron.aeron_mpsc_concurrent_array_queue_drain(queue::Ptr{aeron_mpsc_concurrent_array_queue_t}, func::aeron_queue_drain_func_t, clientd::Ptr{Cvoid}, limit::Csize_t)::Csize_t
 end
 
 """
@@ -7069,7 +7069,7 @@ inline size_t aeron_mpsc_concurrent_array_queue_drain_all( aeron_mpsc_concurrent
 ```
 """
 function aeron_mpsc_concurrent_array_queue_drain_all(queue, func, clientd)
-    @ccall Aeron.aeron_mpsc_concurrent_array_queue_drain_all(queue::Ptr{aeron_mpsc_concurrent_array_queue_t}, func::aeron_queue_drain_func_t, clientd::Ptr{Cvoid})::Csize_t
+    @ccall libaeron.aeron_mpsc_concurrent_array_queue_drain_all(queue::Ptr{aeron_mpsc_concurrent_array_queue_t}, func::aeron_queue_drain_func_t, clientd::Ptr{Cvoid})::Csize_t
 end
 
 """
@@ -7081,7 +7081,7 @@ inline size_t aeron_mpsc_concurrent_array_queue_size(aeron_mpsc_concurrent_array
 ```
 """
 function aeron_mpsc_concurrent_array_queue_size(queue)
-    @ccall Aeron.aeron_mpsc_concurrent_array_queue_size(queue::Ptr{aeron_mpsc_concurrent_array_queue_t})::Csize_t
+    @ccall libaeron.aeron_mpsc_concurrent_array_queue_size(queue::Ptr{aeron_mpsc_concurrent_array_queue_t})::Csize_t
 end
 
 # typedef void ( * aeron_broadcast_receiver_handler_t ) ( int32_t type_id , uint8_t * buffer , size_t length , void * clientd )
@@ -7096,7 +7096,7 @@ int aeron_broadcast_receiver_init(aeron_broadcast_receiver_t *receiver, void *bu
 ```
 """
 function aeron_broadcast_receiver_init(receiver, buffer, length)
-    @ccall Aeron.aeron_broadcast_receiver_init(receiver::Ptr{aeron_broadcast_receiver_t}, buffer::Ptr{Cvoid}, length::Csize_t)::Cint
+    @ccall libaeron.aeron_broadcast_receiver_init(receiver::Ptr{aeron_broadcast_receiver_t}, buffer::Ptr{Cvoid}, length::Csize_t)::Cint
 end
 
 """
@@ -7108,7 +7108,7 @@ inline bool aeron_broadcast_receiver_validate_at(aeron_broadcast_receiver_t *rec
 ```
 """
 function aeron_broadcast_receiver_validate_at(receiver, cursor)
-    @ccall Aeron.aeron_broadcast_receiver_validate_at(receiver::Ptr{aeron_broadcast_receiver_t}, cursor::Int64)::Bool
+    @ccall libaeron.aeron_broadcast_receiver_validate_at(receiver::Ptr{aeron_broadcast_receiver_t}, cursor::Int64)::Bool
 end
 
 """
@@ -7120,7 +7120,7 @@ inline bool aeron_broadcast_receiver_validate(aeron_broadcast_receiver_t *receiv
 ```
 """
 function aeron_broadcast_receiver_validate(receiver)
-    @ccall Aeron.aeron_broadcast_receiver_validate(receiver::Ptr{aeron_broadcast_receiver_t})::Bool
+    @ccall libaeron.aeron_broadcast_receiver_validate(receiver::Ptr{aeron_broadcast_receiver_t})::Bool
 end
 
 """
@@ -7132,7 +7132,7 @@ inline bool aeron_broadcast_receiver_receive_next(aeron_broadcast_receiver_t *re
 ```
 """
 function aeron_broadcast_receiver_receive_next(receiver)
-    @ccall Aeron.aeron_broadcast_receiver_receive_next(receiver::Ptr{aeron_broadcast_receiver_t})::Bool
+    @ccall libaeron.aeron_broadcast_receiver_receive_next(receiver::Ptr{aeron_broadcast_receiver_t})::Bool
 end
 
 """
@@ -7144,7 +7144,7 @@ int aeron_broadcast_receiver_receive( aeron_broadcast_receiver_t *receiver, aero
 ```
 """
 function aeron_broadcast_receiver_receive(receiver, handler, clientd)
-    @ccall Aeron.aeron_broadcast_receiver_receive(receiver::Ptr{aeron_broadcast_receiver_t}, handler::aeron_broadcast_receiver_handler_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_broadcast_receiver_receive(receiver::Ptr{aeron_broadcast_receiver_t}, handler::aeron_broadcast_receiver_handler_t, clientd::Ptr{Cvoid})::Cint
 end
 
 @cenum aeron_rb_write_result_stct::Int32 begin
@@ -7167,7 +7167,7 @@ int aeron_mpsc_rb_init(aeron_mpsc_rb_t *ring_buffer, void *buffer, size_t length
 ```
 """
 function aeron_mpsc_rb_init(ring_buffer, buffer, length)
-    @ccall Aeron.aeron_mpsc_rb_init(ring_buffer::Ptr{aeron_mpsc_rb_t}, buffer::Ptr{Cvoid}, length::Csize_t)::Cint
+    @ccall libaeron.aeron_mpsc_rb_init(ring_buffer::Ptr{aeron_mpsc_rb_t}, buffer::Ptr{Cvoid}, length::Csize_t)::Cint
 end
 
 """
@@ -7179,7 +7179,7 @@ aeron_rb_write_result_t aeron_mpsc_rb_write( aeron_mpsc_rb_t *ring_buffer, int32
 ```
 """
 function aeron_mpsc_rb_write(ring_buffer, msg_type_id, msg, length)
-    @ccall Aeron.aeron_mpsc_rb_write(ring_buffer::Ptr{aeron_mpsc_rb_t}, msg_type_id::Int32, msg::Ptr{Cvoid}, length::Csize_t)::aeron_rb_write_result_t
+    @ccall libaeron.aeron_mpsc_rb_write(ring_buffer::Ptr{aeron_mpsc_rb_t}, msg_type_id::Int32, msg::Ptr{Cvoid}, length::Csize_t)::aeron_rb_write_result_t
 end
 
 """
@@ -7191,7 +7191,7 @@ int32_t aeron_mpsc_rb_try_claim(aeron_mpsc_rb_t *ring_buffer, int32_t msg_type_i
 ```
 """
 function aeron_mpsc_rb_try_claim(ring_buffer, msg_type_id, length)
-    @ccall Aeron.aeron_mpsc_rb_try_claim(ring_buffer::Ptr{aeron_mpsc_rb_t}, msg_type_id::Int32, length::Csize_t)::Int32
+    @ccall libaeron.aeron_mpsc_rb_try_claim(ring_buffer::Ptr{aeron_mpsc_rb_t}, msg_type_id::Int32, length::Csize_t)::Int32
 end
 
 """
@@ -7203,7 +7203,7 @@ int aeron_mpsc_rb_commit(aeron_mpsc_rb_t *ring_buffer, int32_t offset);
 ```
 """
 function aeron_mpsc_rb_commit(ring_buffer, offset)
-    @ccall Aeron.aeron_mpsc_rb_commit(ring_buffer::Ptr{aeron_mpsc_rb_t}, offset::Int32)::Cint
+    @ccall libaeron.aeron_mpsc_rb_commit(ring_buffer::Ptr{aeron_mpsc_rb_t}, offset::Int32)::Cint
 end
 
 """
@@ -7215,7 +7215,7 @@ int aeron_mpsc_rb_abort(aeron_mpsc_rb_t *ring_buffer, int32_t offset);
 ```
 """
 function aeron_mpsc_rb_abort(ring_buffer, offset)
-    @ccall Aeron.aeron_mpsc_rb_abort(ring_buffer::Ptr{aeron_mpsc_rb_t}, offset::Int32)::Cint
+    @ccall libaeron.aeron_mpsc_rb_abort(ring_buffer::Ptr{aeron_mpsc_rb_t}, offset::Int32)::Cint
 end
 
 """
@@ -7227,7 +7227,7 @@ size_t aeron_mpsc_rb_read( aeron_mpsc_rb_t *ring_buffer, aeron_rb_handler_t hand
 ```
 """
 function aeron_mpsc_rb_read(ring_buffer, handler, clientd, message_count_limit)
-    @ccall Aeron.aeron_mpsc_rb_read(ring_buffer::Ptr{aeron_mpsc_rb_t}, handler::aeron_rb_handler_t, clientd::Ptr{Cvoid}, message_count_limit::Csize_t)::Csize_t
+    @ccall libaeron.aeron_mpsc_rb_read(ring_buffer::Ptr{aeron_mpsc_rb_t}, handler::aeron_rb_handler_t, clientd::Ptr{Cvoid}, message_count_limit::Csize_t)::Csize_t
 end
 
 """
@@ -7239,7 +7239,7 @@ int64_t aeron_mpsc_rb_next_correlation_id(aeron_mpsc_rb_t *ring_buffer);
 ```
 """
 function aeron_mpsc_rb_next_correlation_id(ring_buffer)
-    @ccall Aeron.aeron_mpsc_rb_next_correlation_id(ring_buffer::Ptr{aeron_mpsc_rb_t})::Int64
+    @ccall libaeron.aeron_mpsc_rb_next_correlation_id(ring_buffer::Ptr{aeron_mpsc_rb_t})::Int64
 end
 
 """
@@ -7251,7 +7251,7 @@ void aeron_mpsc_rb_consumer_heartbeat_time(aeron_mpsc_rb_t *ring_buffer, int64_t
 ```
 """
 function aeron_mpsc_rb_consumer_heartbeat_time(ring_buffer, now_ms)
-    @ccall Aeron.aeron_mpsc_rb_consumer_heartbeat_time(ring_buffer::Ptr{aeron_mpsc_rb_t}, now_ms::Int64)::Cvoid
+    @ccall libaeron.aeron_mpsc_rb_consumer_heartbeat_time(ring_buffer::Ptr{aeron_mpsc_rb_t}, now_ms::Int64)::Cvoid
 end
 
 """
@@ -7263,7 +7263,7 @@ int64_t aeron_mpsc_rb_consumer_heartbeat_time_value(aeron_mpsc_rb_t *ring_buffer
 ```
 """
 function aeron_mpsc_rb_consumer_heartbeat_time_value(ring_buffer)
-    @ccall Aeron.aeron_mpsc_rb_consumer_heartbeat_time_value(ring_buffer::Ptr{aeron_mpsc_rb_t})::Int64
+    @ccall libaeron.aeron_mpsc_rb_consumer_heartbeat_time_value(ring_buffer::Ptr{aeron_mpsc_rb_t})::Int64
 end
 
 """
@@ -7275,7 +7275,7 @@ bool aeron_mpsc_rb_unblock(aeron_mpsc_rb_t *ring_buffer);
 ```
 """
 function aeron_mpsc_rb_unblock(ring_buffer)
-    @ccall Aeron.aeron_mpsc_rb_unblock(ring_buffer::Ptr{aeron_mpsc_rb_t})::Bool
+    @ccall libaeron.aeron_mpsc_rb_unblock(ring_buffer::Ptr{aeron_mpsc_rb_t})::Bool
 end
 
 """
@@ -7287,7 +7287,7 @@ inline int64_t aeron_mpsc_rb_consumer_position(aeron_mpsc_rb_t *ring_buffer);
 ```
 """
 function aeron_mpsc_rb_consumer_position(ring_buffer)
-    @ccall Aeron.aeron_mpsc_rb_consumer_position(ring_buffer::Ptr{aeron_mpsc_rb_t})::Int64
+    @ccall libaeron.aeron_mpsc_rb_consumer_position(ring_buffer::Ptr{aeron_mpsc_rb_t})::Int64
 end
 
 """
@@ -7299,7 +7299,7 @@ inline int64_t aeron_mpsc_rb_producer_position(aeron_mpsc_rb_t *ring_buffer);
 ```
 """
 function aeron_mpsc_rb_producer_position(ring_buffer)
-    @ccall Aeron.aeron_mpsc_rb_producer_position(ring_buffer::Ptr{aeron_mpsc_rb_t})::Int64
+    @ccall libaeron.aeron_mpsc_rb_producer_position(ring_buffer::Ptr{aeron_mpsc_rb_t})::Int64
 end
 
 struct aeron_correlated_command_stct
@@ -7781,7 +7781,7 @@ int aeron_counters_manager_init( aeron_counters_manager_t *manager, uint8_t *met
 ```
 """
 function aeron_counters_manager_init(manager, metadata_buffer, metadata_length, values_buffer, values_length, cached_clock, free_to_reuse_timeout_ms)
-    @ccall Aeron.aeron_counters_manager_init(manager::Ptr{aeron_counters_manager_t}, metadata_buffer::Ptr{UInt8}, metadata_length::Csize_t, values_buffer::Ptr{UInt8}, values_length::Csize_t, cached_clock::Ptr{aeron_clock_cache_t}, free_to_reuse_timeout_ms::Int64)::Cint
+    @ccall libaeron.aeron_counters_manager_init(manager::Ptr{aeron_counters_manager_t}, metadata_buffer::Ptr{UInt8}, metadata_length::Csize_t, values_buffer::Ptr{UInt8}, values_length::Csize_t, cached_clock::Ptr{aeron_clock_cache_t}, free_to_reuse_timeout_ms::Int64)::Cint
 end
 
 """
@@ -7793,7 +7793,7 @@ void aeron_counters_manager_close(aeron_counters_manager_t *manager);
 ```
 """
 function aeron_counters_manager_close(manager)
-    @ccall Aeron.aeron_counters_manager_close(manager::Ptr{aeron_counters_manager_t})::Cvoid
+    @ccall libaeron.aeron_counters_manager_close(manager::Ptr{aeron_counters_manager_t})::Cvoid
 end
 
 """
@@ -7805,7 +7805,7 @@ int32_t aeron_counters_manager_allocate( aeron_counters_manager_t *manager, int3
 ```
 """
 function aeron_counters_manager_allocate(manager, type_id, key, key_length, label, label_length)
-    @ccall Aeron.aeron_counters_manager_allocate(manager::Ptr{aeron_counters_manager_t}, type_id::Int32, key::Ptr{UInt8}, key_length::Csize_t, label::Cstring, label_length::Csize_t)::Int32
+    @ccall libaeron.aeron_counters_manager_allocate(manager::Ptr{aeron_counters_manager_t}, type_id::Int32, key::Ptr{UInt8}, key_length::Csize_t, label::Cstring, label_length::Csize_t)::Int32
 end
 
 """
@@ -7817,7 +7817,7 @@ void aeron_counters_manager_counter_registration_id( aeron_counters_manager_t *m
 ```
 """
 function aeron_counters_manager_counter_registration_id(manager, counter_id, registration_id)
-    @ccall Aeron.aeron_counters_manager_counter_registration_id(manager::Ptr{aeron_counters_manager_t}, counter_id::Int32, registration_id::Int64)::Cvoid
+    @ccall libaeron.aeron_counters_manager_counter_registration_id(manager::Ptr{aeron_counters_manager_t}, counter_id::Int32, registration_id::Int64)::Cvoid
 end
 
 """
@@ -7829,7 +7829,7 @@ void aeron_counters_manager_counter_owner_id( aeron_counters_manager_t *manager,
 ```
 """
 function aeron_counters_manager_counter_owner_id(manager, counter_id, owner_id)
-    @ccall Aeron.aeron_counters_manager_counter_owner_id(manager::Ptr{aeron_counters_manager_t}, counter_id::Int32, owner_id::Int64)::Cvoid
+    @ccall libaeron.aeron_counters_manager_counter_owner_id(manager::Ptr{aeron_counters_manager_t}, counter_id::Int32, owner_id::Int64)::Cvoid
 end
 
 """
@@ -7841,7 +7841,7 @@ void aeron_counters_manager_update_label( aeron_counters_manager_t *manager, int
 ```
 """
 function aeron_counters_manager_update_label(manager, counter_id, label_length, label)
-    @ccall Aeron.aeron_counters_manager_update_label(manager::Ptr{aeron_counters_manager_t}, counter_id::Int32, label_length::Csize_t, label::Cstring)::Cvoid
+    @ccall libaeron.aeron_counters_manager_update_label(manager::Ptr{aeron_counters_manager_t}, counter_id::Int32, label_length::Csize_t, label::Cstring)::Cvoid
 end
 
 """
@@ -7853,7 +7853,7 @@ void aeron_counters_manager_append_to_label( aeron_counters_manager_t *manager, 
 ```
 """
 function aeron_counters_manager_append_to_label(manager, counter_id, length, value)
-    @ccall Aeron.aeron_counters_manager_append_to_label(manager::Ptr{aeron_counters_manager_t}, counter_id::Int32, length::Csize_t, value::Cstring)::Cvoid
+    @ccall libaeron.aeron_counters_manager_append_to_label(manager::Ptr{aeron_counters_manager_t}, counter_id::Int32, length::Csize_t, value::Cstring)::Cvoid
 end
 
 """
@@ -7865,7 +7865,7 @@ int32_t aeron_counters_manager_next_counter_id(aeron_counters_manager_t *manager
 ```
 """
 function aeron_counters_manager_next_counter_id(manager)
-    @ccall Aeron.aeron_counters_manager_next_counter_id(manager::Ptr{aeron_counters_manager_t})::Int32
+    @ccall libaeron.aeron_counters_manager_next_counter_id(manager::Ptr{aeron_counters_manager_t})::Int32
 end
 
 """
@@ -7877,7 +7877,7 @@ int aeron_counters_manager_free(aeron_counters_manager_t *manager, int32_t count
 ```
 """
 function aeron_counters_manager_free(manager, counter_id)
-    @ccall Aeron.aeron_counters_manager_free(manager::Ptr{aeron_counters_manager_t}, counter_id::Int32)::Cint
+    @ccall libaeron.aeron_counters_manager_free(manager::Ptr{aeron_counters_manager_t}, counter_id::Int32)::Cint
 end
 
 # typedef void ( * aeron_counters_reader_foreach_metadata_func_t ) ( int32_t id , int32_t type_id , const uint8_t * key , size_t key_length , const uint8_t * label , size_t label_length , void * clientd )
@@ -7892,7 +7892,7 @@ void aeron_counters_reader_foreach_metadata( uint8_t *metadata_buffer, size_t me
 ```
 """
 function aeron_counters_reader_foreach_metadata(metadata_buffer, metadata_length, func, clientd)
-    @ccall Aeron.aeron_counters_reader_foreach_metadata(metadata_buffer::Ptr{UInt8}, metadata_length::Csize_t, func::aeron_counters_reader_foreach_metadata_func_t, clientd::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_counters_reader_foreach_metadata(metadata_buffer::Ptr{UInt8}, metadata_length::Csize_t, func::aeron_counters_reader_foreach_metadata_func_t, clientd::Ptr{Cvoid})::Cvoid
 end
 
 """
@@ -7904,7 +7904,7 @@ inline int64_t *aeron_counters_manager_addr(aeron_counters_manager_t *counters_m
 ```
 """
 function aeron_counters_manager_addr(counters_manager, counter_id)
-    @ccall Aeron.aeron_counters_manager_addr(counters_manager::Ptr{aeron_counters_manager_t}, counter_id::Int32)::Ptr{Int64}
+    @ccall libaeron.aeron_counters_manager_addr(counters_manager::Ptr{aeron_counters_manager_t}, counter_id::Int32)::Ptr{Int64}
 end
 
 """
@@ -7916,7 +7916,7 @@ inline int aeron_counters_reader_init( aeron_counters_reader_t *reader, uint8_t 
 ```
 """
 function aeron_counters_reader_init(reader, metadata_buffer, metadata_length, values_buffer, values_length)
-    @ccall Aeron.aeron_counters_reader_init(reader::Ptr{aeron_counters_reader_t}, metadata_buffer::Ptr{UInt8}, metadata_length::Csize_t, values_buffer::Ptr{UInt8}, values_length::Csize_t)::Cint
+    @ccall libaeron.aeron_counters_reader_init(reader::Ptr{aeron_counters_reader_t}, metadata_buffer::Ptr{UInt8}, metadata_length::Csize_t, values_buffer::Ptr{UInt8}, values_length::Csize_t)::Cint
 end
 
 """
@@ -7928,7 +7928,7 @@ inline void aeron_counter_set_ordered(volatile int64_t *addr, int64_t value);
 ```
 """
 function aeron_counter_set_ordered(addr, value)
-    @ccall Aeron.aeron_counter_set_ordered(addr::Ptr{Int64}, value::Int64)::Cvoid
+    @ccall libaeron.aeron_counter_set_ordered(addr::Ptr{Int64}, value::Int64)::Cvoid
 end
 
 """
@@ -7940,7 +7940,7 @@ inline int64_t aeron_counter_get(volatile int64_t *addr);
 ```
 """
 function aeron_counter_get(addr)
-    @ccall Aeron.aeron_counter_get(addr::Ptr{Int64})::Int64
+    @ccall libaeron.aeron_counter_get(addr::Ptr{Int64})::Int64
 end
 
 """
@@ -7952,7 +7952,7 @@ inline int64_t aeron_counter_get_volatile(volatile int64_t *addr);
 ```
 """
 function aeron_counter_get_volatile(addr)
-    @ccall Aeron.aeron_counter_get_volatile(addr::Ptr{Int64})::Int64
+    @ccall libaeron.aeron_counter_get_volatile(addr::Ptr{Int64})::Int64
 end
 
 """
@@ -7964,7 +7964,7 @@ inline int64_t aeron_counter_increment(volatile int64_t *addr, int64_t value);
 ```
 """
 function aeron_counter_increment(addr, value)
-    @ccall Aeron.aeron_counter_increment(addr::Ptr{Int64}, value::Int64)::Int64
+    @ccall libaeron.aeron_counter_increment(addr::Ptr{Int64}, value::Int64)::Int64
 end
 
 """
@@ -7976,7 +7976,7 @@ inline int64_t aeron_counter_ordered_increment(volatile int64_t *addr, int64_t v
 ```
 """
 function aeron_counter_ordered_increment(addr, value)
-    @ccall Aeron.aeron_counter_ordered_increment(addr::Ptr{Int64}, value::Int64)::Int64
+    @ccall libaeron.aeron_counter_ordered_increment(addr::Ptr{Int64}, value::Int64)::Int64
 end
 
 """
@@ -7988,7 +7988,7 @@ inline int64_t aeron_counter_add_ordered(volatile int64_t *addr, int64_t value);
 ```
 """
 function aeron_counter_add_ordered(addr, value)
-    @ccall Aeron.aeron_counter_add_ordered(addr::Ptr{Int64}, value::Int64)::Int64
+    @ccall libaeron.aeron_counter_add_ordered(addr::Ptr{Int64}, value::Int64)::Int64
 end
 
 """
@@ -8000,7 +8000,7 @@ inline bool aeron_counter_propose_max_ordered(volatile int64_t *addr, int64_t pr
 ```
 """
 function aeron_counter_propose_max_ordered(addr, proposed_value)
-    @ccall Aeron.aeron_counter_propose_max_ordered(addr::Ptr{Int64}, proposed_value::Int64)::Bool
+    @ccall libaeron.aeron_counter_propose_max_ordered(addr::Ptr{Int64}, proposed_value::Int64)::Bool
 end
 
 """
@@ -8012,7 +8012,7 @@ inline size_t aeron_int64_to_ptr_hash_map_hash_key(int64_t key, size_t mask);
 ```
 """
 function aeron_int64_to_ptr_hash_map_hash_key(key, mask)
-    @ccall Aeron.aeron_int64_to_ptr_hash_map_hash_key(key::Int64, mask::Csize_t)::Csize_t
+    @ccall libaeron.aeron_int64_to_ptr_hash_map_hash_key(key::Int64, mask::Csize_t)::Csize_t
 end
 
 """
@@ -8024,7 +8024,7 @@ inline int aeron_int64_to_ptr_hash_map_init( aeron_int64_to_ptr_hash_map_t *map,
 ```
 """
 function aeron_int64_to_ptr_hash_map_init(map, initial_capacity, load_factor)
-    @ccall Aeron.aeron_int64_to_ptr_hash_map_init(map::Ptr{aeron_int64_to_ptr_hash_map_t}, initial_capacity::Csize_t, load_factor::Cfloat)::Cint
+    @ccall libaeron.aeron_int64_to_ptr_hash_map_init(map::Ptr{aeron_int64_to_ptr_hash_map_t}, initial_capacity::Csize_t, load_factor::Cfloat)::Cint
 end
 
 """
@@ -8036,7 +8036,7 @@ inline void aeron_int64_to_ptr_hash_map_delete(aeron_int64_to_ptr_hash_map_t *ma
 ```
 """
 function aeron_int64_to_ptr_hash_map_delete(map)
-    @ccall Aeron.aeron_int64_to_ptr_hash_map_delete(map::Ptr{aeron_int64_to_ptr_hash_map_t})::Cvoid
+    @ccall libaeron.aeron_int64_to_ptr_hash_map_delete(map::Ptr{aeron_int64_to_ptr_hash_map_t})::Cvoid
 end
 
 """
@@ -8048,7 +8048,7 @@ inline int aeron_int64_to_ptr_hash_map_rehash(aeron_int64_to_ptr_hash_map_t *map
 ```
 """
 function aeron_int64_to_ptr_hash_map_rehash(map, new_capacity)
-    @ccall Aeron.aeron_int64_to_ptr_hash_map_rehash(map::Ptr{aeron_int64_to_ptr_hash_map_t}, new_capacity::Csize_t)::Cint
+    @ccall libaeron.aeron_int64_to_ptr_hash_map_rehash(map::Ptr{aeron_int64_to_ptr_hash_map_t}, new_capacity::Csize_t)::Cint
 end
 
 """
@@ -8060,7 +8060,7 @@ inline int aeron_int64_to_ptr_hash_map_put(aeron_int64_to_ptr_hash_map_t *map, c
 ```
 """
 function aeron_int64_to_ptr_hash_map_put(map, key, value)
-    @ccall Aeron.aeron_int64_to_ptr_hash_map_put(map::Ptr{aeron_int64_to_ptr_hash_map_t}, key::Int64, value::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_int64_to_ptr_hash_map_put(map::Ptr{aeron_int64_to_ptr_hash_map_t}, key::Int64, value::Ptr{Cvoid})::Cint
 end
 
 """
@@ -8072,7 +8072,7 @@ inline void *aeron_int64_to_ptr_hash_map_get(aeron_int64_to_ptr_hash_map_t *map,
 ```
 """
 function aeron_int64_to_ptr_hash_map_get(map, key)
-    @ccall Aeron.aeron_int64_to_ptr_hash_map_get(map::Ptr{aeron_int64_to_ptr_hash_map_t}, key::Int64)::Ptr{Cvoid}
+    @ccall libaeron.aeron_int64_to_ptr_hash_map_get(map::Ptr{aeron_int64_to_ptr_hash_map_t}, key::Int64)::Ptr{Cvoid}
 end
 
 """
@@ -8084,7 +8084,7 @@ inline void aeron_int64_to_ptr_hash_map_compact_chain(aeron_int64_to_ptr_hash_ma
 ```
 """
 function aeron_int64_to_ptr_hash_map_compact_chain(map, delete_index)
-    @ccall Aeron.aeron_int64_to_ptr_hash_map_compact_chain(map::Ptr{aeron_int64_to_ptr_hash_map_t}, delete_index::Csize_t)::Cvoid
+    @ccall libaeron.aeron_int64_to_ptr_hash_map_compact_chain(map::Ptr{aeron_int64_to_ptr_hash_map_t}, delete_index::Csize_t)::Cvoid
 end
 
 """
@@ -8096,7 +8096,7 @@ inline void *aeron_int64_to_ptr_hash_map_remove(aeron_int64_to_ptr_hash_map_t *m
 ```
 """
 function aeron_int64_to_ptr_hash_map_remove(map, key)
-    @ccall Aeron.aeron_int64_to_ptr_hash_map_remove(map::Ptr{aeron_int64_to_ptr_hash_map_t}, key::Int64)::Ptr{Cvoid}
+    @ccall libaeron.aeron_int64_to_ptr_hash_map_remove(map::Ptr{aeron_int64_to_ptr_hash_map_t}, key::Int64)::Ptr{Cvoid}
 end
 
 # typedef void ( * aeron_int64_to_ptr_hash_map_for_each_func_t ) ( void * clientd , int64_t key , void * value )
@@ -8114,7 +8114,7 @@ inline void aeron_int64_to_ptr_hash_map_for_each( aeron_int64_to_ptr_hash_map_t 
 ```
 """
 function aeron_int64_to_ptr_hash_map_for_each(map, func, clientd)
-    @ccall Aeron.aeron_int64_to_ptr_hash_map_for_each(map::Ptr{aeron_int64_to_ptr_hash_map_t}, func::aeron_int64_to_ptr_hash_map_for_each_func_t, clientd::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_int64_to_ptr_hash_map_for_each(map::Ptr{aeron_int64_to_ptr_hash_map_t}, func::aeron_int64_to_ptr_hash_map_for_each_func_t, clientd::Ptr{Cvoid})::Cvoid
 end
 
 """
@@ -8126,7 +8126,7 @@ inline void aeron_int64_to_ptr_hash_map_remove_if( aeron_int64_to_ptr_hash_map_t
 ```
 """
 function aeron_int64_to_ptr_hash_map_remove_if(map, func, clientd)
-    @ccall Aeron.aeron_int64_to_ptr_hash_map_remove_if(map::Ptr{aeron_int64_to_ptr_hash_map_t}, func::aeron_int64_to_ptr_hash_map_predicate_func_t, clientd::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_int64_to_ptr_hash_map_remove_if(map::Ptr{aeron_int64_to_ptr_hash_map_t}, func::aeron_int64_to_ptr_hash_map_predicate_func_t, clientd::Ptr{Cvoid})::Cvoid
 end
 
 @cenum aeron_client_handler_cmd_type_en::UInt32 begin
@@ -8197,7 +8197,7 @@ int aeron_client_conductor_init(aeron_client_conductor_t *conductor, aeron_conte
 ```
 """
 function aeron_client_conductor_init(conductor, context)
-    @ccall Aeron.aeron_client_conductor_init(conductor::Ptr{aeron_client_conductor_t}, context::Ptr{aeron_context_t})::Cint
+    @ccall libaeron.aeron_client_conductor_init(conductor::Ptr{aeron_client_conductor_t}, context::Ptr{aeron_context_t})::Cint
 end
 
 """
@@ -8209,7 +8209,7 @@ int aeron_client_conductor_do_work(aeron_client_conductor_t *conductor);
 ```
 """
 function aeron_client_conductor_do_work(conductor)
-    @ccall Aeron.aeron_client_conductor_do_work(conductor::Ptr{aeron_client_conductor_t})::Cint
+    @ccall libaeron.aeron_client_conductor_do_work(conductor::Ptr{aeron_client_conductor_t})::Cint
 end
 
 """
@@ -8221,7 +8221,7 @@ void aeron_client_conductor_on_close(aeron_client_conductor_t *conductor);
 ```
 """
 function aeron_client_conductor_on_close(conductor)
-    @ccall Aeron.aeron_client_conductor_on_close(conductor::Ptr{aeron_client_conductor_t})::Cvoid
+    @ccall libaeron.aeron_client_conductor_on_close(conductor::Ptr{aeron_client_conductor_t})::Cvoid
 end
 
 """
@@ -8233,7 +8233,7 @@ void aeron_client_conductor_force_close_resources(aeron_client_conductor_t *cond
 ```
 """
 function aeron_client_conductor_force_close_resources(conductor)
-    @ccall Aeron.aeron_client_conductor_force_close_resources(conductor::Ptr{aeron_client_conductor_t})::Cvoid
+    @ccall libaeron.aeron_client_conductor_force_close_resources(conductor::Ptr{aeron_client_conductor_t})::Cvoid
 end
 
 """
@@ -8245,7 +8245,7 @@ void aeron_client_conductor_on_cmd_add_publication(void *clientd, void *item);
 ```
 """
 function aeron_client_conductor_on_cmd_add_publication(clientd, item)
-    @ccall Aeron.aeron_client_conductor_on_cmd_add_publication(clientd::Ptr{Cvoid}, item::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_client_conductor_on_cmd_add_publication(clientd::Ptr{Cvoid}, item::Ptr{Cvoid})::Cvoid
 end
 
 """
@@ -8257,7 +8257,7 @@ void aeron_client_conductor_on_cmd_close_publication(void *clientd, void *item);
 ```
 """
 function aeron_client_conductor_on_cmd_close_publication(clientd, item)
-    @ccall Aeron.aeron_client_conductor_on_cmd_close_publication(clientd::Ptr{Cvoid}, item::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_client_conductor_on_cmd_close_publication(clientd::Ptr{Cvoid}, item::Ptr{Cvoid})::Cvoid
 end
 
 """
@@ -8269,7 +8269,7 @@ int aeron_client_conductor_async_add_publication( aeron_async_add_publication_t 
 ```
 """
 function aeron_client_conductor_async_add_publication(async, conductor, uri, stream_id)
-    @ccall Aeron.aeron_client_conductor_async_add_publication(async::Ptr{Ptr{aeron_async_add_publication_t}}, conductor::Ptr{aeron_client_conductor_t}, uri::Cstring, stream_id::Int32)::Cint
+    @ccall libaeron.aeron_client_conductor_async_add_publication(async::Ptr{Ptr{aeron_async_add_publication_t}}, conductor::Ptr{aeron_client_conductor_t}, uri::Cstring, stream_id::Int32)::Cint
 end
 
 """
@@ -8281,7 +8281,7 @@ int aeron_client_conductor_async_close_publication( aeron_client_conductor_t *co
 ```
 """
 function aeron_client_conductor_async_close_publication(conductor, publication, on_close_complete, on_close_complete_clientd)
-    @ccall Aeron.aeron_client_conductor_async_close_publication(conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_publication_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_client_conductor_async_close_publication(conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_publication_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -8293,7 +8293,7 @@ int aeron_client_conductor_async_add_exclusive_publication( aeron_async_add_excl
 ```
 """
 function aeron_client_conductor_async_add_exclusive_publication(async, conductor, uri, stream_id)
-    @ccall Aeron.aeron_client_conductor_async_add_exclusive_publication(async::Ptr{Ptr{aeron_async_add_exclusive_publication_t}}, conductor::Ptr{aeron_client_conductor_t}, uri::Cstring, stream_id::Int32)::Cint
+    @ccall libaeron.aeron_client_conductor_async_add_exclusive_publication(async::Ptr{Ptr{aeron_async_add_exclusive_publication_t}}, conductor::Ptr{aeron_client_conductor_t}, uri::Cstring, stream_id::Int32)::Cint
 end
 
 """
@@ -8305,7 +8305,7 @@ int aeron_client_conductor_async_close_exclusive_publication( aeron_client_condu
 ```
 """
 function aeron_client_conductor_async_close_exclusive_publication(conductor, publication, on_close_complete, on_close_complete_clientd)
-    @ccall Aeron.aeron_client_conductor_async_close_exclusive_publication(conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_exclusive_publication_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_client_conductor_async_close_exclusive_publication(conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_exclusive_publication_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -8317,7 +8317,7 @@ int aeron_client_conductor_async_add_subscription( aeron_async_add_subscription_
 ```
 """
 function aeron_client_conductor_async_add_subscription(async, conductor, uri, stream_id, on_available_image_handler, on_available_image_clientd, on_unavailable_image_handler, on_unavailable_image_clientd)
-    @ccall Aeron.aeron_client_conductor_async_add_subscription(async::Ptr{Ptr{aeron_async_add_subscription_t}}, conductor::Ptr{aeron_client_conductor_t}, uri::Cstring, stream_id::Int32, on_available_image_handler::aeron_on_available_image_t, on_available_image_clientd::Ptr{Cvoid}, on_unavailable_image_handler::aeron_on_unavailable_image_t, on_unavailable_image_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_client_conductor_async_add_subscription(async::Ptr{Ptr{aeron_async_add_subscription_t}}, conductor::Ptr{aeron_client_conductor_t}, uri::Cstring, stream_id::Int32, on_available_image_handler::aeron_on_available_image_t, on_available_image_clientd::Ptr{Cvoid}, on_unavailable_image_handler::aeron_on_unavailable_image_t, on_unavailable_image_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -8329,7 +8329,7 @@ int aeron_client_conductor_async_close_subscription( aeron_client_conductor_t *c
 ```
 """
 function aeron_client_conductor_async_close_subscription(conductor, subscription, on_close_complete, on_close_complete_clientd)
-    @ccall Aeron.aeron_client_conductor_async_close_subscription(conductor::Ptr{aeron_client_conductor_t}, subscription::Ptr{aeron_subscription_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_client_conductor_async_close_subscription(conductor::Ptr{aeron_client_conductor_t}, subscription::Ptr{aeron_subscription_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -8341,7 +8341,7 @@ int aeron_client_conductor_async_add_counter( aeron_async_add_counter_t **async,
 ```
 """
 function aeron_client_conductor_async_add_counter(async, conductor, type_id, key_buffer, key_buffer_length, label_buffer, label_buffer_length)
-    @ccall Aeron.aeron_client_conductor_async_add_counter(async::Ptr{Ptr{aeron_async_add_counter_t}}, conductor::Ptr{aeron_client_conductor_t}, type_id::Int32, key_buffer::Ptr{UInt8}, key_buffer_length::Csize_t, label_buffer::Cstring, label_buffer_length::Csize_t)::Cint
+    @ccall libaeron.aeron_client_conductor_async_add_counter(async::Ptr{Ptr{aeron_async_add_counter_t}}, conductor::Ptr{aeron_client_conductor_t}, type_id::Int32, key_buffer::Ptr{UInt8}, key_buffer_length::Csize_t, label_buffer::Cstring, label_buffer_length::Csize_t)::Cint
 end
 
 """
@@ -8353,7 +8353,7 @@ int aeron_client_conductor_async_close_counter( aeron_client_conductor_t *conduc
 ```
 """
 function aeron_client_conductor_async_close_counter(conductor, counter, on_close_complete, on_close_complete_clientd)
-    @ccall Aeron.aeron_client_conductor_async_close_counter(conductor::Ptr{aeron_client_conductor_t}, counter::Ptr{aeron_counter_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_client_conductor_async_close_counter(conductor::Ptr{aeron_client_conductor_t}, counter::Ptr{aeron_counter_t}, on_close_complete::aeron_notification_t, on_close_complete_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -8365,7 +8365,7 @@ int aeron_client_conductor_async_add_publication_destination( aeron_async_destin
 ```
 """
 function aeron_client_conductor_async_add_publication_destination(async, conductor, publication, uri)
-    @ccall Aeron.aeron_client_conductor_async_add_publication_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_publication_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_client_conductor_async_add_publication_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_publication_t}, uri::Cstring)::Cint
 end
 
 """
@@ -8377,7 +8377,7 @@ int aeron_client_conductor_async_remove_publication_destination( aeron_async_des
 ```
 """
 function aeron_client_conductor_async_remove_publication_destination(async, conductor, publication, uri)
-    @ccall Aeron.aeron_client_conductor_async_remove_publication_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_publication_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_client_conductor_async_remove_publication_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_publication_t}, uri::Cstring)::Cint
 end
 
 """
@@ -8389,7 +8389,7 @@ int aeron_client_conductor_async_add_exclusive_publication_destination( aeron_as
 ```
 """
 function aeron_client_conductor_async_add_exclusive_publication_destination(async, conductor, publication, uri)
-    @ccall Aeron.aeron_client_conductor_async_add_exclusive_publication_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_exclusive_publication_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_client_conductor_async_add_exclusive_publication_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_exclusive_publication_t}, uri::Cstring)::Cint
 end
 
 """
@@ -8401,7 +8401,7 @@ int aeron_client_conductor_async_remove_exclusive_publication_destination( aeron
 ```
 """
 function aeron_client_conductor_async_remove_exclusive_publication_destination(async, conductor, publication, uri)
-    @ccall Aeron.aeron_client_conductor_async_remove_exclusive_publication_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_exclusive_publication_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_client_conductor_async_remove_exclusive_publication_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, publication::Ptr{aeron_exclusive_publication_t}, uri::Cstring)::Cint
 end
 
 """
@@ -8413,7 +8413,7 @@ int aeron_client_conductor_async_add_subscription_destination( aeron_async_desti
 ```
 """
 function aeron_client_conductor_async_add_subscription_destination(async, conductor, subscription, uri)
-    @ccall Aeron.aeron_client_conductor_async_add_subscription_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, subscription::Ptr{aeron_subscription_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_client_conductor_async_add_subscription_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, subscription::Ptr{aeron_subscription_t}, uri::Cstring)::Cint
 end
 
 """
@@ -8425,7 +8425,7 @@ int aeron_client_conductor_async_remove_subscription_destination( aeron_async_de
 ```
 """
 function aeron_client_conductor_async_remove_subscription_destination(async, conductor, subscription, uri)
-    @ccall Aeron.aeron_client_conductor_async_remove_subscription_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, subscription::Ptr{aeron_subscription_t}, uri::Cstring)::Cint
+    @ccall libaeron.aeron_client_conductor_async_remove_subscription_destination(async::Ptr{Ptr{aeron_async_destination_t}}, conductor::Ptr{aeron_client_conductor_t}, subscription::Ptr{aeron_subscription_t}, uri::Cstring)::Cint
 end
 
 """
@@ -8437,7 +8437,7 @@ int aeron_client_conductor_async_handler(aeron_client_conductor_t *conductor, ae
 ```
 """
 function aeron_client_conductor_async_handler(conductor, cmd)
-    @ccall Aeron.aeron_client_conductor_async_handler(conductor::Ptr{aeron_client_conductor_t}, cmd::Ptr{aeron_client_handler_cmd_t})::Cint
+    @ccall libaeron.aeron_client_conductor_async_handler(conductor::Ptr{aeron_client_conductor_t}, cmd::Ptr{aeron_client_handler_cmd_t})::Cint
 end
 
 """
@@ -8449,7 +8449,7 @@ int aeron_client_conductor_on_error(aeron_client_conductor_t *conductor, aeron_e
 ```
 """
 function aeron_client_conductor_on_error(conductor, response)
-    @ccall Aeron.aeron_client_conductor_on_error(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_error_response_t})::Cint
+    @ccall libaeron.aeron_client_conductor_on_error(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_error_response_t})::Cint
 end
 
 """
@@ -8461,7 +8461,7 @@ int aeron_client_conductor_on_publication_ready( aeron_client_conductor_t *condu
 ```
 """
 function aeron_client_conductor_on_publication_ready(conductor, response)
-    @ccall Aeron.aeron_client_conductor_on_publication_ready(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_publication_buffers_ready_t})::Cint
+    @ccall libaeron.aeron_client_conductor_on_publication_ready(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_publication_buffers_ready_t})::Cint
 end
 
 """
@@ -8473,7 +8473,7 @@ int aeron_client_conductor_on_subscription_ready( aeron_client_conductor_t *cond
 ```
 """
 function aeron_client_conductor_on_subscription_ready(conductor, response)
-    @ccall Aeron.aeron_client_conductor_on_subscription_ready(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_subscription_ready_t})::Cint
+    @ccall libaeron.aeron_client_conductor_on_subscription_ready(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_subscription_ready_t})::Cint
 end
 
 """
@@ -8485,7 +8485,7 @@ int aeron_client_conductor_on_operation_success( aeron_client_conductor_t *condu
 ```
 """
 function aeron_client_conductor_on_operation_success(conductor, response)
-    @ccall Aeron.aeron_client_conductor_on_operation_success(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_operation_succeeded_t})::Cint
+    @ccall libaeron.aeron_client_conductor_on_operation_success(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_operation_succeeded_t})::Cint
 end
 
 """
@@ -8497,7 +8497,7 @@ int aeron_client_conductor_on_available_image( aeron_client_conductor_t *conduct
 ```
 """
 function aeron_client_conductor_on_available_image(conductor, response, log_file_length, log_file, source_identity_length, source_identity)
-    @ccall Aeron.aeron_client_conductor_on_available_image(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_image_buffers_ready_t}, log_file_length::Int32, log_file::Cstring, source_identity_length::Int32, source_identity::Cstring)::Cint
+    @ccall libaeron.aeron_client_conductor_on_available_image(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_image_buffers_ready_t}, log_file_length::Int32, log_file::Cstring, source_identity_length::Int32, source_identity::Cstring)::Cint
 end
 
 """
@@ -8509,7 +8509,7 @@ int aeron_client_conductor_on_unavailable_image(aeron_client_conductor_t *conduc
 ```
 """
 function aeron_client_conductor_on_unavailable_image(conductor, response)
-    @ccall Aeron.aeron_client_conductor_on_unavailable_image(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_image_message_t})::Cint
+    @ccall libaeron.aeron_client_conductor_on_unavailable_image(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_image_message_t})::Cint
 end
 
 """
@@ -8521,7 +8521,7 @@ int aeron_client_conductor_on_counter_ready(aeron_client_conductor_t *conductor,
 ```
 """
 function aeron_client_conductor_on_counter_ready(conductor, response)
-    @ccall Aeron.aeron_client_conductor_on_counter_ready(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_counter_update_t})::Cint
+    @ccall libaeron.aeron_client_conductor_on_counter_ready(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_counter_update_t})::Cint
 end
 
 """
@@ -8533,7 +8533,7 @@ int aeron_client_conductor_on_unavailable_counter( aeron_client_conductor_t *con
 ```
 """
 function aeron_client_conductor_on_unavailable_counter(conductor, response)
-    @ccall Aeron.aeron_client_conductor_on_unavailable_counter(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_counter_update_t})::Cint
+    @ccall libaeron.aeron_client_conductor_on_unavailable_counter(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_counter_update_t})::Cint
 end
 
 """
@@ -8545,7 +8545,7 @@ int aeron_client_conductor_on_client_timeout(aeron_client_conductor_t *conductor
 ```
 """
 function aeron_client_conductor_on_client_timeout(conductor, response)
-    @ccall Aeron.aeron_client_conductor_on_client_timeout(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_client_timeout_t})::Cint
+    @ccall libaeron.aeron_client_conductor_on_client_timeout(conductor::Ptr{aeron_client_conductor_t}, response::Ptr{aeron_client_timeout_t})::Cint
 end
 
 """
@@ -8557,7 +8557,7 @@ int aeron_client_conductor_get_or_create_log_buffer( aeron_client_conductor_t *c
 ```
 """
 function aeron_client_conductor_get_or_create_log_buffer(conductor, log_buffer, log_file, original_registration_id, pre_touch)
-    @ccall Aeron.aeron_client_conductor_get_or_create_log_buffer(conductor::Ptr{aeron_client_conductor_t}, log_buffer::Ptr{Ptr{aeron_log_buffer_t}}, log_file::Cstring, original_registration_id::Int64, pre_touch::Bool)::Cint
+    @ccall libaeron.aeron_client_conductor_get_or_create_log_buffer(conductor::Ptr{aeron_client_conductor_t}, log_buffer::Ptr{Ptr{aeron_log_buffer_t}}, log_file::Cstring, original_registration_id::Int64, pre_touch::Bool)::Cint
 end
 
 """
@@ -8569,7 +8569,7 @@ int aeron_client_conductor_release_log_buffer(aeron_client_conductor_t *conducto
 ```
 """
 function aeron_client_conductor_release_log_buffer(conductor, log_buffer)
-    @ccall Aeron.aeron_client_conductor_release_log_buffer(conductor::Ptr{aeron_client_conductor_t}, log_buffer::Ptr{aeron_log_buffer_t})::Cint
+    @ccall libaeron.aeron_client_conductor_release_log_buffer(conductor::Ptr{aeron_client_conductor_t}, log_buffer::Ptr{aeron_log_buffer_t})::Cint
 end
 
 """
@@ -8581,7 +8581,7 @@ int aeron_client_conductor_linger_image(aeron_client_conductor_t *conductor, aer
 ```
 """
 function aeron_client_conductor_linger_image(conductor, image)
-    @ccall Aeron.aeron_client_conductor_linger_image(conductor::Ptr{aeron_client_conductor_t}, image::Ptr{aeron_image_t})::Cint
+    @ccall libaeron.aeron_client_conductor_linger_image(conductor::Ptr{aeron_client_conductor_t}, image::Ptr{aeron_image_t})::Cint
 end
 
 """
@@ -8593,7 +8593,7 @@ int aeron_client_conductor_offer_remove_command( aeron_client_conductor_t *condu
 ```
 """
 function aeron_client_conductor_offer_remove_command(conductor, registration_id, command_type)
-    @ccall Aeron.aeron_client_conductor_offer_remove_command(conductor::Ptr{aeron_client_conductor_t}, registration_id::Int64, command_type::Int32)::Cint
+    @ccall libaeron.aeron_client_conductor_offer_remove_command(conductor::Ptr{aeron_client_conductor_t}, registration_id::Int64, command_type::Int32)::Cint
 end
 
 """
@@ -8605,7 +8605,7 @@ int aeron_client_conductor_offer_destination_command( aeron_client_conductor_t *
 ```
 """
 function aeron_client_conductor_offer_destination_command(conductor, registration_id, command_type, uri, correlation_id)
-    @ccall Aeron.aeron_client_conductor_offer_destination_command(conductor::Ptr{aeron_client_conductor_t}, registration_id::Int64, command_type::Int32, uri::Cstring, correlation_id::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_client_conductor_offer_destination_command(conductor::Ptr{aeron_client_conductor_t}, registration_id::Int64, command_type::Int32, uri::Cstring, correlation_id::Ptr{Int64})::Cint
 end
 
 """
@@ -8617,7 +8617,7 @@ inline int aeron_counter_heartbeat_timestamp_find_counter_id_by_registration_id(
 ```
 """
 function aeron_counter_heartbeat_timestamp_find_counter_id_by_registration_id(counters_reader, type_id, registration_id)
-    @ccall Aeron.aeron_counter_heartbeat_timestamp_find_counter_id_by_registration_id(counters_reader::Ptr{aeron_counters_reader_t}, type_id::Int32, registration_id::Int64)::Cint
+    @ccall libaeron.aeron_counter_heartbeat_timestamp_find_counter_id_by_registration_id(counters_reader::Ptr{aeron_counters_reader_t}, type_id::Int32, registration_id::Int64)::Cint
 end
 
 """
@@ -8629,7 +8629,7 @@ inline bool aeron_counter_heartbeat_timestamp_is_active( aeron_counters_reader_t
 ```
 """
 function aeron_counter_heartbeat_timestamp_is_active(counters_reader, counter_id, type_id, registration_id)
-    @ccall Aeron.aeron_counter_heartbeat_timestamp_is_active(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, type_id::Int32, registration_id::Int64)::Bool
+    @ccall libaeron.aeron_counter_heartbeat_timestamp_is_active(counters_reader::Ptr{aeron_counters_reader_t}, counter_id::Int32, type_id::Int32, registration_id::Int64)::Bool
 end
 
 """
@@ -8641,7 +8641,7 @@ inline void aeron_client_conductor_notify_close_handlers(aeron_client_conductor_
 ```
 """
 function aeron_client_conductor_notify_close_handlers(conductor)
-    @ccall Aeron.aeron_client_conductor_notify_close_handlers(conductor::Ptr{aeron_client_conductor_t})::Cvoid
+    @ccall libaeron.aeron_client_conductor_notify_close_handlers(conductor::Ptr{aeron_client_conductor_t})::Cvoid
 end
 
 """
@@ -8653,7 +8653,7 @@ inline bool aeron_client_conductor_is_closed(aeron_client_conductor_t *conductor
 ```
 """
 function aeron_client_conductor_is_closed(conductor)
-    @ccall Aeron.aeron_client_conductor_is_closed(conductor::Ptr{aeron_client_conductor_t})::Bool
+    @ccall libaeron.aeron_client_conductor_is_closed(conductor::Ptr{aeron_client_conductor_t})::Bool
 end
 
 """
@@ -8665,7 +8665,7 @@ int aeron_subscription_create( aeron_subscription_t **subscription, aeron_client
 ```
 """
 function aeron_subscription_create(subscription, conductor, channel, stream_id, registration_id, channel_status_indicator_id, channel_status_indicator_addr, on_available_image, on_available_image_clientd, on_unavailable_image, on_unavailable_image_clientd)
-    @ccall Aeron.aeron_subscription_create(subscription::Ptr{Ptr{aeron_subscription_t}}, conductor::Ptr{aeron_client_conductor_t}, channel::Cstring, stream_id::Int32, registration_id::Int64, channel_status_indicator_id::Int32, channel_status_indicator_addr::Ptr{Int64}, on_available_image::aeron_on_available_image_t, on_available_image_clientd::Ptr{Cvoid}, on_unavailable_image::aeron_on_unavailable_image_t, on_unavailable_image_clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_subscription_create(subscription::Ptr{Ptr{aeron_subscription_t}}, conductor::Ptr{aeron_client_conductor_t}, channel::Cstring, stream_id::Int32, registration_id::Int64, channel_status_indicator_id::Int32, channel_status_indicator_addr::Ptr{Int64}, on_available_image::aeron_on_available_image_t, on_available_image_clientd::Ptr{Cvoid}, on_unavailable_image::aeron_on_unavailable_image_t, on_unavailable_image_clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -8677,7 +8677,7 @@ int aeron_subscription_delete(aeron_subscription_t *subscription);
 ```
 """
 function aeron_subscription_delete(subscription)
-    @ccall Aeron.aeron_subscription_delete(subscription::Ptr{aeron_subscription_t})::Cint
+    @ccall libaeron.aeron_subscription_delete(subscription::Ptr{aeron_subscription_t})::Cint
 end
 
 """
@@ -8689,7 +8689,7 @@ void aeron_subscription_force_close(aeron_subscription_t *subscription);
 ```
 """
 function aeron_subscription_force_close(subscription)
-    @ccall Aeron.aeron_subscription_force_close(subscription::Ptr{aeron_subscription_t})::Cvoid
+    @ccall libaeron.aeron_subscription_force_close(subscription::Ptr{aeron_subscription_t})::Cvoid
 end
 
 """
@@ -8701,7 +8701,7 @@ int aeron_subscription_alloc_image_list(volatile aeron_image_list_t **image_list
 ```
 """
 function aeron_subscription_alloc_image_list(image_list, length)
-    @ccall Aeron.aeron_subscription_alloc_image_list(image_list::Ptr{Ptr{aeron_image_list_t}}, length::Csize_t)::Cint
+    @ccall libaeron.aeron_subscription_alloc_image_list(image_list::Ptr{Ptr{aeron_image_list_t}}, length::Csize_t)::Cint
 end
 
 """
@@ -8713,7 +8713,7 @@ int aeron_client_conductor_subscription_add_image(aeron_subscription_t *subscrip
 ```
 """
 function aeron_client_conductor_subscription_add_image(subscription, image)
-    @ccall Aeron.aeron_client_conductor_subscription_add_image(subscription::Ptr{aeron_subscription_t}, image::Ptr{aeron_image_t})::Cint
+    @ccall libaeron.aeron_client_conductor_subscription_add_image(subscription::Ptr{aeron_subscription_t}, image::Ptr{aeron_image_t})::Cint
 end
 
 """
@@ -8725,7 +8725,7 @@ int aeron_client_conductor_subscription_remove_image(aeron_subscription_t *subsc
 ```
 """
 function aeron_client_conductor_subscription_remove_image(subscription, image)
-    @ccall Aeron.aeron_client_conductor_subscription_remove_image(subscription::Ptr{aeron_subscription_t}, image::Ptr{aeron_image_t})::Cint
+    @ccall libaeron.aeron_client_conductor_subscription_remove_image(subscription::Ptr{aeron_subscription_t}, image::Ptr{aeron_image_t})::Cint
 end
 
 """
@@ -8737,7 +8737,7 @@ inline volatile aeron_image_list_t *aeron_client_conductor_subscription_image_li
 ```
 """
 function aeron_client_conductor_subscription_image_list(subscription)
-    @ccall Aeron.aeron_client_conductor_subscription_image_list(subscription::Ptr{aeron_subscription_t})::Ptr{aeron_image_list_t}
+    @ccall libaeron.aeron_client_conductor_subscription_image_list(subscription::Ptr{aeron_subscription_t})::Ptr{aeron_image_list_t}
 end
 
 """
@@ -8749,7 +8749,7 @@ int aeron_client_conductor_subscription_install_new_image_list( aeron_subscripti
 ```
 """
 function aeron_client_conductor_subscription_install_new_image_list(subscription, image_list)
-    @ccall Aeron.aeron_client_conductor_subscription_install_new_image_list(subscription::Ptr{aeron_subscription_t}, image_list::Ptr{aeron_image_list_t})::Cint
+    @ccall libaeron.aeron_client_conductor_subscription_install_new_image_list(subscription::Ptr{aeron_subscription_t}, image_list::Ptr{aeron_image_list_t})::Cint
 end
 
 """
@@ -8761,7 +8761,7 @@ int aeron_client_conductor_subscription_prune_image_lists(aeron_subscription_t *
 ```
 """
 function aeron_client_conductor_subscription_prune_image_lists(subscription)
-    @ccall Aeron.aeron_client_conductor_subscription_prune_image_lists(subscription::Ptr{aeron_subscription_t})::Cint
+    @ccall libaeron.aeron_client_conductor_subscription_prune_image_lists(subscription::Ptr{aeron_subscription_t})::Cint
 end
 
 """
@@ -8773,7 +8773,7 @@ inline int aeron_subscription_find_image_index(volatile aeron_image_list_t *imag
 ```
 """
 function aeron_subscription_find_image_index(image_list, image)
-    @ccall Aeron.aeron_subscription_find_image_index(image_list::Ptr{aeron_image_list_t}, image::Ptr{aeron_image_t})::Cint
+    @ccall libaeron.aeron_subscription_find_image_index(image_list::Ptr{aeron_image_list_t}, image::Ptr{aeron_image_t})::Cint
 end
 
 """
@@ -8785,7 +8785,7 @@ inline int64_t aeron_subscription_last_image_list_change_number(aeron_subscripti
 ```
 """
 function aeron_subscription_last_image_list_change_number(subscription)
-    @ccall Aeron.aeron_subscription_last_image_list_change_number(subscription::Ptr{aeron_subscription_t})::Int64
+    @ccall libaeron.aeron_subscription_last_image_list_change_number(subscription::Ptr{aeron_subscription_t})::Int64
 end
 
 """
@@ -8797,7 +8797,7 @@ inline void aeron_subscription_propose_last_image_change_number( aeron_subscript
 ```
 """
 function aeron_subscription_propose_last_image_change_number(subscription, change_number)
-    @ccall Aeron.aeron_subscription_propose_last_image_change_number(subscription::Ptr{aeron_subscription_t}, change_number::Int64)::Cvoid
+    @ccall libaeron.aeron_subscription_propose_last_image_change_number(subscription::Ptr{aeron_subscription_t}, change_number::Int64)::Cvoid
 end
 
 """
@@ -8809,7 +8809,7 @@ void aeron_format_date(char *str, size_t count, int64_t timestamp);
 ```
 """
 function aeron_format_date(str, count, timestamp)
-    @ccall Aeron.aeron_format_date(str::Cstring, count::Csize_t, timestamp::Int64)::Cvoid
+    @ccall libaeron.aeron_format_date(str::Cstring, count::Csize_t, timestamp::Int64)::Cvoid
 end
 
 """
@@ -8821,7 +8821,7 @@ char *aeron_format_number_to_locale(long long value, char *buffer, size_t buffer
 ```
 """
 function aeron_format_number_to_locale(value, buffer, buffer_len)
-    @ccall Aeron.aeron_format_number_to_locale(value::Clonglong, buffer::Cstring, buffer_len::Csize_t)::Cstring
+    @ccall libaeron.aeron_format_number_to_locale(value::Clonglong, buffer::Cstring, buffer_len::Csize_t)::Cstring
 end
 
 """
@@ -8833,7 +8833,7 @@ void aeron_format_to_hex(char *str, size_t str_length, uint8_t *data, size_t dat
 ```
 """
 function aeron_format_to_hex(str, str_length, data, data_len)
-    @ccall Aeron.aeron_format_to_hex(str::Cstring, str_length::Csize_t, data::Ptr{UInt8}, data_len::Csize_t)::Cvoid
+    @ccall libaeron.aeron_format_to_hex(str::Cstring, str_length::Csize_t, data::Ptr{UInt8}, data_len::Csize_t)::Cvoid
 end
 
 """
@@ -8845,7 +8845,7 @@ inline uint64_t aeron_fnv_64a_buf(uint8_t *buf, size_t len);
 ```
 """
 function aeron_fnv_64a_buf(buf, len)
-    @ccall Aeron.aeron_fnv_64a_buf(buf::Ptr{UInt8}, len::Csize_t)::UInt64
+    @ccall libaeron.aeron_fnv_64a_buf(buf::Ptr{UInt8}, len::Csize_t)::UInt64
 end
 
 """
@@ -8857,7 +8857,7 @@ int aeron_tokenise(char *input, char delimiter, int max_tokens, char **tokens);
 ```
 """
 function aeron_tokenise(input, delimiter, max_tokens, tokens)
-    @ccall Aeron.aeron_tokenise(input::Cstring, delimiter::Cchar, max_tokens::Cint, tokens::Ptr{Cstring})::Cint
+    @ccall libaeron.aeron_tokenise(input::Cstring, delimiter::Cchar, max_tokens::Cint, tokens::Ptr{Cstring})::Cint
 end
 
 """
@@ -8877,7 +8877,7 @@ inline bool aeron_str_length(const char *str, size_t length_bound, size_t *lengt
 ```
 """
 function aeron_str_length(str, length_bound, length)
-    @ccall Aeron.aeron_str_length(str::Cstring, length_bound::Csize_t, length::Ptr{Csize_t})::Bool
+    @ccall libaeron.aeron_str_length(str::Cstring, length_bound::Csize_t, length::Ptr{Csize_t})::Bool
 end
 
 struct aeron_array_to_ptr_hash_map_key_stct
@@ -8909,7 +8909,7 @@ inline uint64_t aeron_array_hash(const uint8_t *arr, size_t length);
 ```
 """
 function aeron_array_hash(arr, length)
-    @ccall Aeron.aeron_array_hash(arr::Ptr{UInt8}, length::Csize_t)::UInt64
+    @ccall libaeron.aeron_array_hash(arr::Ptr{UInt8}, length::Csize_t)::UInt64
 end
 
 """
@@ -8921,7 +8921,7 @@ inline size_t aeron_array_to_ptr_hash_map_hash_key(uint64_t key_hash_code, size_
 ```
 """
 function aeron_array_to_ptr_hash_map_hash_key(key_hash_code, mask)
-    @ccall Aeron.aeron_array_to_ptr_hash_map_hash_key(key_hash_code::UInt64, mask::Csize_t)::Csize_t
+    @ccall libaeron.aeron_array_to_ptr_hash_map_hash_key(key_hash_code::UInt64, mask::Csize_t)::Csize_t
 end
 
 """
@@ -8933,7 +8933,7 @@ inline bool aeron_array_to_ptr_hash_map_compare( aeron_array_to_ptr_hash_map_key
 ```
 """
 function aeron_array_to_ptr_hash_map_compare(key, key_arr, key_arr_len, key_hash_code)
-    @ccall Aeron.aeron_array_to_ptr_hash_map_compare(key::Ptr{aeron_array_to_ptr_hash_map_key_t}, key_arr::Ptr{UInt8}, key_arr_len::Csize_t, key_hash_code::UInt64)::Bool
+    @ccall libaeron.aeron_array_to_ptr_hash_map_compare(key::Ptr{aeron_array_to_ptr_hash_map_key_t}, key_arr::Ptr{UInt8}, key_arr_len::Csize_t, key_hash_code::UInt64)::Bool
 end
 
 """
@@ -8945,7 +8945,7 @@ inline int aeron_array_to_ptr_hash_map_init( aeron_array_to_ptr_hash_map_t *map,
 ```
 """
 function aeron_array_to_ptr_hash_map_init(map, initial_capacity, load_factor)
-    @ccall Aeron.aeron_array_to_ptr_hash_map_init(map::Ptr{aeron_array_to_ptr_hash_map_t}, initial_capacity::Csize_t, load_factor::Cfloat)::Cint
+    @ccall libaeron.aeron_array_to_ptr_hash_map_init(map::Ptr{aeron_array_to_ptr_hash_map_t}, initial_capacity::Csize_t, load_factor::Cfloat)::Cint
 end
 
 """
@@ -8957,7 +8957,7 @@ inline void aeron_array_to_ptr_hash_map_delete(aeron_array_to_ptr_hash_map_t *ma
 ```
 """
 function aeron_array_to_ptr_hash_map_delete(map)
-    @ccall Aeron.aeron_array_to_ptr_hash_map_delete(map::Ptr{aeron_array_to_ptr_hash_map_t})::Cvoid
+    @ccall libaeron.aeron_array_to_ptr_hash_map_delete(map::Ptr{aeron_array_to_ptr_hash_map_t})::Cvoid
 end
 
 """
@@ -8969,7 +8969,7 @@ inline int aeron_array_to_ptr_hash_map_rehash(aeron_array_to_ptr_hash_map_t *map
 ```
 """
 function aeron_array_to_ptr_hash_map_rehash(map, new_capacity)
-    @ccall Aeron.aeron_array_to_ptr_hash_map_rehash(map::Ptr{aeron_array_to_ptr_hash_map_t}, new_capacity::Csize_t)::Cint
+    @ccall libaeron.aeron_array_to_ptr_hash_map_rehash(map::Ptr{aeron_array_to_ptr_hash_map_t}, new_capacity::Csize_t)::Cint
 end
 
 """
@@ -8981,7 +8981,7 @@ inline int aeron_array_to_ptr_hash_map_put( aeron_array_to_ptr_hash_map_t *map, 
 ```
 """
 function aeron_array_to_ptr_hash_map_put(map, key, key_len, value)
-    @ccall Aeron.aeron_array_to_ptr_hash_map_put(map::Ptr{aeron_array_to_ptr_hash_map_t}, key::Ptr{UInt8}, key_len::Csize_t, value::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_array_to_ptr_hash_map_put(map::Ptr{aeron_array_to_ptr_hash_map_t}, key::Ptr{UInt8}, key_len::Csize_t, value::Ptr{Cvoid})::Cint
 end
 
 """
@@ -8993,7 +8993,7 @@ inline void *aeron_array_to_ptr_hash_map_get(aeron_array_to_ptr_hash_map_t *map,
 ```
 """
 function aeron_array_to_ptr_hash_map_get(map, key, key_len)
-    @ccall Aeron.aeron_array_to_ptr_hash_map_get(map::Ptr{aeron_array_to_ptr_hash_map_t}, key::Ptr{UInt8}, key_len::Csize_t)::Ptr{Cvoid}
+    @ccall libaeron.aeron_array_to_ptr_hash_map_get(map::Ptr{aeron_array_to_ptr_hash_map_t}, key::Ptr{UInt8}, key_len::Csize_t)::Ptr{Cvoid}
 end
 
 """
@@ -9005,7 +9005,7 @@ inline void aeron_array_to_ptr_hash_map_compact_chain(aeron_array_to_ptr_hash_ma
 ```
 """
 function aeron_array_to_ptr_hash_map_compact_chain(map, delete_index)
-    @ccall Aeron.aeron_array_to_ptr_hash_map_compact_chain(map::Ptr{aeron_array_to_ptr_hash_map_t}, delete_index::Csize_t)::Cvoid
+    @ccall libaeron.aeron_array_to_ptr_hash_map_compact_chain(map::Ptr{aeron_array_to_ptr_hash_map_t}, delete_index::Csize_t)::Cvoid
 end
 
 """
@@ -9017,7 +9017,7 @@ inline void *aeron_array_to_ptr_hash_map_remove(aeron_array_to_ptr_hash_map_t *m
 ```
 """
 function aeron_array_to_ptr_hash_map_remove(map, key, key_len)
-    @ccall Aeron.aeron_array_to_ptr_hash_map_remove(map::Ptr{aeron_array_to_ptr_hash_map_t}, key::Ptr{UInt8}, key_len::Csize_t)::Ptr{Cvoid}
+    @ccall libaeron.aeron_array_to_ptr_hash_map_remove(map::Ptr{aeron_array_to_ptr_hash_map_t}, key::Ptr{UInt8}, key_len::Csize_t)::Ptr{Cvoid}
 end
 
 # typedef void ( * aeron_array_to_ptr_hash_map_for_each_func_t ) ( void * clientd , const uint8_t * key , size_t key_len , void * value )
@@ -9032,7 +9032,7 @@ inline void aeron_array_to_ptr_hash_map_for_each( aeron_array_to_ptr_hash_map_t 
 ```
 """
 function aeron_array_to_ptr_hash_map_for_each(map, func, clientd)
-    @ccall Aeron.aeron_array_to_ptr_hash_map_for_each(map::Ptr{aeron_array_to_ptr_hash_map_t}, func::aeron_array_to_ptr_hash_map_for_each_func_t, clientd::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_array_to_ptr_hash_map_for_each(map::Ptr{aeron_array_to_ptr_hash_map_t}, func::aeron_array_to_ptr_hash_map_for_each_func_t, clientd::Ptr{Cvoid})::Cvoid
 end
 
 @cenum aeron_term_unblocker_status_enum::UInt32 begin
@@ -9052,7 +9052,7 @@ aeron_term_unblocker_status_t aeron_term_unblocker_unblock( aeron_logbuffer_meta
 ```
 """
 function aeron_term_unblocker_unblock(log_meta_data, buffer, term_length, blocked_offset, tail_offset, term_id)
-    @ccall Aeron.aeron_term_unblocker_unblock(log_meta_data::Ptr{aeron_logbuffer_metadata_t}, buffer::Ptr{UInt8}, term_length::Csize_t, blocked_offset::Int32, tail_offset::Int32, term_id::Int32)::aeron_term_unblocker_status_t
+    @ccall libaeron.aeron_term_unblocker_unblock(log_meta_data::Ptr{aeron_logbuffer_metadata_t}, buffer::Ptr{UInt8}, term_length::Csize_t, blocked_offset::Int32, tail_offset::Int32, term_id::Int32)::aeron_term_unblocker_status_t
 end
 
 """
@@ -9064,7 +9064,7 @@ int aeron_env_set(const char *key, const char *val);
 ```
 """
 function aeron_env_set(key, val)
-    @ccall Aeron.aeron_env_set(key::Cstring, val::Cstring)::Cint
+    @ccall libaeron.aeron_env_set(key::Cstring, val::Cstring)::Cint
 end
 
 """
@@ -9076,30 +9076,30 @@ int aeron_env_unset(const char *key);
 ```
 """
 function aeron_env_unset(key)
-    @ccall Aeron.aeron_env_unset(key::Cstring)::Cint
+    @ccall libaeron.aeron_env_unset(key::Cstring)::Cint
 end
 
-mutable struct var"##Ctag#5001"
+mutable struct var"##Ctag#2339"
     tail::UInt64
     head_cache::UInt64
     padding::NTuple{48, Int8}
-    var"##Ctag#5001"() = new()
+    var"##Ctag#2339"() = new()
 end
-function Base.getproperty(x::Ptr{var"##Ctag#5001"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#2339"}, f::Symbol)
     f === :tail && return Ptr{UInt64}(x + 0)
     f === :head_cache && return Ptr{UInt64}(x + 8)
     f === :padding && return Ptr{NTuple{48, Int8}}(x + 16)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#5001", f::Symbol)
-    r = Ref{var"##Ctag#5001"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#5001"}, r)
+function Base.getproperty(x::var"##Ctag#2339", f::Symbol)
+    r = Ref{var"##Ctag#2339"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#2339"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#5001"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#2339"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
@@ -9110,8 +9110,8 @@ end
 
 function Base.getproperty(x::Ptr{aeron_spsc_concurrent_array_queue_stct}, f::Symbol)
     f === :padding && return Ptr{NTuple{56, Int8}}(x + 0)
-    f === :producer && return Ptr{var"##Ctag#5001"}(x + 56)
-    f === :consumer && return Ptr{var"##Ctag#5002"}(x + 120)
+    f === :producer && return Ptr{var"##Ctag#2339"}(x + 56)
+    f === :consumer && return Ptr{var"##Ctag#2340"}(x + 120)
     f === :capacity && return Ptr{Csize_t}(x + 184)
     f === :mask && return Ptr{Csize_t}(x + 192)
     f === :buffer && return Ptr{Ptr{Ptr{Cvoid}}}(x + 200)
@@ -9140,7 +9140,7 @@ int aeron_spsc_concurrent_array_queue_init(aeron_spsc_concurrent_array_queue_t *
 ```
 """
 function aeron_spsc_concurrent_array_queue_init(queue, length)
-    @ccall Aeron.aeron_spsc_concurrent_array_queue_init(queue::Ptr{aeron_spsc_concurrent_array_queue_t}, length::Csize_t)::Cint
+    @ccall libaeron.aeron_spsc_concurrent_array_queue_init(queue::Ptr{aeron_spsc_concurrent_array_queue_t}, length::Csize_t)::Cint
 end
 
 """
@@ -9152,7 +9152,7 @@ int aeron_spsc_concurrent_array_queue_close(aeron_spsc_concurrent_array_queue_t 
 ```
 """
 function aeron_spsc_concurrent_array_queue_close(queue)
-    @ccall Aeron.aeron_spsc_concurrent_array_queue_close(queue::Ptr{aeron_spsc_concurrent_array_queue_t})::Cint
+    @ccall libaeron.aeron_spsc_concurrent_array_queue_close(queue::Ptr{aeron_spsc_concurrent_array_queue_t})::Cint
 end
 
 """
@@ -9164,7 +9164,7 @@ inline aeron_queue_offer_result_t aeron_spsc_concurrent_array_queue_offer( aeron
 ```
 """
 function aeron_spsc_concurrent_array_queue_offer(queue, element)
-    @ccall Aeron.aeron_spsc_concurrent_array_queue_offer(queue::Ptr{aeron_spsc_concurrent_array_queue_t}, element::Ptr{Cvoid})::aeron_queue_offer_result_t
+    @ccall libaeron.aeron_spsc_concurrent_array_queue_offer(queue::Ptr{aeron_spsc_concurrent_array_queue_t}, element::Ptr{Cvoid})::aeron_queue_offer_result_t
 end
 
 """
@@ -9176,7 +9176,7 @@ inline void *aeron_spsc_concurrent_array_queue_poll(aeron_spsc_concurrent_array_
 ```
 """
 function aeron_spsc_concurrent_array_queue_poll(queue)
-    @ccall Aeron.aeron_spsc_concurrent_array_queue_poll(queue::Ptr{aeron_spsc_concurrent_array_queue_t})::Ptr{Cvoid}
+    @ccall libaeron.aeron_spsc_concurrent_array_queue_poll(queue::Ptr{aeron_spsc_concurrent_array_queue_t})::Ptr{Cvoid}
 end
 
 """
@@ -9188,7 +9188,7 @@ inline size_t aeron_spsc_concurrent_array_queue_drain( aeron_spsc_concurrent_arr
 ```
 """
 function aeron_spsc_concurrent_array_queue_drain(queue, func, clientd, limit)
-    @ccall Aeron.aeron_spsc_concurrent_array_queue_drain(queue::Ptr{aeron_spsc_concurrent_array_queue_t}, func::aeron_queue_drain_func_t, clientd::Ptr{Cvoid}, limit::Csize_t)::Csize_t
+    @ccall libaeron.aeron_spsc_concurrent_array_queue_drain(queue::Ptr{aeron_spsc_concurrent_array_queue_t}, func::aeron_queue_drain_func_t, clientd::Ptr{Cvoid}, limit::Csize_t)::Csize_t
 end
 
 """
@@ -9200,7 +9200,7 @@ inline size_t aeron_spsc_concurrent_array_queue_drain_all( aeron_spsc_concurrent
 ```
 """
 function aeron_spsc_concurrent_array_queue_drain_all(queue, func, clientd)
-    @ccall Aeron.aeron_spsc_concurrent_array_queue_drain_all(queue::Ptr{aeron_spsc_concurrent_array_queue_t}, func::aeron_queue_drain_func_t, clientd::Ptr{Cvoid})::Csize_t
+    @ccall libaeron.aeron_spsc_concurrent_array_queue_drain_all(queue::Ptr{aeron_spsc_concurrent_array_queue_t}, func::aeron_queue_drain_func_t, clientd::Ptr{Cvoid})::Csize_t
 end
 
 """
@@ -9212,7 +9212,7 @@ inline size_t aeron_spsc_concurrent_array_queue_size(aeron_spsc_concurrent_array
 ```
 """
 function aeron_spsc_concurrent_array_queue_size(queue)
-    @ccall Aeron.aeron_spsc_concurrent_array_queue_size(queue::Ptr{aeron_spsc_concurrent_array_queue_t})::Csize_t
+    @ccall libaeron.aeron_spsc_concurrent_array_queue_size(queue::Ptr{aeron_spsc_concurrent_array_queue_t})::Csize_t
 end
 
 mutable struct aeron_broadcast_transmitter_stct
@@ -9234,7 +9234,7 @@ int aeron_broadcast_transmitter_init(aeron_broadcast_transmitter_t *transmitter,
 ```
 """
 function aeron_broadcast_transmitter_init(transmitter, buffer, length)
-    @ccall Aeron.aeron_broadcast_transmitter_init(transmitter::Ptr{aeron_broadcast_transmitter_t}, buffer::Ptr{Cvoid}, length::Csize_t)::Cint
+    @ccall libaeron.aeron_broadcast_transmitter_init(transmitter::Ptr{aeron_broadcast_transmitter_t}, buffer::Ptr{Cvoid}, length::Csize_t)::Cint
 end
 
 """
@@ -9246,7 +9246,7 @@ int aeron_broadcast_transmitter_transmit( aeron_broadcast_transmitter_t *transmi
 ```
 """
 function aeron_broadcast_transmitter_transmit(transmitter, msg_type_id, msg, length)
-    @ccall Aeron.aeron_broadcast_transmitter_transmit(transmitter::Ptr{aeron_broadcast_transmitter_t}, msg_type_id::Int32, msg::Ptr{Cvoid}, length::Csize_t)::Cint
+    @ccall libaeron.aeron_broadcast_transmitter_transmit(transmitter::Ptr{aeron_broadcast_transmitter_t}, msg_type_id::Int32, msg::Ptr{Cvoid}, length::Csize_t)::Cint
 end
 
 """
@@ -9258,7 +9258,7 @@ int aeron_exclusive_publication_create( aeron_exclusive_publication_t **publicat
 ```
 """
 function aeron_exclusive_publication_create(publication, conductor, channel, stream_id, session_id, position_limit_counter_id, position_limit_addr, channel_status_indicator_id, channel_status_addr, log_buffer, original_registration_id, registration_id)
-    @ccall Aeron.aeron_exclusive_publication_create(publication::Ptr{Ptr{aeron_exclusive_publication_t}}, conductor::Ptr{aeron_client_conductor_t}, channel::Cstring, stream_id::Int32, session_id::Int32, position_limit_counter_id::Int32, position_limit_addr::Ptr{Int64}, channel_status_indicator_id::Int32, channel_status_addr::Ptr{Int64}, log_buffer::Ptr{aeron_log_buffer_t}, original_registration_id::Int64, registration_id::Int64)::Cint
+    @ccall libaeron.aeron_exclusive_publication_create(publication::Ptr{Ptr{aeron_exclusive_publication_t}}, conductor::Ptr{aeron_client_conductor_t}, channel::Cstring, stream_id::Int32, session_id::Int32, position_limit_counter_id::Int32, position_limit_addr::Ptr{Int64}, channel_status_indicator_id::Int32, channel_status_addr::Ptr{Int64}, log_buffer::Ptr{aeron_log_buffer_t}, original_registration_id::Int64, registration_id::Int64)::Cint
 end
 
 """
@@ -9270,7 +9270,7 @@ int aeron_exclusive_publication_delete(aeron_exclusive_publication_t *publicatio
 ```
 """
 function aeron_exclusive_publication_delete(publication)
-    @ccall Aeron.aeron_exclusive_publication_delete(publication::Ptr{aeron_exclusive_publication_t})::Cint
+    @ccall libaeron.aeron_exclusive_publication_delete(publication::Ptr{aeron_exclusive_publication_t})::Cint
 end
 
 """
@@ -9282,7 +9282,7 @@ void aeron_exclusive_publication_force_close(aeron_exclusive_publication_t *publ
 ```
 """
 function aeron_exclusive_publication_force_close(publication)
-    @ccall Aeron.aeron_exclusive_publication_force_close(publication::Ptr{aeron_exclusive_publication_t})::Cvoid
+    @ccall libaeron.aeron_exclusive_publication_force_close(publication::Ptr{aeron_exclusive_publication_t})::Cvoid
 end
 
 """
@@ -9294,7 +9294,7 @@ inline void aeron_exclusive_publication_rotate_term(aeron_exclusive_publication_
 ```
 """
 function aeron_exclusive_publication_rotate_term(publication)
-    @ccall Aeron.aeron_exclusive_publication_rotate_term(publication::Ptr{aeron_exclusive_publication_t})::Cvoid
+    @ccall libaeron.aeron_exclusive_publication_rotate_term(publication::Ptr{aeron_exclusive_publication_t})::Cvoid
 end
 
 """
@@ -9306,7 +9306,7 @@ inline int64_t aeron_exclusive_publication_new_position( aeron_exclusive_publica
 ```
 """
 function aeron_exclusive_publication_new_position(publication, resulting_offset)
-    @ccall Aeron.aeron_exclusive_publication_new_position(publication::Ptr{aeron_exclusive_publication_t}, resulting_offset::Int32)::Int64
+    @ccall libaeron.aeron_exclusive_publication_new_position(publication::Ptr{aeron_exclusive_publication_t}, resulting_offset::Int32)::Int64
 end
 
 """
@@ -9318,7 +9318,7 @@ inline int64_t aeron_exclusive_publication_back_pressure_status( aeron_exclusive
 ```
 """
 function aeron_exclusive_publication_back_pressure_status(publication, current_position, message_length)
-    @ccall Aeron.aeron_exclusive_publication_back_pressure_status(publication::Ptr{aeron_exclusive_publication_t}, current_position::Int64, message_length::Int32)::Int64
+    @ccall libaeron.aeron_exclusive_publication_back_pressure_status(publication::Ptr{aeron_exclusive_publication_t}, current_position::Int64, message_length::Int32)::Int64
 end
 
 const aeron_socket_t = Cint
@@ -9332,7 +9332,7 @@ int aeron_set_socket_non_blocking(aeron_socket_t fd);
 ```
 """
 function aeron_set_socket_non_blocking(fd)
-    @ccall Aeron.aeron_set_socket_non_blocking(fd::aeron_socket_t)::Cint
+    @ccall libaeron.aeron_set_socket_non_blocking(fd::aeron_socket_t)::Cint
 end
 
 """
@@ -9344,7 +9344,7 @@ aeron_socket_t aeron_socket(int domain, int type, int protocol);
 ```
 """
 function aeron_socket(domain, type, protocol)
-    @ccall Aeron.aeron_socket(domain::Cint, type::Cint, protocol::Cint)::aeron_socket_t
+    @ccall libaeron.aeron_socket(domain::Cint, type::Cint, protocol::Cint)::aeron_socket_t
 end
 
 """
@@ -9356,7 +9356,7 @@ void aeron_close_socket(aeron_socket_t socket);
 ```
 """
 function aeron_close_socket(socket)
-    @ccall Aeron.aeron_close_socket(socket::aeron_socket_t)::Cvoid
+    @ccall libaeron.aeron_close_socket(socket::aeron_socket_t)::Cvoid
 end
 
 """
@@ -9368,7 +9368,7 @@ int aeron_connect(aeron_socket_t fd, struct sockaddr *address, socklen_t address
 ```
 """
 function aeron_connect(fd, address, address_length)
-    @ccall Aeron.aeron_connect(fd::aeron_socket_t, address::Ptr{sockaddr}, address_length::socklen_t)::Cint
+    @ccall libaeron.aeron_connect(fd::aeron_socket_t, address::Ptr{sockaddr}, address_length::socklen_t)::Cint
 end
 
 """
@@ -9380,7 +9380,7 @@ int aeron_bind(aeron_socket_t fd, struct sockaddr *address, socklen_t address_le
 ```
 """
 function aeron_bind(fd, address, address_length)
-    @ccall Aeron.aeron_bind(fd::aeron_socket_t, address::Ptr{sockaddr}, address_length::socklen_t)::Cint
+    @ccall libaeron.aeron_bind(fd::aeron_socket_t, address::Ptr{sockaddr}, address_length::socklen_t)::Cint
 end
 
 """
@@ -9392,7 +9392,7 @@ int aeron_net_init(void);
 ```
 """
 function aeron_net_init()
-    @ccall Aeron.aeron_net_init()::Cint
+    @ccall libaeron.aeron_net_init()::Cint
 end
 
 """
@@ -9404,7 +9404,7 @@ int aeron_getsockopt(aeron_socket_t fd, int level, int optname, void *optval, so
 ```
 """
 function aeron_getsockopt(fd, level, optname, optval, optlen)
-    @ccall Aeron.aeron_getsockopt(fd::aeron_socket_t, level::Cint, optname::Cint, optval::Ptr{Cvoid}, optlen::Ptr{socklen_t})::Cint
+    @ccall libaeron.aeron_getsockopt(fd::aeron_socket_t, level::Cint, optname::Cint, optval::Ptr{Cvoid}, optlen::Ptr{socklen_t})::Cint
 end
 
 """
@@ -9416,7 +9416,7 @@ int aeron_setsockopt(aeron_socket_t fd, int level, int optname, const void *optv
 ```
 """
 function aeron_setsockopt(fd, level, optname, optval, optlen)
-    @ccall Aeron.aeron_setsockopt(fd::aeron_socket_t, level::Cint, optname::Cint, optval::Ptr{Cvoid}, optlen::socklen_t)::Cint
+    @ccall libaeron.aeron_setsockopt(fd::aeron_socket_t, level::Cint, optname::Cint, optval::Ptr{Cvoid}, optlen::socklen_t)::Cint
 end
 
 """
@@ -9428,7 +9428,7 @@ int aeron_getifaddrs(struct ifaddrs **ifap);
 ```
 """
 function aeron_getifaddrs(ifap)
-    @ccall Aeron.aeron_getifaddrs(ifap::Ptr{Ptr{ifaddrs}})::Cint
+    @ccall libaeron.aeron_getifaddrs(ifap::Ptr{Ptr{ifaddrs}})::Cint
 end
 
 """
@@ -9440,7 +9440,7 @@ void aeron_freeifaddrs(struct ifaddrs *ifa);
 ```
 """
 function aeron_freeifaddrs(ifa)
-    @ccall Aeron.aeron_freeifaddrs(ifa::Ptr{ifaddrs})::Cvoid
+    @ccall libaeron.aeron_freeifaddrs(ifa::Ptr{ifaddrs})::Cvoid
 end
 
 """
@@ -9452,7 +9452,7 @@ ssize_t aeron_sendmsg(aeron_socket_t fd, struct msghdr *msghdr, int flags);
 ```
 """
 function aeron_sendmsg(fd, msghdr, flags)
-    @ccall Aeron.aeron_sendmsg(fd::aeron_socket_t, msghdr::Ptr{Cvoid}, flags::Cint)::Cssize_t
+    @ccall libaeron.aeron_sendmsg(fd::aeron_socket_t, msghdr::Ptr{Cvoid}, flags::Cint)::Cssize_t
 end
 
 """
@@ -9464,7 +9464,7 @@ ssize_t aeron_send(aeron_socket_t fd, const void *buf, size_t len, int flags);
 ```
 """
 function aeron_send(fd, buf, len, flags)
-    @ccall Aeron.aeron_send(fd::aeron_socket_t, buf::Ptr{Cvoid}, len::Csize_t, flags::Cint)::Cssize_t
+    @ccall libaeron.aeron_send(fd::aeron_socket_t, buf::Ptr{Cvoid}, len::Csize_t, flags::Cint)::Cssize_t
 end
 
 """
@@ -9476,7 +9476,7 @@ ssize_t aeron_recvmsg(aeron_socket_t fd, struct msghdr *msghdr, int flags);
 ```
 """
 function aeron_recvmsg(fd, msghdr, flags)
-    @ccall Aeron.aeron_recvmsg(fd::aeron_socket_t, msghdr::Ptr{Cvoid}, flags::Cint)::Cssize_t
+    @ccall libaeron.aeron_recvmsg(fd::aeron_socket_t, msghdr::Ptr{Cvoid}, flags::Cint)::Cssize_t
 end
 
 """
@@ -9488,7 +9488,7 @@ int aeron_poll(struct pollfd *fds, unsigned long nfds, int timeout);
 ```
 """
 function aeron_poll(fds, nfds, timeout)
-    @ccall Aeron.aeron_poll(fds::Ptr{Cvoid}, nfds::Culong, timeout::Cint)::Cint
+    @ccall libaeron.aeron_poll(fds::Ptr{Cvoid}, nfds::Culong, timeout::Cint)::Cint
 end
 
 mutable struct aeron_parsed_address_stct
@@ -9519,7 +9519,7 @@ int aeron_parse_size64(const char *str, uint64_t *result);
 ```
 """
 function aeron_parse_size64(str, result)
-    @ccall Aeron.aeron_parse_size64(str::Cstring, result::Ptr{UInt64})::Cint
+    @ccall libaeron.aeron_parse_size64(str::Cstring, result::Ptr{UInt64})::Cint
 end
 
 """
@@ -9531,7 +9531,7 @@ int aeron_parse_duration_ns(const char *str, uint64_t *result);
 ```
 """
 function aeron_parse_duration_ns(str, result)
-    @ccall Aeron.aeron_parse_duration_ns(str::Cstring, result::Ptr{UInt64})::Cint
+    @ccall libaeron.aeron_parse_duration_ns(str::Cstring, result::Ptr{UInt64})::Cint
 end
 
 """
@@ -9543,7 +9543,7 @@ bool aeron_parse_bool(const char *str, bool def);
 ```
 """
 function aeron_parse_bool(str, def)
-    @ccall Aeron.aeron_parse_bool(str::Cstring, def::Bool)::Bool
+    @ccall libaeron.aeron_parse_bool(str::Cstring, def::Bool)::Bool
 end
 
 """
@@ -9555,7 +9555,7 @@ int aeron_address_split(const char *address_str, aeron_parsed_address_t *parsed_
 ```
 """
 function aeron_address_split(address_str, parsed_address)
-    @ccall Aeron.aeron_address_split(address_str::Cstring, parsed_address::Ptr{aeron_parsed_address_t})::Cint
+    @ccall libaeron.aeron_address_split(address_str::Cstring, parsed_address::Ptr{aeron_parsed_address_t})::Cint
 end
 
 """
@@ -9567,7 +9567,7 @@ int aeron_interface_split(const char *interface_str, aeron_parsed_interface_t *p
 ```
 """
 function aeron_interface_split(interface_str, parsed_interface)
-    @ccall Aeron.aeron_interface_split(interface_str::Cstring, parsed_interface::Ptr{aeron_parsed_interface_t})::Cint
+    @ccall libaeron.aeron_interface_split(interface_str::Cstring, parsed_interface::Ptr{aeron_parsed_interface_t})::Cint
 end
 
 """
@@ -9579,7 +9579,7 @@ int aeron_parse_get_line(char *line, size_t max_length, const char *buffer);
 ```
 """
 function aeron_parse_get_line(line, max_length, buffer)
-    @ccall Aeron.aeron_parse_get_line(line::Cstring, max_length::Csize_t, buffer::Cstring)::Cint
+    @ccall libaeron.aeron_parse_get_line(line::Cstring, max_length::Csize_t, buffer::Cstring)::Cint
 end
 
 mutable struct aeron_http_parsed_url_stct
@@ -9602,7 +9602,7 @@ int aeron_http_parse_url(const char *url, aeron_http_parsed_url_t *parsed_url);
 ```
 """
 function aeron_http_parse_url(url, parsed_url)
-    @ccall Aeron.aeron_http_parse_url(url::Cstring, parsed_url::Ptr{aeron_http_parsed_url_t})::Cint
+    @ccall libaeron.aeron_http_parse_url(url::Cstring, parsed_url::Ptr{aeron_http_parsed_url_t})::Cint
 end
 
 mutable struct aeron_http_response_stct
@@ -9630,7 +9630,7 @@ inline void aeron_http_response_delete(aeron_http_response_t *response);
 ```
 """
 function aeron_http_response_delete(response)
-    @ccall Aeron.aeron_http_response_delete(response::Ptr{aeron_http_response_t})::Cvoid
+    @ccall libaeron.aeron_http_response_delete(response::Ptr{aeron_http_response_t})::Cvoid
 end
 
 """
@@ -9642,7 +9642,7 @@ int aeron_http_retrieve(aeron_http_response_t **response, const char *url, int64
 ```
 """
 function aeron_http_retrieve(response, url, timeout_ns)
-    @ccall Aeron.aeron_http_retrieve(response::Ptr{Ptr{aeron_http_response_t}}, url::Cstring, timeout_ns::Int64)::Cint
+    @ccall libaeron.aeron_http_retrieve(response::Ptr{Ptr{aeron_http_response_t}}, url::Cstring, timeout_ns::Int64)::Cint
 end
 
 """
@@ -9654,7 +9654,7 @@ int aeron_http_header_get(aeron_http_response_t *response, const char *header_na
 ```
 """
 function aeron_http_header_get(response, header_name, line, max_length)
-    @ccall Aeron.aeron_http_header_get(response::Ptr{aeron_http_response_t}, header_name::Cstring, line::Cstring, max_length::Csize_t)::Cint
+    @ccall libaeron.aeron_http_header_get(response::Ptr{aeron_http_response_t}, header_name::Cstring, line::Cstring, max_length::Csize_t)::Cint
 end
 
 """
@@ -9666,7 +9666,7 @@ inline int aeron_array_ensure_capacity(uint8_t **array, size_t element_size, siz
 ```
 """
 function aeron_array_ensure_capacity(array, element_size, old_capacity, new_capacity)
-    @ccall Aeron.aeron_array_ensure_capacity(array::Ptr{Ptr{UInt8}}, element_size::Csize_t, old_capacity::Csize_t, new_capacity::Csize_t)::Cint
+    @ccall libaeron.aeron_array_ensure_capacity(array::Ptr{Ptr{UInt8}}, element_size::Csize_t, old_capacity::Csize_t, new_capacity::Csize_t)::Cint
 end
 
 """
@@ -9678,7 +9678,7 @@ inline void aeron_array_fast_unordered_remove( uint8_t *restrict array, size_t e
 ```
 """
 function aeron_array_fast_unordered_remove(array, element_size, index, last_index)
-    @ccall Aeron.aeron_array_fast_unordered_remove(array::Ptr{UInt8}, element_size::Csize_t, index::Csize_t, last_index::Csize_t)::Cvoid
+    @ccall libaeron.aeron_array_fast_unordered_remove(array::Ptr{UInt8}, element_size::Csize_t, index::Csize_t, last_index::Csize_t)::Cvoid
 end
 
 """
@@ -9690,7 +9690,7 @@ inline int aeron_array_add(uint8_t **array, size_t element_size, size_t new_leng
 ```
 """
 function aeron_array_add(array, element_size, new_length, element_to_add)
-    @ccall Aeron.aeron_array_add(array::Ptr{Ptr{UInt8}}, element_size::Csize_t, new_length::Csize_t, element_to_add::Ptr{UInt8})::Cint
+    @ccall libaeron.aeron_array_add(array::Ptr{Ptr{UInt8}}, element_size::Csize_t, new_length::Csize_t, element_to_add::Ptr{UInt8})::Cint
 end
 
 """
@@ -9702,7 +9702,7 @@ inline int aeron_array_remove(uint8_t **array, size_t element_size, size_t index
 ```
 """
 function aeron_array_remove(array, element_size, index, old_length)
-    @ccall Aeron.aeron_array_remove(array::Ptr{Ptr{UInt8}}, element_size::Csize_t, index::Csize_t, old_length::Csize_t)::Cint
+    @ccall libaeron.aeron_array_remove(array::Ptr{Ptr{UInt8}}, element_size::Csize_t, index::Csize_t, old_length::Csize_t)::Cint
 end
 
 """
@@ -9714,7 +9714,7 @@ int aeron_log_buffer_create( aeron_log_buffer_t **log_buffer, const char *log_fi
 ```
 """
 function aeron_log_buffer_create(log_buffer, log_file, correlation_id, pre_touch)
-    @ccall Aeron.aeron_log_buffer_create(log_buffer::Ptr{Ptr{aeron_log_buffer_t}}, log_file::Cstring, correlation_id::Int64, pre_touch::Bool)::Cint
+    @ccall libaeron.aeron_log_buffer_create(log_buffer::Ptr{Ptr{aeron_log_buffer_t}}, log_file::Cstring, correlation_id::Int64, pre_touch::Bool)::Cint
 end
 
 """
@@ -9726,7 +9726,7 @@ int aeron_log_buffer_delete(aeron_log_buffer_t *log_buffer);
 ```
 """
 function aeron_log_buffer_delete(log_buffer)
-    @ccall Aeron.aeron_log_buffer_delete(log_buffer::Ptr{aeron_log_buffer_t})::Cint
+    @ccall libaeron.aeron_log_buffer_delete(log_buffer::Ptr{aeron_log_buffer_t})::Cint
 end
 
 """
@@ -9738,7 +9738,7 @@ inline size_t aeron_term_scanner_scan_for_availability( const uint8_t *buffer, s
 ```
 """
 function aeron_term_scanner_scan_for_availability(buffer, term_length_left, max_length, padding)
-    @ccall Aeron.aeron_term_scanner_scan_for_availability(buffer::Ptr{UInt8}, term_length_left::Csize_t, max_length::Csize_t, padding::Ptr{Csize_t})::Csize_t
+    @ccall libaeron.aeron_term_scanner_scan_for_availability(buffer::Ptr{UInt8}, term_length_left::Csize_t, max_length::Csize_t, padding::Ptr{Csize_t})::Csize_t
 end
 
 """
@@ -9750,7 +9750,7 @@ int aeron_buffer_builder_create(aeron_buffer_builder_t **buffer_builder);
 ```
 """
 function aeron_buffer_builder_create(buffer_builder)
-    @ccall Aeron.aeron_buffer_builder_create(buffer_builder::Ptr{Ptr{aeron_buffer_builder_t}})::Cint
+    @ccall libaeron.aeron_buffer_builder_create(buffer_builder::Ptr{Ptr{aeron_buffer_builder_t}})::Cint
 end
 
 """
@@ -9762,7 +9762,7 @@ int aeron_buffer_builder_find_suitable_capacity(size_t current_capacity, size_t 
 ```
 """
 function aeron_buffer_builder_find_suitable_capacity(current_capacity, required_capacity)
-    @ccall Aeron.aeron_buffer_builder_find_suitable_capacity(current_capacity::Csize_t, required_capacity::Csize_t)::Cint
+    @ccall libaeron.aeron_buffer_builder_find_suitable_capacity(current_capacity::Csize_t, required_capacity::Csize_t)::Cint
 end
 
 """
@@ -9774,7 +9774,7 @@ int aeron_buffer_builder_ensure_capacity(aeron_buffer_builder_t *buffer_builder,
 ```
 """
 function aeron_buffer_builder_ensure_capacity(buffer_builder, additional_capacity)
-    @ccall Aeron.aeron_buffer_builder_ensure_capacity(buffer_builder::Ptr{aeron_buffer_builder_t}, additional_capacity::Csize_t)::Cint
+    @ccall libaeron.aeron_buffer_builder_ensure_capacity(buffer_builder::Ptr{aeron_buffer_builder_t}, additional_capacity::Csize_t)::Cint
 end
 
 """
@@ -9786,7 +9786,7 @@ void aeron_buffer_builder_delete(aeron_buffer_builder_t *buffer_builder);
 ```
 """
 function aeron_buffer_builder_delete(buffer_builder)
-    @ccall Aeron.aeron_buffer_builder_delete(buffer_builder::Ptr{aeron_buffer_builder_t})::Cvoid
+    @ccall libaeron.aeron_buffer_builder_delete(buffer_builder::Ptr{aeron_buffer_builder_t})::Cvoid
 end
 
 """
@@ -9798,7 +9798,7 @@ inline void aeron_buffer_builder_reset(aeron_buffer_builder_t *buffer_builder);
 ```
 """
 function aeron_buffer_builder_reset(buffer_builder)
-    @ccall Aeron.aeron_buffer_builder_reset(buffer_builder::Ptr{aeron_buffer_builder_t})::Cvoid
+    @ccall libaeron.aeron_buffer_builder_reset(buffer_builder::Ptr{aeron_buffer_builder_t})::Cvoid
 end
 
 """
@@ -9810,7 +9810,7 @@ inline int aeron_buffer_builder_append( aeron_buffer_builder_t *buffer_builder, 
 ```
 """
 function aeron_buffer_builder_append(buffer_builder, buffer, length)
-    @ccall Aeron.aeron_buffer_builder_append(buffer_builder::Ptr{aeron_buffer_builder_t}, buffer::Ptr{UInt8}, length::Csize_t)::Cint
+    @ccall libaeron.aeron_buffer_builder_append(buffer_builder::Ptr{aeron_buffer_builder_t}, buffer::Ptr{UInt8}, length::Csize_t)::Cint
 end
 
 struct aeron_data_header_as_longs_stct
@@ -9844,7 +9844,7 @@ inline void aeron_term_rebuilder_insert(uint8_t *dest, const uint8_t *src, size_
 ```
 """
 function aeron_term_rebuilder_insert(dest, src, length)
-    @ccall Aeron.aeron_term_rebuilder_insert(dest::Ptr{UInt8}, src::Ptr{UInt8}, length::Csize_t)::Cvoid
+    @ccall libaeron.aeron_term_rebuilder_insert(dest::Ptr{UInt8}, src::Ptr{UInt8}, length::Csize_t)::Cvoid
 end
 
 mutable struct aeron_spsc_rb_stct
@@ -9866,7 +9866,7 @@ int aeron_spsc_rb_init(aeron_spsc_rb_t *ring_buffer, void *buffer, size_t length
 ```
 """
 function aeron_spsc_rb_init(ring_buffer, buffer, length)
-    @ccall Aeron.aeron_spsc_rb_init(ring_buffer::Ptr{aeron_spsc_rb_t}, buffer::Ptr{Cvoid}, length::Csize_t)::Cint
+    @ccall libaeron.aeron_spsc_rb_init(ring_buffer::Ptr{aeron_spsc_rb_t}, buffer::Ptr{Cvoid}, length::Csize_t)::Cint
 end
 
 """
@@ -9878,7 +9878,7 @@ aeron_rb_write_result_t aeron_spsc_rb_write( aeron_spsc_rb_t *ring_buffer, int32
 ```
 """
 function aeron_spsc_rb_write(ring_buffer, msg_type_id, msg, length)
-    @ccall Aeron.aeron_spsc_rb_write(ring_buffer::Ptr{aeron_spsc_rb_t}, msg_type_id::Int32, msg::Ptr{Cvoid}, length::Csize_t)::aeron_rb_write_result_t
+    @ccall libaeron.aeron_spsc_rb_write(ring_buffer::Ptr{aeron_spsc_rb_t}, msg_type_id::Int32, msg::Ptr{Cvoid}, length::Csize_t)::aeron_rb_write_result_t
 end
 
 """
@@ -9890,7 +9890,7 @@ aeron_rb_write_result_t aeron_spsc_rb_writev( aeron_spsc_rb_t *ring_buffer, int3
 ```
 """
 function aeron_spsc_rb_writev(ring_buffer, msg_type_id, iov, iovcnt)
-    @ccall Aeron.aeron_spsc_rb_writev(ring_buffer::Ptr{aeron_spsc_rb_t}, msg_type_id::Int32, iov::Ptr{Cvoid}, iovcnt::Cint)::aeron_rb_write_result_t
+    @ccall libaeron.aeron_spsc_rb_writev(ring_buffer::Ptr{aeron_spsc_rb_t}, msg_type_id::Int32, iov::Ptr{Cvoid}, iovcnt::Cint)::aeron_rb_write_result_t
 end
 
 """
@@ -9902,7 +9902,7 @@ int32_t aeron_spsc_rb_try_claim(aeron_spsc_rb_t *ring_buffer, int32_t msg_type_i
 ```
 """
 function aeron_spsc_rb_try_claim(ring_buffer, msg_type_id, length)
-    @ccall Aeron.aeron_spsc_rb_try_claim(ring_buffer::Ptr{aeron_spsc_rb_t}, msg_type_id::Int32, length::Csize_t)::Int32
+    @ccall libaeron.aeron_spsc_rb_try_claim(ring_buffer::Ptr{aeron_spsc_rb_t}, msg_type_id::Int32, length::Csize_t)::Int32
 end
 
 """
@@ -9914,7 +9914,7 @@ int aeron_spsc_rb_commit(aeron_spsc_rb_t *ring_buffer, int32_t offset);
 ```
 """
 function aeron_spsc_rb_commit(ring_buffer, offset)
-    @ccall Aeron.aeron_spsc_rb_commit(ring_buffer::Ptr{aeron_spsc_rb_t}, offset::Int32)::Cint
+    @ccall libaeron.aeron_spsc_rb_commit(ring_buffer::Ptr{aeron_spsc_rb_t}, offset::Int32)::Cint
 end
 
 """
@@ -9926,7 +9926,7 @@ int aeron_spsc_rb_abort(aeron_spsc_rb_t *ring_buffer, int32_t offset);
 ```
 """
 function aeron_spsc_rb_abort(ring_buffer, offset)
-    @ccall Aeron.aeron_spsc_rb_abort(ring_buffer::Ptr{aeron_spsc_rb_t}, offset::Int32)::Cint
+    @ccall libaeron.aeron_spsc_rb_abort(ring_buffer::Ptr{aeron_spsc_rb_t}, offset::Int32)::Cint
 end
 
 """
@@ -9938,7 +9938,7 @@ size_t aeron_spsc_rb_read( aeron_spsc_rb_t *ring_buffer, aeron_rb_handler_t hand
 ```
 """
 function aeron_spsc_rb_read(ring_buffer, handler, clientd, message_count_limit)
-    @ccall Aeron.aeron_spsc_rb_read(ring_buffer::Ptr{aeron_spsc_rb_t}, handler::aeron_rb_handler_t, clientd::Ptr{Cvoid}, message_count_limit::Csize_t)::Csize_t
+    @ccall libaeron.aeron_spsc_rb_read(ring_buffer::Ptr{aeron_spsc_rb_t}, handler::aeron_rb_handler_t, clientd::Ptr{Cvoid}, message_count_limit::Csize_t)::Csize_t
 end
 
 """
@@ -9950,7 +9950,7 @@ int64_t aeron_spsc_rb_next_correlation_id(aeron_spsc_rb_t *ring_buffer);
 ```
 """
 function aeron_spsc_rb_next_correlation_id(ring_buffer)
-    @ccall Aeron.aeron_spsc_rb_next_correlation_id(ring_buffer::Ptr{aeron_spsc_rb_t})::Int64
+    @ccall libaeron.aeron_spsc_rb_next_correlation_id(ring_buffer::Ptr{aeron_spsc_rb_t})::Int64
 end
 
 """
@@ -9962,7 +9962,7 @@ void aeron_spsc_rb_consumer_heartbeat_time(aeron_spsc_rb_t *ring_buffer, int64_t
 ```
 """
 function aeron_spsc_rb_consumer_heartbeat_time(ring_buffer, time_ms)
-    @ccall Aeron.aeron_spsc_rb_consumer_heartbeat_time(ring_buffer::Ptr{aeron_spsc_rb_t}, time_ms::Int64)::Cvoid
+    @ccall libaeron.aeron_spsc_rb_consumer_heartbeat_time(ring_buffer::Ptr{aeron_spsc_rb_t}, time_ms::Int64)::Cvoid
 end
 
 """
@@ -9974,7 +9974,7 @@ int aeron_client_connect_to_driver(aeron_mapped_file_t *cnc_mmap, aeron_context_
 ```
 """
 function aeron_client_connect_to_driver(cnc_mmap, context)
-    @ccall Aeron.aeron_client_connect_to_driver(cnc_mmap::Ptr{aeron_mapped_file_t}, context::Ptr{aeron_context_t})::Cint
+    @ccall libaeron.aeron_client_connect_to_driver(cnc_mmap::Ptr{aeron_mapped_file_t}, context::Ptr{aeron_context_t})::Cint
 end
 
 struct aeron_str_to_ptr_hash_map_key_stct
@@ -10006,7 +10006,7 @@ inline size_t aeron_str_to_ptr_hash_map_hash_key(uint64_t key_hash_code, size_t 
 ```
 """
 function aeron_str_to_ptr_hash_map_hash_key(key_hash_code, mask)
-    @ccall Aeron.aeron_str_to_ptr_hash_map_hash_key(key_hash_code::UInt64, mask::Csize_t)::Csize_t
+    @ccall libaeron.aeron_str_to_ptr_hash_map_hash_key(key_hash_code::UInt64, mask::Csize_t)::Csize_t
 end
 
 """
@@ -10018,7 +10018,7 @@ inline bool aeron_str_to_ptr_hash_map_compare( aeron_str_to_ptr_hash_map_key_t *
 ```
 """
 function aeron_str_to_ptr_hash_map_compare(key, key_str, key_str_len, key_hash_code)
-    @ccall Aeron.aeron_str_to_ptr_hash_map_compare(key::Ptr{aeron_str_to_ptr_hash_map_key_t}, key_str::Cstring, key_str_len::Csize_t, key_hash_code::UInt64)::Bool
+    @ccall libaeron.aeron_str_to_ptr_hash_map_compare(key::Ptr{aeron_str_to_ptr_hash_map_key_t}, key_str::Cstring, key_str_len::Csize_t, key_hash_code::UInt64)::Bool
 end
 
 """
@@ -10030,7 +10030,7 @@ inline int aeron_str_to_ptr_hash_map_init(aeron_str_to_ptr_hash_map_t *map, size
 ```
 """
 function aeron_str_to_ptr_hash_map_init(map, initial_capacity, load_factor)
-    @ccall Aeron.aeron_str_to_ptr_hash_map_init(map::Ptr{aeron_str_to_ptr_hash_map_t}, initial_capacity::Csize_t, load_factor::Cfloat)::Cint
+    @ccall libaeron.aeron_str_to_ptr_hash_map_init(map::Ptr{aeron_str_to_ptr_hash_map_t}, initial_capacity::Csize_t, load_factor::Cfloat)::Cint
 end
 
 """
@@ -10042,7 +10042,7 @@ inline void aeron_str_to_ptr_hash_map_delete(aeron_str_to_ptr_hash_map_t *map);
 ```
 """
 function aeron_str_to_ptr_hash_map_delete(map)
-    @ccall Aeron.aeron_str_to_ptr_hash_map_delete(map::Ptr{aeron_str_to_ptr_hash_map_t})::Cvoid
+    @ccall libaeron.aeron_str_to_ptr_hash_map_delete(map::Ptr{aeron_str_to_ptr_hash_map_t})::Cvoid
 end
 
 """
@@ -10054,7 +10054,7 @@ inline int aeron_str_to_ptr_hash_map_rehash(aeron_str_to_ptr_hash_map_t *map, si
 ```
 """
 function aeron_str_to_ptr_hash_map_rehash(map, new_capacity)
-    @ccall Aeron.aeron_str_to_ptr_hash_map_rehash(map::Ptr{aeron_str_to_ptr_hash_map_t}, new_capacity::Csize_t)::Cint
+    @ccall libaeron.aeron_str_to_ptr_hash_map_rehash(map::Ptr{aeron_str_to_ptr_hash_map_t}, new_capacity::Csize_t)::Cint
 end
 
 """
@@ -10066,7 +10066,7 @@ inline int aeron_str_to_ptr_hash_map_put(aeron_str_to_ptr_hash_map_t *map, const
 ```
 """
 function aeron_str_to_ptr_hash_map_put(map, key, key_len, value)
-    @ccall Aeron.aeron_str_to_ptr_hash_map_put(map::Ptr{aeron_str_to_ptr_hash_map_t}, key::Cstring, key_len::Csize_t, value::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_str_to_ptr_hash_map_put(map::Ptr{aeron_str_to_ptr_hash_map_t}, key::Cstring, key_len::Csize_t, value::Ptr{Cvoid})::Cint
 end
 
 """
@@ -10078,7 +10078,7 @@ inline void *aeron_str_to_ptr_hash_map_get(aeron_str_to_ptr_hash_map_t *map, con
 ```
 """
 function aeron_str_to_ptr_hash_map_get(map, key, key_len)
-    @ccall Aeron.aeron_str_to_ptr_hash_map_get(map::Ptr{aeron_str_to_ptr_hash_map_t}, key::Cstring, key_len::Csize_t)::Ptr{Cvoid}
+    @ccall libaeron.aeron_str_to_ptr_hash_map_get(map::Ptr{aeron_str_to_ptr_hash_map_t}, key::Cstring, key_len::Csize_t)::Ptr{Cvoid}
 end
 
 """
@@ -10090,7 +10090,7 @@ inline void aeron_str_to_ptr_hash_map_compact_chain(aeron_str_to_ptr_hash_map_t 
 ```
 """
 function aeron_str_to_ptr_hash_map_compact_chain(map, delete_index)
-    @ccall Aeron.aeron_str_to_ptr_hash_map_compact_chain(map::Ptr{aeron_str_to_ptr_hash_map_t}, delete_index::Csize_t)::Cvoid
+    @ccall libaeron.aeron_str_to_ptr_hash_map_compact_chain(map::Ptr{aeron_str_to_ptr_hash_map_t}, delete_index::Csize_t)::Cvoid
 end
 
 """
@@ -10102,7 +10102,7 @@ inline void *aeron_str_to_ptr_hash_map_remove(aeron_str_to_ptr_hash_map_t *map, 
 ```
 """
 function aeron_str_to_ptr_hash_map_remove(map, key, key_len)
-    @ccall Aeron.aeron_str_to_ptr_hash_map_remove(map::Ptr{aeron_str_to_ptr_hash_map_t}, key::Cstring, key_len::Csize_t)::Ptr{Cvoid}
+    @ccall libaeron.aeron_str_to_ptr_hash_map_remove(map::Ptr{aeron_str_to_ptr_hash_map_t}, key::Cstring, key_len::Csize_t)::Ptr{Cvoid}
 end
 
 # typedef void ( * aeron_str_to_ptr_hash_map_for_each_func_t ) ( void * clientd , const char * key , size_t key_len , void * value )
@@ -10117,7 +10117,7 @@ inline void aeron_str_to_ptr_hash_map_for_each( aeron_str_to_ptr_hash_map_t *map
 ```
 """
 function aeron_str_to_ptr_hash_map_for_each(map, func, clientd)
-    @ccall Aeron.aeron_str_to_ptr_hash_map_for_each(map::Ptr{aeron_str_to_ptr_hash_map_t}, func::aeron_str_to_ptr_hash_map_for_each_func_t, clientd::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_str_to_ptr_hash_map_for_each(map::Ptr{aeron_str_to_ptr_hash_map_t}, func::aeron_str_to_ptr_hash_map_for_each_func_t, clientd::Ptr{Cvoid})::Cvoid
 end
 
 """
@@ -10129,7 +10129,7 @@ int aeron_publication_create( aeron_publication_t **publication, aeron_client_co
 ```
 """
 function aeron_publication_create(publication, conductor, channel, stream_id, session_id, position_limit_counter_id, position_limit_addr, channel_status_indicator_id, channel_status_addr, log_buffer, original_registration_id, registration_id)
-    @ccall Aeron.aeron_publication_create(publication::Ptr{Ptr{aeron_publication_t}}, conductor::Ptr{aeron_client_conductor_t}, channel::Cstring, stream_id::Int32, session_id::Int32, position_limit_counter_id::Int32, position_limit_addr::Ptr{Int64}, channel_status_indicator_id::Int32, channel_status_addr::Ptr{Int64}, log_buffer::Ptr{aeron_log_buffer_t}, original_registration_id::Int64, registration_id::Int64)::Cint
+    @ccall libaeron.aeron_publication_create(publication::Ptr{Ptr{aeron_publication_t}}, conductor::Ptr{aeron_client_conductor_t}, channel::Cstring, stream_id::Int32, session_id::Int32, position_limit_counter_id::Int32, position_limit_addr::Ptr{Int64}, channel_status_indicator_id::Int32, channel_status_addr::Ptr{Int64}, log_buffer::Ptr{aeron_log_buffer_t}, original_registration_id::Int64, registration_id::Int64)::Cint
 end
 
 """
@@ -10141,7 +10141,7 @@ int aeron_publication_delete(aeron_publication_t *publication);
 ```
 """
 function aeron_publication_delete(publication)
-    @ccall Aeron.aeron_publication_delete(publication::Ptr{aeron_publication_t})::Cint
+    @ccall libaeron.aeron_publication_delete(publication::Ptr{aeron_publication_t})::Cint
 end
 
 """
@@ -10153,7 +10153,7 @@ void aeron_publication_force_close(aeron_publication_t *publication);
 ```
 """
 function aeron_publication_force_close(publication)
-    @ccall Aeron.aeron_publication_force_close(publication::Ptr{aeron_publication_t})::Cvoid
+    @ccall libaeron.aeron_publication_force_close(publication::Ptr{aeron_publication_t})::Cvoid
 end
 
 """
@@ -10165,7 +10165,7 @@ inline int64_t aeron_publication_back_pressure_status( aeron_publication_t *publ
 ```
 """
 function aeron_publication_back_pressure_status(publication, current_position, message_length)
-    @ccall Aeron.aeron_publication_back_pressure_status(publication::Ptr{aeron_publication_t}, current_position::Int64, message_length::Int32)::Int64
+    @ccall libaeron.aeron_publication_back_pressure_status(publication::Ptr{aeron_publication_t}, current_position::Int64, message_length::Int32)::Int64
 end
 
 """
@@ -10177,7 +10177,7 @@ int aeron_counter_create( aeron_counter_t **counter, aeron_client_conductor_t *c
 ```
 """
 function aeron_counter_create(counter, conductor, registration_id, counter_id, counter_addr)
-    @ccall Aeron.aeron_counter_create(counter::Ptr{Ptr{aeron_counter_t}}, conductor::Ptr{aeron_client_conductor_t}, registration_id::Int64, counter_id::Int32, counter_addr::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_counter_create(counter::Ptr{Ptr{aeron_counter_t}}, conductor::Ptr{aeron_client_conductor_t}, registration_id::Int64, counter_id::Int32, counter_addr::Ptr{Int64})::Cint
 end
 
 """
@@ -10189,7 +10189,7 @@ int aeron_counter_delete(aeron_counter_t *counter);
 ```
 """
 function aeron_counter_delete(counter)
-    @ccall Aeron.aeron_counter_delete(counter::Ptr{aeron_counter_t})::Cint
+    @ccall libaeron.aeron_counter_delete(counter::Ptr{aeron_counter_t})::Cint
 end
 
 """
@@ -10201,7 +10201,7 @@ void aeron_counter_force_close(aeron_counter_t *counter);
 ```
 """
 function aeron_counter_force_close(counter)
-    @ccall Aeron.aeron_counter_force_close(counter::Ptr{aeron_counter_t})::Cvoid
+    @ccall libaeron.aeron_counter_force_close(counter::Ptr{aeron_counter_t})::Cvoid
 end
 
 struct aeron_int64_to_tagged_ptr_entry_stct
@@ -10233,7 +10233,7 @@ inline size_t aeron_int64_to_tagged_ptr_hash_map_hash_key(int64_t key, size_t ma
 ```
 """
 function aeron_int64_to_tagged_ptr_hash_map_hash_key(key, mask)
-    @ccall Aeron.aeron_int64_to_tagged_ptr_hash_map_hash_key(key::Int64, mask::Csize_t)::Csize_t
+    @ccall libaeron.aeron_int64_to_tagged_ptr_hash_map_hash_key(key::Int64, mask::Csize_t)::Csize_t
 end
 
 """
@@ -10245,7 +10245,7 @@ inline int aeron_int64_to_tagged_ptr_hash_map_init( aeron_int64_to_tagged_ptr_ha
 ```
 """
 function aeron_int64_to_tagged_ptr_hash_map_init(map, initial_capacity, load_factor)
-    @ccall Aeron.aeron_int64_to_tagged_ptr_hash_map_init(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, initial_capacity::Csize_t, load_factor::Cfloat)::Cint
+    @ccall libaeron.aeron_int64_to_tagged_ptr_hash_map_init(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, initial_capacity::Csize_t, load_factor::Cfloat)::Cint
 end
 
 """
@@ -10257,7 +10257,7 @@ inline void aeron_int64_to_tagged_ptr_hash_map_delete(aeron_int64_to_tagged_ptr_
 ```
 """
 function aeron_int64_to_tagged_ptr_hash_map_delete(map)
-    @ccall Aeron.aeron_int64_to_tagged_ptr_hash_map_delete(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t})::Cvoid
+    @ccall libaeron.aeron_int64_to_tagged_ptr_hash_map_delete(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t})::Cvoid
 end
 
 """
@@ -10269,7 +10269,7 @@ inline int aeron_int64_to_tagged_ptr_hash_map_rehash(aeron_int64_to_tagged_ptr_h
 ```
 """
 function aeron_int64_to_tagged_ptr_hash_map_rehash(map, new_capacity)
-    @ccall Aeron.aeron_int64_to_tagged_ptr_hash_map_rehash(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, new_capacity::Csize_t)::Cint
+    @ccall libaeron.aeron_int64_to_tagged_ptr_hash_map_rehash(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, new_capacity::Csize_t)::Cint
 end
 
 """
@@ -10281,7 +10281,7 @@ inline int aeron_int64_to_tagged_ptr_hash_map_put( aeron_int64_to_tagged_ptr_has
 ```
 """
 function aeron_int64_to_tagged_ptr_hash_map_put(map, key, tag, value)
-    @ccall Aeron.aeron_int64_to_tagged_ptr_hash_map_put(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, key::Int64, tag::Int32, value::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_int64_to_tagged_ptr_hash_map_put(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, key::Int64, tag::Int32, value::Ptr{Cvoid})::Cint
 end
 
 """
@@ -10293,7 +10293,7 @@ inline bool aeron_int64_to_tagged_ptr_hash_map_get( aeron_int64_to_tagged_ptr_ha
 ```
 """
 function aeron_int64_to_tagged_ptr_hash_map_get(map, key, tag, value)
-    @ccall Aeron.aeron_int64_to_tagged_ptr_hash_map_get(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, key::Int64, tag::Ptr{UInt32}, value::Ptr{Ptr{Cvoid}})::Bool
+    @ccall libaeron.aeron_int64_to_tagged_ptr_hash_map_get(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, key::Int64, tag::Ptr{UInt32}, value::Ptr{Ptr{Cvoid}})::Bool
 end
 
 """
@@ -10305,7 +10305,7 @@ inline void aeron_int64_to_tagged_ptr_hash_map_compact_chain( aeron_int64_to_tag
 ```
 """
 function aeron_int64_to_tagged_ptr_hash_map_compact_chain(map, delete_index)
-    @ccall Aeron.aeron_int64_to_tagged_ptr_hash_map_compact_chain(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, delete_index::Csize_t)::Cvoid
+    @ccall libaeron.aeron_int64_to_tagged_ptr_hash_map_compact_chain(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, delete_index::Csize_t)::Cvoid
 end
 
 """
@@ -10317,7 +10317,7 @@ inline bool aeron_int64_to_tagged_ptr_hash_map_remove( aeron_int64_to_tagged_ptr
 ```
 """
 function aeron_int64_to_tagged_ptr_hash_map_remove(map, key, tag, value)
-    @ccall Aeron.aeron_int64_to_tagged_ptr_hash_map_remove(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, key::Int64, tag::Ptr{UInt32}, value::Ptr{Ptr{Cvoid}})::Bool
+    @ccall libaeron.aeron_int64_to_tagged_ptr_hash_map_remove(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, key::Int64, tag::Ptr{UInt32}, value::Ptr{Ptr{Cvoid}})::Bool
 end
 
 # typedef void ( * aeron_int64_to_tagged_ptr_hash_map_for_each_func_t ) ( void * clientd , int64_t key , uint32_t tag , void * value )
@@ -10335,7 +10335,7 @@ inline void aeron_int64_to_tagged_ptr_hash_map_for_each( aeron_int64_to_tagged_p
 ```
 """
 function aeron_int64_to_tagged_ptr_hash_map_for_each(map, func, clientd)
-    @ccall Aeron.aeron_int64_to_tagged_ptr_hash_map_for_each(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, func::aeron_int64_to_tagged_ptr_hash_map_for_each_func_t, clientd::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_int64_to_tagged_ptr_hash_map_for_each(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, func::aeron_int64_to_tagged_ptr_hash_map_for_each_func_t, clientd::Ptr{Cvoid})::Cvoid
 end
 
 """
@@ -10347,7 +10347,7 @@ inline void aeron_int64_to_tagged_ptr_hash_map_remove_if( aeron_int64_to_tagged_
 ```
 """
 function aeron_int64_to_tagged_ptr_hash_map_remove_if(map, func, clientd)
-    @ccall Aeron.aeron_int64_to_tagged_ptr_hash_map_remove_if(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, func::aeron_int64_to_tagged_ptr_hash_map_predicate_func_t, clientd::Ptr{Cvoid})::Cvoid
+    @ccall libaeron.aeron_int64_to_tagged_ptr_hash_map_remove_if(map::Ptr{aeron_int64_to_tagged_ptr_hash_map_t}, func::aeron_int64_to_tagged_ptr_hash_map_predicate_func_t, clientd::Ptr{Cvoid})::Cvoid
 end
 
 mutable struct aeron_symbol_table_obj_stct
@@ -10368,7 +10368,7 @@ void* aeron_symbol_table_obj_load( const aeron_symbol_table_obj_t *table, size_t
 ```
 """
 function aeron_symbol_table_obj_load(table, table_length, name, component_name)
-    @ccall Aeron.aeron_symbol_table_obj_load(table::Ptr{aeron_symbol_table_obj_t}, table_length::Csize_t, name::Cstring, component_name::Cstring)::Ptr{Cvoid}
+    @ccall libaeron.aeron_symbol_table_obj_load(table::Ptr{aeron_symbol_table_obj_t}, table_length::Csize_t, name::Cstring, component_name::Cstring)::Ptr{Cvoid}
 end
 
 mutable struct aeron_symbol_table_func_stct
@@ -10389,7 +10389,7 @@ aeron_fptr_t aeron_symbol_table_func_load( const aeron_symbol_table_func_t *tabl
 ```
 """
 function aeron_symbol_table_func_load(table, table_length, name, component_name)
-    @ccall Aeron.aeron_symbol_table_func_load(table::Ptr{aeron_symbol_table_func_t}, table_length::Csize_t, name::Cstring, component_name::Cstring)::aeron_fptr_t
+    @ccall libaeron.aeron_symbol_table_func_load(table::Ptr{aeron_symbol_table_func_t}, table_length::Csize_t, name::Cstring, component_name::Cstring)::aeron_fptr_t
 end
 
 # typedef void ( * aeron_term_gap_scanner_on_gap_detected_func_t ) ( void * clientd , int32_t term_id , int32_t term_offset , size_t length )
@@ -10404,7 +10404,7 @@ inline int32_t aeron_term_gap_scanner_scan_for_gap( const uint8_t *buffer, int32
 ```
 """
 function aeron_term_gap_scanner_scan_for_gap(buffer, term_id, term_offset, limit_offset, on_gap_detected, clientd)
-    @ccall Aeron.aeron_term_gap_scanner_scan_for_gap(buffer::Ptr{UInt8}, term_id::Int32, term_offset::Int32, limit_offset::Int32, on_gap_detected::aeron_term_gap_scanner_on_gap_detected_func_t, clientd::Ptr{Cvoid})::Int32
+    @ccall libaeron.aeron_term_gap_scanner_scan_for_gap(buffer::Ptr{UInt8}, term_id::Int32, term_offset::Int32, limit_offset::Int32, on_gap_detected::aeron_term_gap_scanner_on_gap_detected_func_t, clientd::Ptr{Cvoid})::Int32
 end
 
 struct aeron_cnc_metadata_stct
@@ -10457,7 +10457,7 @@ inline uint8_t *aeron_cnc_to_driver_buffer(aeron_cnc_metadata_t *metadata);
 ```
 """
 function aeron_cnc_to_driver_buffer(metadata)
-    @ccall Aeron.aeron_cnc_to_driver_buffer(metadata::Ptr{aeron_cnc_metadata_t})::Ptr{UInt8}
+    @ccall libaeron.aeron_cnc_to_driver_buffer(metadata::Ptr{aeron_cnc_metadata_t})::Ptr{UInt8}
 end
 
 """
@@ -10469,7 +10469,7 @@ inline uint8_t *aeron_cnc_to_clients_buffer(aeron_cnc_metadata_t *metadata);
 ```
 """
 function aeron_cnc_to_clients_buffer(metadata)
-    @ccall Aeron.aeron_cnc_to_clients_buffer(metadata::Ptr{aeron_cnc_metadata_t})::Ptr{UInt8}
+    @ccall libaeron.aeron_cnc_to_clients_buffer(metadata::Ptr{aeron_cnc_metadata_t})::Ptr{UInt8}
 end
 
 """
@@ -10481,7 +10481,7 @@ inline uint8_t *aeron_cnc_counters_metadata_buffer(aeron_cnc_metadata_t *metadat
 ```
 """
 function aeron_cnc_counters_metadata_buffer(metadata)
-    @ccall Aeron.aeron_cnc_counters_metadata_buffer(metadata::Ptr{aeron_cnc_metadata_t})::Ptr{UInt8}
+    @ccall libaeron.aeron_cnc_counters_metadata_buffer(metadata::Ptr{aeron_cnc_metadata_t})::Ptr{UInt8}
 end
 
 """
@@ -10493,7 +10493,7 @@ inline uint8_t *aeron_cnc_counters_values_buffer(aeron_cnc_metadata_t *metadata)
 ```
 """
 function aeron_cnc_counters_values_buffer(metadata)
-    @ccall Aeron.aeron_cnc_counters_values_buffer(metadata::Ptr{aeron_cnc_metadata_t})::Ptr{UInt8}
+    @ccall libaeron.aeron_cnc_counters_values_buffer(metadata::Ptr{aeron_cnc_metadata_t})::Ptr{UInt8}
 end
 
 """
@@ -10505,7 +10505,7 @@ inline uint8_t *aeron_cnc_error_log_buffer(aeron_cnc_metadata_t *metadata);
 ```
 """
 function aeron_cnc_error_log_buffer(metadata)
-    @ccall Aeron.aeron_cnc_error_log_buffer(metadata::Ptr{aeron_cnc_metadata_t})::Ptr{UInt8}
+    @ccall libaeron.aeron_cnc_error_log_buffer(metadata::Ptr{aeron_cnc_metadata_t})::Ptr{UInt8}
 end
 
 """
@@ -10517,7 +10517,7 @@ inline size_t aeron_cnc_computed_length(size_t total_length_of_buffers, size_t a
 ```
 """
 function aeron_cnc_computed_length(total_length_of_buffers, alignment)
-    @ccall Aeron.aeron_cnc_computed_length(total_length_of_buffers::Csize_t, alignment::Csize_t)::Csize_t
+    @ccall libaeron.aeron_cnc_computed_length(total_length_of_buffers::Csize_t, alignment::Csize_t)::Csize_t
 end
 
 """
@@ -10529,7 +10529,7 @@ inline bool aeron_cnc_is_file_length_sufficient(aeron_mapped_file_t *cnc_mmap);
 ```
 """
 function aeron_cnc_is_file_length_sufficient(cnc_mmap)
-    @ccall Aeron.aeron_cnc_is_file_length_sufficient(cnc_mmap::Ptr{aeron_mapped_file_t})::Bool
+    @ccall libaeron.aeron_cnc_is_file_length_sufficient(cnc_mmap::Ptr{aeron_mapped_file_t})::Bool
 end
 
 """
@@ -10541,7 +10541,7 @@ int32_t aeron_cnc_version_volatile(aeron_cnc_metadata_t *metadata);
 ```
 """
 function aeron_cnc_version_volatile(metadata)
-    @ccall Aeron.aeron_cnc_version_volatile(metadata::Ptr{aeron_cnc_metadata_t})::Int32
+    @ccall libaeron.aeron_cnc_version_volatile(metadata::Ptr{aeron_cnc_metadata_t})::Int32
 end
 
 """
@@ -10553,7 +10553,7 @@ aeron_cnc_load_result_t aeron_cnc_map_file_and_load_metadata( const char *dir, a
 ```
 """
 function aeron_cnc_map_file_and_load_metadata(dir, mapped_file, metadata)
-    @ccall Aeron.aeron_cnc_map_file_and_load_metadata(dir::Cstring, mapped_file::Ptr{aeron_mapped_file_t}, metadata::Ptr{Ptr{aeron_cnc_metadata_t}})::aeron_cnc_load_result_t
+    @ccall libaeron.aeron_cnc_map_file_and_load_metadata(dir::Cstring, mapped_file::Ptr{aeron_mapped_file_t}, metadata::Ptr{Ptr{aeron_cnc_metadata_t}})::aeron_cnc_load_result_t
 end
 
 """
@@ -10565,7 +10565,7 @@ int aeron_cnc_resolve_filename(const char *directory, char *filename_buffer, siz
 ```
 """
 function aeron_cnc_resolve_filename(directory, filename_buffer, filename_buffer_length)
-    @ccall Aeron.aeron_cnc_resolve_filename(directory::Cstring, filename_buffer::Cstring, filename_buffer_length::Csize_t)::Cint
+    @ccall libaeron.aeron_cnc_resolve_filename(directory::Cstring, filename_buffer::Cstring, filename_buffer_length::Csize_t)::Cint
 end
 
 struct aeron_uri_param_stct
@@ -10613,24 +10613,24 @@ end
 
 const aeron_uri_type_t = aeron_uri_type_enum
 
-struct var"##Ctag#5003"
+struct var"##Ctag#2341"
     data::NTuple{72, UInt8}
 end
 
-function Base.getproperty(x::Ptr{var"##Ctag#5003"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#2341"}, f::Symbol)
     f === :udp && return Ptr{aeron_udp_channel_params_t}(x + 0)
     f === :ipc && return Ptr{aeron_ipc_channel_params_t}(x + 0)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#5003", f::Symbol)
-    r = Ref{var"##Ctag#5003"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#5003"}, r)
+function Base.getproperty(x::var"##Ctag#2341", f::Symbol)
+    r = Ref{var"##Ctag#2341"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#2341"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#5003"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#2341"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
@@ -10641,7 +10641,7 @@ end
 function Base.getproperty(x::Ptr{aeron_uri_stct}, f::Symbol)
     f === :mutable_uri && return Ptr{NTuple{384, Cchar}}(x + 0)
     f === :type && return Ptr{aeron_uri_type_t}(x + 384)
-    f === :params && return Ptr{var"##Ctag#5003"}(x + 392)
+    f === :params && return Ptr{var"##Ctag#2341"}(x + 392)
     return getfield(x, f)
 end
 
@@ -10678,7 +10678,7 @@ int aeron_uri_parse_params(char *uri, aeron_uri_parse_callback_t param_func, voi
 ```
 """
 function aeron_uri_parse_params(uri, param_func, clientd)
-    @ccall Aeron.aeron_uri_parse_params(uri::Cstring, param_func::aeron_uri_parse_callback_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_uri_parse_params(uri::Cstring, param_func::aeron_uri_parse_callback_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -10690,7 +10690,7 @@ int aeron_udp_uri_parse(char *uri, aeron_udp_channel_params_t *params);
 ```
 """
 function aeron_udp_uri_parse(uri, params)
-    @ccall Aeron.aeron_udp_uri_parse(uri::Cstring, params::Ptr{aeron_udp_channel_params_t})::Cint
+    @ccall libaeron.aeron_udp_uri_parse(uri::Cstring, params::Ptr{aeron_udp_channel_params_t})::Cint
 end
 
 """
@@ -10702,7 +10702,7 @@ int aeron_ipc_uri_parse(char *uri, aeron_ipc_channel_params_t *params);
 ```
 """
 function aeron_ipc_uri_parse(uri, params)
-    @ccall Aeron.aeron_ipc_uri_parse(uri::Cstring, params::Ptr{aeron_ipc_channel_params_t})::Cint
+    @ccall libaeron.aeron_ipc_uri_parse(uri::Cstring, params::Ptr{aeron_ipc_channel_params_t})::Cint
 end
 
 """
@@ -10714,7 +10714,7 @@ int aeron_uri_parse(size_t uri_length, const char *uri, aeron_uri_t *params);
 ```
 """
 function aeron_uri_parse(uri_length, uri, params)
-    @ccall Aeron.aeron_uri_parse(uri_length::Csize_t, uri::Cstring, params::Ptr{aeron_uri_t})::Cint
+    @ccall libaeron.aeron_uri_parse(uri_length::Csize_t, uri::Cstring, params::Ptr{aeron_uri_t})::Cint
 end
 
 """
@@ -10726,7 +10726,7 @@ void aeron_uri_close(aeron_uri_t *params);
 ```
 """
 function aeron_uri_close(params)
-    @ccall Aeron.aeron_uri_close(params::Ptr{aeron_uri_t})::Cvoid
+    @ccall libaeron.aeron_uri_close(params::Ptr{aeron_uri_t})::Cvoid
 end
 
 """
@@ -10738,7 +10738,7 @@ uint8_t aeron_uri_multicast_ttl(aeron_uri_t *uri);
 ```
 """
 function aeron_uri_multicast_ttl(uri)
-    @ccall Aeron.aeron_uri_multicast_ttl(uri::Ptr{aeron_uri_t})::UInt8
+    @ccall libaeron.aeron_uri_multicast_ttl(uri::Ptr{aeron_uri_t})::UInt8
 end
 
 """
@@ -10750,7 +10750,7 @@ const char *aeron_uri_find_param_value(const aeron_uri_params_t *uri_params, con
 ```
 """
 function aeron_uri_find_param_value(uri_params, key)
-    @ccall Aeron.aeron_uri_find_param_value(uri_params::Ptr{aeron_uri_params_t}, key::Cstring)::Cstring
+    @ccall libaeron.aeron_uri_find_param_value(uri_params::Ptr{aeron_uri_params_t}, key::Cstring)::Cstring
 end
 
 """
@@ -10762,7 +10762,7 @@ int aeron_uri_get_int32(aeron_uri_params_t *uri_params, const char *key, int32_t
 ```
 """
 function aeron_uri_get_int32(uri_params, key, retval)
-    @ccall Aeron.aeron_uri_get_int32(uri_params::Ptr{aeron_uri_params_t}, key::Cstring, retval::Ptr{Int32})::Cint
+    @ccall libaeron.aeron_uri_get_int32(uri_params::Ptr{aeron_uri_params_t}, key::Cstring, retval::Ptr{Int32})::Cint
 end
 
 """
@@ -10774,7 +10774,7 @@ int aeron_uri_get_int64(aeron_uri_params_t *uri_params, const char *key, int64_t
 ```
 """
 function aeron_uri_get_int64(uri_params, key, retval)
-    @ccall Aeron.aeron_uri_get_int64(uri_params::Ptr{aeron_uri_params_t}, key::Cstring, retval::Ptr{Int64})::Cint
+    @ccall libaeron.aeron_uri_get_int64(uri_params::Ptr{aeron_uri_params_t}, key::Cstring, retval::Ptr{Int64})::Cint
 end
 
 """
@@ -10786,7 +10786,7 @@ int aeron_uri_get_bool(aeron_uri_params_t *uri_params, const char *key, bool *re
 ```
 """
 function aeron_uri_get_bool(uri_params, key, retval)
-    @ccall Aeron.aeron_uri_get_bool(uri_params::Ptr{aeron_uri_params_t}, key::Cstring, retval::Ptr{Bool})::Cint
+    @ccall libaeron.aeron_uri_get_bool(uri_params::Ptr{aeron_uri_params_t}, key::Cstring, retval::Ptr{Bool})::Cint
 end
 
 """
@@ -10798,7 +10798,7 @@ int aeron_uri_get_ats(aeron_uri_params_t *uri_params, aeron_uri_ats_status_t *ur
 ```
 """
 function aeron_uri_get_ats(uri_params, uri_ats_status)
-    @ccall Aeron.aeron_uri_get_ats(uri_params::Ptr{aeron_uri_params_t}, uri_ats_status::Ptr{aeron_uri_ats_status_t})::Cint
+    @ccall libaeron.aeron_uri_get_ats(uri_params::Ptr{aeron_uri_params_t}, uri_ats_status::Ptr{aeron_uri_ats_status_t})::Cint
 end
 
 """
@@ -10810,7 +10810,7 @@ int aeron_uri_sprint(aeron_uri_t *uri, char *buffer, size_t buffer_len);
 ```
 """
 function aeron_uri_sprint(uri, buffer, buffer_len)
-    @ccall Aeron.aeron_uri_sprint(uri::Ptr{aeron_uri_t}, buffer::Cstring, buffer_len::Csize_t)::Cint
+    @ccall libaeron.aeron_uri_sprint(uri::Ptr{aeron_uri_t}, buffer::Cstring, buffer_len::Csize_t)::Cint
 end
 
 """
@@ -10822,7 +10822,7 @@ int aeron_uri_get_socket_buf_lengths( aeron_uri_params_t *uri_params, size_t *so
 ```
 """
 function aeron_uri_get_socket_buf_lengths(uri_params, socket_sndbuf_length, socket_rcvbuf_length)
-    @ccall Aeron.aeron_uri_get_socket_buf_lengths(uri_params::Ptr{aeron_uri_params_t}, socket_sndbuf_length::Ptr{Csize_t}, socket_rcvbuf_length::Ptr{Csize_t})::Cint
+    @ccall libaeron.aeron_uri_get_socket_buf_lengths(uri_params::Ptr{aeron_uri_params_t}, socket_sndbuf_length::Ptr{Csize_t}, socket_rcvbuf_length::Ptr{Csize_t})::Cint
 end
 
 """
@@ -10834,7 +10834,7 @@ int aeron_uri_get_receiver_window_length(aeron_uri_params_t *uri_params, size_t 
 ```
 """
 function aeron_uri_get_receiver_window_length(uri_params, receiver_window_length)
-    @ccall Aeron.aeron_uri_get_receiver_window_length(uri_params::Ptr{aeron_uri_params_t}, receiver_window_length::Ptr{Csize_t})::Cint
+    @ccall libaeron.aeron_uri_get_receiver_window_length(uri_params::Ptr{aeron_uri_params_t}, receiver_window_length::Ptr{Csize_t})::Cint
 end
 
 """
@@ -10846,7 +10846,7 @@ int64_t aeron_uri_parse_tag(const char *tag_str);
 ```
 """
 function aeron_uri_parse_tag(tag_str)
-    @ccall Aeron.aeron_uri_parse_tag(tag_str::Cstring)::Int64
+    @ccall libaeron.aeron_uri_parse_tag(tag_str::Cstring)::Int64
 end
 
 """
@@ -10858,7 +10858,7 @@ int aeron_image_create( aeron_image_t **image, aeron_subscription_t *subscriptio
 ```
 """
 function aeron_image_create(image, subscription, conductor, log_buffer, subscriber_position_id, subscriber_position, correlation_id, session_id, source_identity, source_identity_length)
-    @ccall Aeron.aeron_image_create(image::Ptr{Ptr{aeron_image_t}}, subscription::Ptr{aeron_subscription_t}, conductor::Ptr{aeron_client_conductor_t}, log_buffer::Ptr{aeron_log_buffer_t}, subscriber_position_id::Int32, subscriber_position::Ptr{Int64}, correlation_id::Int64, session_id::Int32, source_identity::Cstring, source_identity_length::Csize_t)::Cint
+    @ccall libaeron.aeron_image_create(image::Ptr{Ptr{aeron_image_t}}, subscription::Ptr{aeron_subscription_t}, conductor::Ptr{aeron_client_conductor_t}, log_buffer::Ptr{aeron_log_buffer_t}, subscriber_position_id::Int32, subscriber_position::Ptr{Int64}, correlation_id::Int64, session_id::Int32, source_identity::Cstring, source_identity_length::Csize_t)::Cint
 end
 
 """
@@ -10870,7 +10870,7 @@ int aeron_image_delete(aeron_image_t *image);
 ```
 """
 function aeron_image_delete(image)
-    @ccall Aeron.aeron_image_delete(image::Ptr{aeron_image_t})::Cint
+    @ccall libaeron.aeron_image_delete(image::Ptr{aeron_image_t})::Cint
 end
 
 """
@@ -10882,7 +10882,7 @@ void aeron_image_force_close(aeron_image_t *image);
 ```
 """
 function aeron_image_force_close(image)
-    @ccall Aeron.aeron_image_force_close(image::Ptr{aeron_image_t})::Cvoid
+    @ccall libaeron.aeron_image_force_close(image::Ptr{aeron_image_t})::Cvoid
 end
 
 """
@@ -10894,7 +10894,7 @@ inline int64_t aeron_image_removal_change_number(aeron_image_t *image);
 ```
 """
 function aeron_image_removal_change_number(image)
-    @ccall Aeron.aeron_image_removal_change_number(image::Ptr{aeron_image_t})::Int64
+    @ccall libaeron.aeron_image_removal_change_number(image::Ptr{aeron_image_t})::Int64
 end
 
 """
@@ -10906,7 +10906,7 @@ inline bool aeron_image_is_in_use_by_subscription(aeron_image_t *image, int64_t 
 ```
 """
 function aeron_image_is_in_use_by_subscription(image, last_change_number)
-    @ccall Aeron.aeron_image_is_in_use_by_subscription(image::Ptr{aeron_image_t}, last_change_number::Int64)::Bool
+    @ccall libaeron.aeron_image_is_in_use_by_subscription(image::Ptr{aeron_image_t}, last_change_number::Int64)::Bool
 end
 
 """
@@ -10918,7 +10918,7 @@ inline int aeron_image_validate_position(aeron_image_t *image, int64_t position)
 ```
 """
 function aeron_image_validate_position(image, position)
-    @ccall Aeron.aeron_image_validate_position(image::Ptr{aeron_image_t}, position::Int64)::Cint
+    @ccall libaeron.aeron_image_validate_position(image::Ptr{aeron_image_t}, position::Int64)::Cint
 end
 
 """
@@ -10930,7 +10930,7 @@ inline int64_t aeron_image_incr_refcnt(aeron_image_t *image);
 ```
 """
 function aeron_image_incr_refcnt(image)
-    @ccall Aeron.aeron_image_incr_refcnt(image::Ptr{aeron_image_t})::Int64
+    @ccall libaeron.aeron_image_incr_refcnt(image::Ptr{aeron_image_t})::Int64
 end
 
 """
@@ -10942,7 +10942,7 @@ inline int64_t aeron_image_decr_refcnt(aeron_image_t *image);
 ```
 """
 function aeron_image_decr_refcnt(image)
-    @ccall Aeron.aeron_image_decr_refcnt(image::Ptr{aeron_image_t})::Int64
+    @ccall libaeron.aeron_image_decr_refcnt(image::Ptr{aeron_image_t})::Int64
 end
 
 """
@@ -10954,7 +10954,7 @@ inline int64_t aeron_image_refcnt_volatile(aeron_image_t *image);
 ```
 """
 function aeron_image_refcnt_volatile(image)
-    @ccall Aeron.aeron_image_refcnt_volatile(image::Ptr{aeron_image_t})::Int64
+    @ccall libaeron.aeron_image_refcnt_volatile(image::Ptr{aeron_image_t})::Int64
 end
 
 # typedef int ( * aeron_uri_hostname_resolver_func_t ) ( void * clientd , const char * host , struct addrinfo * hints , struct addrinfo * * info )
@@ -10978,7 +10978,7 @@ int aeron_ip_addr_resolver(const char *host, struct sockaddr_storage *sockaddr, 
 ```
 """
 function aeron_ip_addr_resolver(host, sockaddr_, family_hint, protocol)
-    @ccall Aeron.aeron_ip_addr_resolver(host::Cstring, sockaddr_::Ptr{sockaddr_storage}, family_hint::Cint, protocol::Cint)::Cint
+    @ccall libaeron.aeron_ip_addr_resolver(host::Cstring, sockaddr_::Ptr{sockaddr_storage}, family_hint::Cint, protocol::Cint)::Cint
 end
 
 """
@@ -10990,7 +10990,7 @@ int aeron_udp_port_resolver(const char *port_str, bool optional);
 ```
 """
 function aeron_udp_port_resolver(port_str, optional)
-    @ccall Aeron.aeron_udp_port_resolver(port_str::Cstring, optional::Bool)::Cint
+    @ccall libaeron.aeron_udp_port_resolver(port_str::Cstring, optional::Bool)::Cint
 end
 
 """
@@ -11002,7 +11002,7 @@ bool aeron_try_parse_ipv4(const char *host, struct sockaddr_storage *sockaddr);
 ```
 """
 function aeron_try_parse_ipv4(host, sockaddr_)
-    @ccall Aeron.aeron_try_parse_ipv4(host::Cstring, sockaddr_::Ptr{sockaddr_storage})::Bool
+    @ccall libaeron.aeron_try_parse_ipv4(host::Cstring, sockaddr_::Ptr{sockaddr_storage})::Bool
 end
 
 """
@@ -11014,7 +11014,7 @@ int aeron_ipv4_addr_resolver(const char *host, int protocol, struct sockaddr_sto
 ```
 """
 function aeron_ipv4_addr_resolver(host, protocol, sockaddr_)
-    @ccall Aeron.aeron_ipv4_addr_resolver(host::Cstring, protocol::Cint, sockaddr_::Ptr{sockaddr_storage})::Cint
+    @ccall libaeron.aeron_ipv4_addr_resolver(host::Cstring, protocol::Cint, sockaddr_::Ptr{sockaddr_storage})::Cint
 end
 
 """
@@ -11026,7 +11026,7 @@ bool aeron_try_parse_ipv6(const char *host, struct sockaddr_storage *sockaddr);
 ```
 """
 function aeron_try_parse_ipv6(host, sockaddr_)
-    @ccall Aeron.aeron_try_parse_ipv6(host::Cstring, sockaddr_::Ptr{sockaddr_storage})::Bool
+    @ccall libaeron.aeron_try_parse_ipv6(host::Cstring, sockaddr_::Ptr{sockaddr_storage})::Bool
 end
 
 """
@@ -11038,7 +11038,7 @@ int aeron_ipv6_addr_resolver(const char *host, int protocol, struct sockaddr_sto
 ```
 """
 function aeron_ipv6_addr_resolver(host, protocol, sockaddr_)
-    @ccall Aeron.aeron_ipv6_addr_resolver(host::Cstring, protocol::Cint, sockaddr_::Ptr{sockaddr_storage})::Cint
+    @ccall libaeron.aeron_ipv6_addr_resolver(host::Cstring, protocol::Cint, sockaddr_::Ptr{sockaddr_storage})::Cint
 end
 
 """
@@ -11050,7 +11050,7 @@ int aeron_lookup_interfaces(aeron_ifaddr_func_t func, void *clientd);
 ```
 """
 function aeron_lookup_interfaces(func, clientd)
-    @ccall Aeron.aeron_lookup_interfaces(func::aeron_ifaddr_func_t, clientd::Ptr{Cvoid})::Cint
+    @ccall libaeron.aeron_lookup_interfaces(func::aeron_ifaddr_func_t, clientd::Ptr{Cvoid})::Cint
 end
 
 """
@@ -11062,7 +11062,7 @@ int aeron_lookup_interfaces_from_ifaddrs(aeron_ifaddr_func_t func, void *clientd
 ```
 """
 function aeron_lookup_interfaces_from_ifaddrs(func, clientd, ifaddrs_)
-    @ccall Aeron.aeron_lookup_interfaces_from_ifaddrs(func::aeron_ifaddr_func_t, clientd::Ptr{Cvoid}, ifaddrs_::Ptr{ifaddrs})::Cint
+    @ccall libaeron.aeron_lookup_interfaces_from_ifaddrs(func::aeron_ifaddr_func_t, clientd::Ptr{Cvoid}, ifaddrs_::Ptr{ifaddrs})::Cint
 end
 
 """
@@ -11074,7 +11074,7 @@ void aeron_set_getifaddrs(aeron_getifaddrs_func_t get_func, aeron_freeifaddrs_fu
 ```
 """
 function aeron_set_getifaddrs(get_func, free_func)
-    @ccall Aeron.aeron_set_getifaddrs(get_func::aeron_getifaddrs_func_t, free_func::aeron_freeifaddrs_func_t)::Cvoid
+    @ccall libaeron.aeron_set_getifaddrs(get_func::aeron_getifaddrs_func_t, free_func::aeron_freeifaddrs_func_t)::Cvoid
 end
 
 """
@@ -11086,7 +11086,7 @@ int aeron_interface_parse_and_resolve(const char *interface_str, struct sockaddr
 ```
 """
 function aeron_interface_parse_and_resolve(interface_str, sockaddr_, prefixlen)
-    @ccall Aeron.aeron_interface_parse_and_resolve(interface_str::Cstring, sockaddr_::Ptr{sockaddr_storage}, prefixlen::Ptr{Csize_t})::Cint
+    @ccall libaeron.aeron_interface_parse_and_resolve(interface_str::Cstring, sockaddr_::Ptr{sockaddr_storage}, prefixlen::Ptr{Csize_t})::Cint
 end
 
 """
@@ -11098,7 +11098,7 @@ void aeron_set_ipv4_wildcard_host_and_port(struct sockaddr_storage *sockaddr);
 ```
 """
 function aeron_set_ipv4_wildcard_host_and_port(sockaddr_)
-    @ccall Aeron.aeron_set_ipv4_wildcard_host_and_port(sockaddr_::Ptr{sockaddr_storage})::Cvoid
+    @ccall libaeron.aeron_set_ipv4_wildcard_host_and_port(sockaddr_::Ptr{sockaddr_storage})::Cvoid
 end
 
 """
@@ -11110,7 +11110,7 @@ void aeron_set_ipv6_wildcard_host_and_port(struct sockaddr_storage *sockaddr);
 ```
 """
 function aeron_set_ipv6_wildcard_host_and_port(sockaddr_)
-    @ccall Aeron.aeron_set_ipv6_wildcard_host_and_port(sockaddr_::Ptr{sockaddr_storage})::Cvoid
+    @ccall libaeron.aeron_set_ipv6_wildcard_host_and_port(sockaddr_::Ptr{sockaddr_storage})::Cvoid
 end
 
 """
@@ -11122,7 +11122,7 @@ bool aeron_ipv4_does_prefix_match(struct in_addr *in_addr1, struct in_addr *in_a
 ```
 """
 function aeron_ipv4_does_prefix_match(in_addr1, in_addr2, prefixlen)
-    @ccall Aeron.aeron_ipv4_does_prefix_match(in_addr1::Ptr{Cvoid}, in_addr2::Ptr{Cvoid}, prefixlen::Csize_t)::Bool
+    @ccall libaeron.aeron_ipv4_does_prefix_match(in_addr1::Ptr{Cvoid}, in_addr2::Ptr{Cvoid}, prefixlen::Csize_t)::Bool
 end
 
 """
@@ -11134,7 +11134,7 @@ bool aeron_ipv6_does_prefix_match(struct in6_addr *in6_addr1, struct in6_addr *i
 ```
 """
 function aeron_ipv6_does_prefix_match(in6_addr1, in6_addr2, prefixlen)
-    @ccall Aeron.aeron_ipv6_does_prefix_match(in6_addr1::Ptr{Cvoid}, in6_addr2::Ptr{Cvoid}, prefixlen::Csize_t)::Bool
+    @ccall libaeron.aeron_ipv6_does_prefix_match(in6_addr1::Ptr{Cvoid}, in6_addr2::Ptr{Cvoid}, prefixlen::Csize_t)::Bool
 end
 
 """
@@ -11146,7 +11146,7 @@ size_t aeron_ipv4_netmask_to_prefixlen(struct in_addr *netmask);
 ```
 """
 function aeron_ipv4_netmask_to_prefixlen(netmask)
-    @ccall Aeron.aeron_ipv4_netmask_to_prefixlen(netmask::Ptr{Cvoid})::Csize_t
+    @ccall libaeron.aeron_ipv4_netmask_to_prefixlen(netmask::Ptr{Cvoid})::Csize_t
 end
 
 """
@@ -11158,7 +11158,7 @@ size_t aeron_ipv6_netmask_to_prefixlen(struct in6_addr *netmask);
 ```
 """
 function aeron_ipv6_netmask_to_prefixlen(netmask)
-    @ccall Aeron.aeron_ipv6_netmask_to_prefixlen(netmask::Ptr{Cvoid})::Csize_t
+    @ccall libaeron.aeron_ipv6_netmask_to_prefixlen(netmask::Ptr{Cvoid})::Csize_t
 end
 
 """
@@ -11170,7 +11170,7 @@ int aeron_find_interface(const char *interface_str, struct sockaddr_storage *if_
 ```
 """
 function aeron_find_interface(interface_str, if_addr, if_index)
-    @ccall Aeron.aeron_find_interface(interface_str::Cstring, if_addr::Ptr{sockaddr_storage}, if_index::Ptr{Cuint})::Cint
+    @ccall libaeron.aeron_find_interface(interface_str::Cstring, if_addr::Ptr{sockaddr_storage}, if_index::Ptr{Cuint})::Cint
 end
 
 """
@@ -11182,7 +11182,7 @@ int aeron_find_unicast_interface( int family, const char *interface_str, struct 
 ```
 """
 function aeron_find_unicast_interface(family, interface_str, interface_addr, interface_index)
-    @ccall Aeron.aeron_find_unicast_interface(family::Cint, interface_str::Cstring, interface_addr::Ptr{sockaddr_storage}, interface_index::Ptr{Cuint})::Cint
+    @ccall libaeron.aeron_find_unicast_interface(family::Cint, interface_str::Cstring, interface_addr::Ptr{sockaddr_storage}, interface_index::Ptr{Cuint})::Cint
 end
 
 """
@@ -11194,7 +11194,7 @@ bool aeron_is_addr_multicast(struct sockaddr_storage *addr);
 ```
 """
 function aeron_is_addr_multicast(addr)
-    @ccall Aeron.aeron_is_addr_multicast(addr::Ptr{sockaddr_storage})::Bool
+    @ccall libaeron.aeron_is_addr_multicast(addr::Ptr{sockaddr_storage})::Bool
 end
 
 """
@@ -11206,7 +11206,7 @@ bool aeron_is_wildcard_addr(struct sockaddr_storage *addr);
 ```
 """
 function aeron_is_wildcard_addr(addr)
-    @ccall Aeron.aeron_is_wildcard_addr(addr::Ptr{sockaddr_storage})::Bool
+    @ccall libaeron.aeron_is_wildcard_addr(addr::Ptr{sockaddr_storage})::Bool
 end
 
 """
@@ -11218,7 +11218,7 @@ bool aeron_is_wildcard_port(struct sockaddr_storage *addr);
 ```
 """
 function aeron_is_wildcard_port(addr)
-    @ccall Aeron.aeron_is_wildcard_port(addr::Ptr{sockaddr_storage})::Bool
+    @ccall libaeron.aeron_is_wildcard_port(addr::Ptr{sockaddr_storage})::Bool
 end
 
 """
@@ -11230,7 +11230,7 @@ int aeron_format_source_identity(char *buffer, size_t length, struct sockaddr_st
 ```
 """
 function aeron_format_source_identity(buffer, length, addr)
-    @ccall Aeron.aeron_format_source_identity(buffer::Cstring, length::Csize_t, addr::Ptr{sockaddr_storage})::Cint
+    @ccall libaeron.aeron_format_source_identity(buffer::Cstring, length::Csize_t, addr::Ptr{sockaddr_storage})::Cint
 end
 
 """
@@ -11242,7 +11242,7 @@ int aeron_netutil_get_so_buf_lengths(size_t *default_so_rcvbuf, size_t *default_
 ```
 """
 function aeron_netutil_get_so_buf_lengths(default_so_rcvbuf, default_so_sndbuf)
-    @ccall Aeron.aeron_netutil_get_so_buf_lengths(default_so_rcvbuf::Ptr{Csize_t}, default_so_sndbuf::Ptr{Csize_t})::Cint
+    @ccall libaeron.aeron_netutil_get_so_buf_lengths(default_so_rcvbuf::Ptr{Csize_t}, default_so_sndbuf::Ptr{Csize_t})::Cint
 end
 
 mutable struct __pthread_mutex_s
@@ -11256,25 +11256,25 @@ mutable struct __pthread_mutex_s
     __pthread_mutex_s() = new()
 end
 
-mutable struct var"##Ctag#5000"
+mutable struct var"##Ctag#2338"
     head::UInt64
     padding::NTuple{56, Int8}
-    var"##Ctag#5000"() = new()
+    var"##Ctag#2338"() = new()
 end
-function Base.getproperty(x::Ptr{var"##Ctag#5000"}, f::Symbol)
+function Base.getproperty(x::Ptr{var"##Ctag#2338"}, f::Symbol)
     f === :head && return Ptr{UInt64}(x + 0)
     f === :padding && return Ptr{NTuple{56, Int8}}(x + 8)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::var"##Ctag#5000", f::Symbol)
-    r = Ref{var"##Ctag#5000"}(x)
-    ptr = Base.unsafe_convert(Ptr{var"##Ctag#5000"}, r)
+function Base.getproperty(x::var"##Ctag#2338", f::Symbol)
+    r = Ref{var"##Ctag#2338"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"##Ctag#2338"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{var"##Ctag#5000"}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"##Ctag#2338"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 

@@ -1,5 +1,5 @@
 # Prologue file
-Aeron = joinpath(@__DIR__, "../artifact/lib/libaeron.so")
+libaeron = joinpath(@__DIR__, "../artifact/lib/libaeron.so")
 
 INT64_C = Int64
 INT64_MAX = typemax(INT64_C)

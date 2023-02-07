@@ -1,5 +1,5 @@
 [general]
-library_name = "Aeron"
+library_name = "libaeron"
 output_file_path = "./LibAeron.jl"
 module_name = "LibAeron"
 # jll_pkg_name = "Aeron_jll"
@@ -43,6 +43,3 @@ functionlike_macro_includelist = [
     # "AERON_COUNTER_KEY_OFFSET",
     # "AERON_COUNTER_LABEL_LENGTH_OFFSET",
 ]
-
-[log]
-TweakMutability_log=true
