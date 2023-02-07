@@ -1,19 +1,33 @@
 [general]
-library_name = "AeronClient"
-output_file_path = "./LibAeronClient.jl"
-module_name = "LibAeronClient"
+library_name = "Aeron"
+output_file_path = "./LibAeron.jl"
+module_name = "LibAeron"
 # jll_pkg_name = "Aeron_jll"
 export_symbol_prefixes = ["aeron_"]
 prologue_file_path = "./prologue.jl"
 
-# For simplicity right now
-use_julia_native_enum_type = true
+
+
+# use_julia_native_enum_type = true
+
+# We want to be able to create unintialized context structs and let the library fill them in
+auto_mutability = true
+auto_mutability_with_new = true
+auto_mutability_includelist  = [
+    "aeron_context_stct",
+]
+
+extract_c_comment_style = "doxygen"
+show_c_function_prototype = true
+
+# # use deterministic symbol instead of `gensym`-generated `var"##XXX"`
+# use_deterministic_symbol = true
+# smart_de_anonymize = true
 
 
 [codegen]
 use_ccall_macro = true
 always_NUL_terminated_string = true
-opaque_as_mutable_struct = false
 
 
 [codegen.macro]
