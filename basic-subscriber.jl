@@ -1,7 +1,7 @@
 include("gen/LibAeron.jl")
 
 using CSyntax
-
+using Libdl
 
 ## Basic config
 DEFAULT_CHANNEL = "aeron:udp?endpoint=localhost:20121"
@@ -79,11 +79,20 @@ end
 if !@isdefined PH
     const PH = Ref(0)
 end
+if !@isdefined BUFFDAT
+    const BUFDAT = zeros(UInt8, 1024)
+end
 function poll_handler(clientd, buffer, length, header)
     PH[] = PH[] + 1
 
+    BUFDAT[1:length] .= unsafe_wrap(Array, buffer, (length,))
+
+    @show "ABC"
+
     return nothing
 end
+
+
     # void poll_handler(void *clientd, const uint8_t *buffer, size_t length, aeron_header_t *header)
     # {
     #     aeron_subscription_t *subscription = (aeron_subscription_t *)clientd;
