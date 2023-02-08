@@ -18,70 +18,11 @@ DEFAULT_LINGER_TIMEOUT_MS = (0)
 DEFAULT_FRAGMENT_COUNT_LIMIT = (10)
 DEFAULT_RANDOM_MESSAGE_LENGTH = (false)
 DEFAULT_PUBLICATION_RATE_PROGRESS = (false)
-
-using Aeron: LibAeron
-
-using CSyntax
-using Libdl
-using StrideArrays
-
-## Basic config
-DEFAULT_CHANNEL = "aeron:udp?endpoint=localhost:20121"
-DEFAULT_PING_CHANNEL = "aeron:udp?endpoint=localhost:20123"
-DEFAULT_PONG_CHANNEL = "aeron:udp?endpoint=localhost:20124"
-DEFAULT_STREAM_ID = (1001)
-DEFAULT_PING_STREAM_ID = (1002)
-DEFAULT_PONG_STREAM_ID = (1003)
-DEFAULT_NUMBER_OF_WARM_UP_MESSAGES = (100000)
-DEFAULT_NUMBER_OF_MESSAGES = (10000000)
-DEFAULT_MESSAGE_LENGTH = (32)
-DEFAULT_LINGER_TIMEOUT_MS = (0)
-DEFAULT_FRAGMENT_COUNT_LIMIT = (10)
-DEFAULT_RANDOM_MESSAGE_LENGTH = (false)
-DEFAULT_PUBLICATION_RATE_PROGRESS = (false)
 ##
 
 
-function poll_handler(clientd, buffer, length, header_ptr)
-    # Allocation free
-    bufarr = PtrArray(buffer, (length,))
-
-    # Allocates
-    # header = unsafe_load(header_ptr)
-
-    @info "Message received" 
-    display(bufarr)
-
-    return nothing
-end
-
-
-    # void poll_handler(void *clientd, const uint8_t *buffer, size_t length, aeron_header_t *header)
-    # {
-    #     aeron_subscription_t *subscription = (aeron_subscription_t *)clientd;
-    #     aeron_subscription_constants_t subscription_constants;
-    #     aeron_header_values_t header_values;
-    
-    #     if (aeron_subscription_constants(subscription, &subscription_constants) < 0)
-    #     {
-    #         fprintf(stderr, "could not get subscription constants: %s\n", aeron_errmsg());
-    #         return;
-    #     }
-    
-    #     aeron_header_values(header, &header_values);
-    
-    #     printf(
-    #         "Message to stream %" PRId32 " from session %" PRId32 " (%" PRIu64 " bytes) <<%.*s>>\n",
-    #         subscription_constants.stream_id,
-    #         header_values.frame.session_id,
-    #         (uint64_t)length,
-    #         (int)length,
-    #         buffer);
-    # }
-
 function main()
     channel = DEFAULT_CHANNEL
-    idle_duration_ns = 1000 * 1000
     stream_id = DEFAULT_STREAM_ID
 
     println("Publishing to channel $channel on Stream ID $stream_id")
