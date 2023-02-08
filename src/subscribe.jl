@@ -99,8 +99,7 @@ function subscribe(callback::Base.Callable, conf::AeronConfig1)
         end
 
         aeron_fragment_assembler_handler_ptr = dlsym(dlopen(LibAeron.libaeron), :aeron_fragment_assembler_handler)
-        timeout = time() + 30
-        while time() < timeout
+        while true
             fragments_read = LibAeron.aeron_subscription_poll(
                 subscription,
                 aeron_fragment_assembler_handler_ptr,
