@@ -1,0 +1,10 @@
+name = "Aeron"
+uuid = "42ac8a32-990f-4d8c-aece-52d731103226"
+authors = ["William Thompson <wthompson@uvic.ca>"]
+version = "1.0.0"
+
+[deps]
+CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
+CSyntax = "ea656a56-6ca6-5dda-bba5-7b6963a5f74c"
+Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
+StrideArrays = "d1fa6d79-ef01-42a6-86c9-f7c551f8593b"

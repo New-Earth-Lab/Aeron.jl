@@ -1,21 +1,22 @@
 [general]
 library_name = "libaeron"
-output_file_path = "./LibAeron.jl"
+output_file_path = "../src/LibAeron.jl"
 module_name = "LibAeron"
 # jll_pkg_name = "Aeron_jll"
 export_symbol_prefixes = ["aeron_"]
 prologue_file_path = "./prologue.jl"
+epilogue_file_path = "./epilogue.jl"
 
 
 
 # use_julia_native_enum_type = true
 
 # We want to be able to create unintialized context structs and let the library fill them in
-auto_mutability = true
-auto_mutability_with_new = true
-auto_mutability_includelist  = [
-    "aeron_context_stct",
-]
+auto_mutability = false
+# auto_mutability_with_new = true
+# auto_mutability_includelist  = [
+#     "aeron_context_stct",
+# ]
 
 extract_c_comment_style = "doxygen"
 show_c_function_prototype = true
@@ -36,10 +37,3 @@ always_NUL_terminated_string = true
 # if you'd like to translate function-like macros to Julia, please set this entry to "aggressive".
 macro_mode = "disable"
 
-functionlike_macro_includelist = [
-    # "AERON_COUNTER_REGISTRATION_ID_OFFSET",
-    # "AERON_COUNTER_TYPE_ID_OFFSET",
-    # "AERON_COUNTER_FREE_FOR_REUSE_DEADLINE_OFFSET",
-    # "AERON_COUNTER_KEY_OFFSET",
-    # "AERON_COUNTER_LABEL_LENGTH_OFFSET",
-]
