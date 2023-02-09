@@ -1,5 +1,5 @@
 # Prologue file
-libaeron = joinpath(@__DIR__, "../artifact/lib/libaeron.so")
+# libaeron = joinpath(@__DIR__, "../artifact/lib/libaeron.so")
 
 INT64_C = Int64
 UINT8_C = UInt8

@@ -7,7 +7,7 @@ conf = AeronConfig1(
 
 
 i = 0
-Aeron.subscribe(conf) do buffer
+Aeron.subscribe(conf) do header, buffer
     
     total = sum(buffer)
     @info "Message received" total

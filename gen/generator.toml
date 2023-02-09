@@ -2,7 +2,7 @@
 library_name = "libaeron"
 output_file_path = "../src/LibAeron.jl"
 module_name = "LibAeron"
-# jll_pkg_name = "Aeron_jll"
+jll_pkg_name = "Aeron_jll"
 export_symbol_prefixes = ["aeron_"]
 prologue_file_path = "./prologue.jl"
 epilogue_file_path = "./epilogue.jl"

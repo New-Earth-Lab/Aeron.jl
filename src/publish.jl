@@ -63,7 +63,7 @@ function publisher(callback::Base.Callable, conf::AeronConfig1)
 end
 
 
-function publication_offer(pub::AeronPublication1, message::DenseArray{UInt8})
+function publication_offer(pub::AeronPublication1, message::AbstractArray{UInt8})
 
     message_len = length(message)
     result = 

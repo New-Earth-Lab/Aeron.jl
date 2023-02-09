@@ -4,6 +4,7 @@ authors = ["William Thompson <wthompson@uvic.ca>"]
 version = "1.0.0"
 
 [deps]
+Aeron_jll = "d964258c-d1ad-568a-aca9-3ef511f5bffd"
 CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 CSyntax = "ea656a56-6ca6-5dda-bba5-7b6963a5f74c"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"

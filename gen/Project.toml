@@ -1,0 +1,3 @@
+[deps]
+Aeron_jll = "d964258c-d1ad-568a-aca9-3ef511f5bffd"
+Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
