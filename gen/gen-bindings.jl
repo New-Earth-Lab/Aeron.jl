@@ -6,7 +6,7 @@ using Aeron_jll
 cd(@__DIR__)
 
 # include_dir = normpath("../artifact/include/aeron")
-includedir = joinpath(Aeron_jll.artifact_dir, "include/aeron")
+include_dir = joinpath(Aeron_jll.artifact_dir, "include/aeron")
 options = load_options(joinpath(@__DIR__, "generator.toml"))
 
 # add compiler flags, e.g. "-DXXXXXXXXX"
@@ -14,13 +14,14 @@ args = get_default_args(Clang.JLLEnvs.JLL_ENV_TRIPLES[11])  # Note you must call
 push!(args, "-I$include_dir")
 
 headers = joinpath.(
-    includedir,
+    include_dir,
     [
         "aeronc.h",
         "concurrent/aeron_atomic.h",
         "util/aeron_strutil.h",
         "util/aeron_parse_util.h",
         "aeron_agent.h",
+        "protocol/aeron_udp_protocol.h",
     ]
 )
 

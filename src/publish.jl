@@ -3,7 +3,7 @@ struct AeronPublication1
     handle::Ptr{LibAeron.aeron_publication_t}
 end
 
-function publisher(callback::Base.Callable, conf::AeronConfig1)
+function publisher(callback::Base.Callable, conf::AeronConfig)
 
 
     println("Publishing to channel $(conf.channel) on Stream ID $(conf.stream)")
@@ -82,8 +82,8 @@ function publication_offer(pub::AeronPublication1, message::AbstractArray{UInt8}
         return :adminaction
         # println("Offer failed because of an administration action in the system")
     elseif LibAeron.AERON_PUBLICATION_CLOSED == result
-        return :closed
-        # println("Offer failed because publication is closed")
+        # return :closed
+        error("Offer failed because publication is closed")
     else
         return :unknown
         # println("Offer failed due to unknown reason ", res)

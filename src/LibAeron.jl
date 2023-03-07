@@ -14,6 +14,43 @@ UINT16_C = UInt16
 UINT32_C = UInt32
 INT64_MAX = typemax(INT64_C)
 
+__declspec = (args...)->nothing
+dllimport = nothing
+offsetof = (args...)->nothing
+registration_id = type_id = free_for_reuse_deadline_ms  = key = label = nothing
+
+AERON_ALIGN(value, alignment) = (((value) + ((alignment) - 0x01)) & ~((alignment) - 0x01))
+
+const pthread_t = Culong
+
+struct __pthread_internal_list
+    __prev::Ptr{__pthread_internal_list}
+    __next::Ptr{__pthread_internal_list}
+end
+
+const __pthread_list_t = __pthread_internal_list
+
+struct pthread_mutex_t
+    data::NTuple{40, UInt8}
+end
+
+function Base.getproperty(x::Ptr{pthread_mutex_t}, f::Symbol)
+    f === :__data && return Ptr{__pthread_mutex_s}(x + 0)
+    f === :__size && return Ptr{NTuple{40, Cchar}}(x + 0)
+    f === :__align && return Ptr{Clong}(x + 0)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::pthread_mutex_t, f::Symbol)
+    r = Ref{pthread_mutex_t}(x)
+    ptr = Base.unsafe_convert(Ptr{pthread_mutex_t}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{pthread_mutex_t}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
 
 struct aeron_counter_value_descriptor_stct
     data::NTuple{128, UInt8}
@@ -80,10 +117,11 @@ const aeron_t = aeron_stct
 
 Structure used to hold information for a try\\_claim function call.
 """
-struct aeron_buffer_claim_stct
+mutable struct aeron_buffer_claim_stct
     frame_header::Ptr{UInt8}
     data::Ptr{UInt8}
     length::Csize_t
+    aeron_buffer_claim_stct() = new()
 end
 
 """
@@ -1147,23 +1185,26 @@ function aeron_async_add_counter_poll(counter, async)
     @ccall libaeron.aeron_async_add_counter_poll(counter::Ptr{Ptr{aeron_counter_t}}, async::Ptr{aeron_async_add_counter_t})::Cint
 end
 
-struct aeron_on_available_counter_pair_stct
+mutable struct aeron_on_available_counter_pair_stct
     handler::aeron_on_available_counter_t
     clientd::Ptr{Cvoid}
+    aeron_on_available_counter_pair_stct() = new()
 end
 
 const aeron_on_available_counter_pair_t = aeron_on_available_counter_pair_stct
 
-struct aeron_on_unavailable_counter_pair_stct
+mutable struct aeron_on_unavailable_counter_pair_stct
     handler::aeron_on_unavailable_counter_t
     clientd::Ptr{Cvoid}
+    aeron_on_unavailable_counter_pair_stct() = new()
 end
 
 const aeron_on_unavailable_counter_pair_t = aeron_on_unavailable_counter_pair_stct
 
-struct aeron_on_close_client_pair_stct
+mutable struct aeron_on_close_client_pair_stct
     handler::aeron_on_close_client_t
     clientd::Ptr{Cvoid}
+    aeron_on_close_client_pair_stct() = new()
 end
 
 const aeron_on_close_client_pair_t = aeron_on_close_client_pair_stct
@@ -1294,11 +1335,12 @@ function aeron_remove_close_handler(client, pair)
     @ccall libaeron.aeron_remove_close_handler(client::Ptr{aeron_t}, pair::Ptr{aeron_on_close_client_pair_t})::Cint
 end
 
-struct aeron_counters_reader_buffers_stct
+mutable struct aeron_counters_reader_buffers_stct
     values::Ptr{UInt8}
     metadata::Ptr{UInt8}
     values_length::Csize_t
     metadata_length::Csize_t
+    aeron_counters_reader_buffers_stct() = new()
 end
 
 const aeron_counters_reader_buffers_t = aeron_counters_reader_buffers_stct
@@ -1522,9 +1564,10 @@ Function called when filling in the reserved value field of a message.
 """
 const aeron_reserved_value_supplier_t = Ptr{Cvoid}
 
-struct aeron_iovec_stct
+mutable struct aeron_iovec_stct
     iov_base::Ptr{UInt8}
     iov_len::Csize_t
+    aeron_iovec_stct() = new()
 end
 
 const aeron_iovec_t = aeron_iovec_stct
@@ -1570,7 +1613,7 @@ end
 
 Configuration for a publication that does not change during it's lifetime.
 """
-struct aeron_publication_constants_stct
+mutable struct aeron_publication_constants_stct
     channel::Cstring
     original_registration_id::Int64
     registration_id::Int64
@@ -1584,6 +1627,7 @@ struct aeron_publication_constants_stct
     initial_term_id::Int32
     publication_limit_counter_id::Int32
     channel_status_indicator_id::Int32
+    aeron_publication_constants_stct() = new()
 end
 
 """
@@ -2357,13 +2401,14 @@ function aeron_header_position_bits_to_shift(header)
     @ccall libaeron.aeron_header_position_bits_to_shift(header::Ptr{aeron_header_t})::Csize_t
 end
 
-struct aeron_subscription_constants_stct
+mutable struct aeron_subscription_constants_stct
     channel::Cstring
     on_available_image::aeron_on_available_image_t
     on_unavailable_image::aeron_on_unavailable_image_t
     registration_id::Int64
     stream_id::Int32
     channel_status_indicator_id::Int32
+    aeron_subscription_constants_stct() = new()
 end
 
 const aeron_subscription_constants_t = aeron_subscription_constants_stct
@@ -2768,7 +2813,7 @@ end
 
 Configuration for an image that does not change during it's lifetime.
 """
-struct aeron_image_constants_stct
+mutable struct aeron_image_constants_stct
     subscription::Ptr{aeron_subscription_t}
     source_identity::Cstring
     correlation_id::Int64
@@ -2779,6 +2824,7 @@ struct aeron_image_constants_stct
     session_id::Int32
     initial_term_id::Int32
     subscriber_position_id::Int32
+    aeron_image_constants_stct() = new()
 end
 
 """
@@ -3274,9 +3320,10 @@ end
 
 Configuration for a counter that does not change during it's lifetime.
 """
-struct aeron_counter_constants_stct
+mutable struct aeron_counter_constants_stct
     registration_id::Int64
     counter_id::Int32
+    aeron_counter_constants_stct() = new()
 end
 
 """
@@ -3891,6 +3938,66 @@ function aeron_cnc_close(aeron_cnc)
 end
 
 """
+    aeron_cas_int64(dst, expected, desired)
+
+### Prototype
+```c
+inline bool aeron_cas_int64(volatile int64_t *dst, int64_t expected, int64_t desired);
+```
+"""
+function aeron_cas_int64(dst, expected, desired)
+    @ccall libaeron.aeron_cas_int64(dst::Ptr{Int64}, expected::Int64, desired::Int64)::Bool
+end
+
+"""
+    aeron_cas_uint64(dst, expected, desired)
+
+### Prototype
+```c
+inline bool aeron_cas_uint64(volatile uint64_t *dst, uint64_t expected, uint64_t desired);
+```
+"""
+function aeron_cas_uint64(dst, expected, desired)
+    @ccall libaeron.aeron_cas_uint64(dst::Ptr{UInt64}, expected::UInt64, desired::UInt64)::Bool
+end
+
+"""
+    aeron_cas_int32(dst, expected, desired)
+
+### Prototype
+```c
+inline bool aeron_cas_int32(volatile int32_t *dst, int32_t expected, int32_t desired);
+```
+"""
+function aeron_cas_int32(dst, expected, desired)
+    @ccall libaeron.aeron_cas_int32(dst::Ptr{Int32}, expected::Int32, desired::Int32)::Bool
+end
+
+"""
+    aeron_acquire()
+
+### Prototype
+```c
+inline void aeron_acquire(void);
+```
+"""
+function aeron_acquire()
+    @ccall libaeron.aeron_acquire()::Cvoid
+end
+
+"""
+    aeron_release()
+
+### Prototype
+```c
+inline void aeron_release(void);
+```
+"""
+function aeron_release()
+    @ccall libaeron.aeron_release()::Cvoid
+end
+
+"""
     aeron_format_date(str, count, timestamp)
 
 ### Prototype
@@ -3970,19 +4077,21 @@ function aeron_str_length(str, length_bound, length)
     @ccall libaeron.aeron_str_length(str::Cstring, length_bound::Csize_t, length::Ptr{Csize_t})::Bool
 end
 
-struct aeron_parsed_address_stct
+mutable struct aeron_parsed_address_stct
     host::NTuple{384, Cchar}
     port::NTuple{8, Cchar}
     ip_version_hint::Cint
+    aeron_parsed_address_stct() = new()
 end
 
 const aeron_parsed_address_t = aeron_parsed_address_stct
 
-struct aeron_parsed_interface_stct
+mutable struct aeron_parsed_interface_stct
     host::NTuple{384, Cchar}
     port::NTuple{8, Cchar}
     prefix::NTuple{8, Cchar}
     ip_version_hint::Cint
+    aeron_parsed_interface_stct() = new()
 end
 
 const aeron_parsed_interface_t = aeron_parsed_interface_stct
@@ -4107,6 +4216,22 @@ function aeron_thread_set_affinity(role_name, cpu_affinity_no)
     @ccall libaeron.aeron_thread_set_affinity(role_name::Cstring, cpu_affinity_no::UInt8)::Cint
 end
 
+const aeron_mutex_t = pthread_mutex_t
+
+const aeron_thread_t = pthread_t
+
+"""
+    proc_yield()
+
+### Prototype
+```c
+void proc_yield(void);
+```
+"""
+function proc_yield()
+    @ccall libaeron.proc_yield()::Cvoid
+end
+
 # typedef void ( * aeron_idle_strategy_func_t ) ( void * state , int work_count )
 const aeron_idle_strategy_func_t = Ptr{Cvoid}
 
@@ -4170,9 +4295,10 @@ const aeron_agent_do_work_func_t = Ptr{Cvoid}
 # typedef void ( * aeron_agent_on_close_func_t ) ( void * )
 const aeron_agent_on_close_func_t = Ptr{Cvoid}
 
-struct aeron_idle_strategy_stct
+mutable struct aeron_idle_strategy_stct
     idle::aeron_idle_strategy_func_t
     init::aeron_idle_strategy_init_func_t
+    aeron_idle_strategy_stct() = new()
 end
 
 const aeron_idle_strategy_t = aeron_idle_strategy_stct
@@ -4261,7 +4387,7 @@ function aeron_idle_strategy_init_null(state, env_var, load_args)
     @ccall libaeron.aeron_idle_strategy_init_null(state::Ptr{Ptr{Cvoid}}, env_var::Cstring, load_args::Cstring)::Cint
 end
 
-struct aeron_agent_runner_stct
+mutable struct aeron_agent_runner_stct
     role_name::Cstring
     agent_state::Ptr{Cvoid}
     idle_strategy_state::Ptr{Cvoid}
@@ -4270,9 +4396,10 @@ struct aeron_agent_runner_stct
     do_work::aeron_agent_do_work_func_t
     on_close::aeron_agent_on_close_func_t
     idle_strategy::aeron_idle_strategy_func_t
-    thread::Cint
+    thread::aeron_thread_t
     running::Bool
     state::UInt8
+    aeron_agent_runner_stct() = new()
 end
 
 const aeron_agent_runner_t = aeron_agent_runner_stct
@@ -4384,6 +4511,579 @@ int aeron_agent_close(aeron_agent_runner_t *runner);
 function aeron_agent_close(runner)
     @ccall libaeron.aeron_agent_close(runner::Ptr{aeron_agent_runner_t})::Cint
 end
+
+struct aeron_frame_header_stct
+    data::NTuple{8, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_frame_header_stct}, f::Symbol)
+    f === :frame_length && return Ptr{Int32}(x + 0)
+    f === :version && return Ptr{Int8}(x + 4)
+    f === :flags && return Ptr{UInt8}(x + 5)
+    f === :type && return Ptr{Int16}(x + 6)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_frame_header_stct, f::Symbol)
+    r = Ref{aeron_frame_header_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_frame_header_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_frame_header_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_frame_header_t = aeron_frame_header_stct
+
+struct aeron_data_header_stct
+    data::NTuple{32, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_data_header_stct}, f::Symbol)
+    f === :frame_header && return Ptr{aeron_frame_header_t}(x + 0)
+    f === :term_offset && return Ptr{Int32}(x + 8)
+    f === :session_id && return Ptr{Int32}(x + 12)
+    f === :stream_id && return Ptr{Int32}(x + 16)
+    f === :term_id && return Ptr{Int32}(x + 20)
+    f === :reserved_value && return Ptr{Int64}(x + 24)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_data_header_stct, f::Symbol)
+    r = Ref{aeron_data_header_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_data_header_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_data_header_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_data_header_t = aeron_data_header_stct
+
+struct aeron_setup_header_stct
+    data::NTuple{40, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_setup_header_stct}, f::Symbol)
+    f === :frame_header && return Ptr{aeron_frame_header_t}(x + 0)
+    f === :term_offset && return Ptr{Int32}(x + 8)
+    f === :session_id && return Ptr{Int32}(x + 12)
+    f === :stream_id && return Ptr{Int32}(x + 16)
+    f === :initial_term_id && return Ptr{Int32}(x + 20)
+    f === :active_term_id && return Ptr{Int32}(x + 24)
+    f === :term_length && return Ptr{Int32}(x + 28)
+    f === :mtu && return Ptr{Int32}(x + 32)
+    f === :ttl && return Ptr{Int32}(x + 36)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_setup_header_stct, f::Symbol)
+    r = Ref{aeron_setup_header_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_setup_header_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_setup_header_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_setup_header_t = aeron_setup_header_stct
+
+struct aeron_nak_header_stct
+    data::NTuple{28, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_nak_header_stct}, f::Symbol)
+    f === :frame_header && return Ptr{aeron_frame_header_t}(x + 0)
+    f === :session_id && return Ptr{Int32}(x + 8)
+    f === :stream_id && return Ptr{Int32}(x + 12)
+    f === :term_id && return Ptr{Int32}(x + 16)
+    f === :term_offset && return Ptr{Int32}(x + 20)
+    f === :length && return Ptr{Int32}(x + 24)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_nak_header_stct, f::Symbol)
+    r = Ref{aeron_nak_header_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_nak_header_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_nak_header_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_nak_header_t = aeron_nak_header_stct
+
+struct aeron_status_message_header_stct
+    data::NTuple{36, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_status_message_header_stct}, f::Symbol)
+    f === :frame_header && return Ptr{aeron_frame_header_t}(x + 0)
+    f === :session_id && return Ptr{Int32}(x + 8)
+    f === :stream_id && return Ptr{Int32}(x + 12)
+    f === :consumption_term_id && return Ptr{Int32}(x + 16)
+    f === :consumption_term_offset && return Ptr{Int32}(x + 20)
+    f === :receiver_window && return Ptr{Int32}(x + 24)
+    f === :receiver_id && return Ptr{Int64}(x + 28)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_status_message_header_stct, f::Symbol)
+    r = Ref{aeron_status_message_header_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_status_message_header_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_status_message_header_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_status_message_header_t = aeron_status_message_header_stct
+
+struct aeron_status_message_optional_header_stct
+    data::NTuple{8, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_status_message_optional_header_stct}, f::Symbol)
+    f === :group_tag && return Ptr{Int64}(x + 0)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_status_message_optional_header_stct, f::Symbol)
+    r = Ref{aeron_status_message_optional_header_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_status_message_optional_header_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_status_message_optional_header_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_status_message_optional_header_t = aeron_status_message_optional_header_stct
+
+struct aeron_rttm_header_stct
+    data::NTuple{40, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_rttm_header_stct}, f::Symbol)
+    f === :frame_header && return Ptr{aeron_frame_header_t}(x + 0)
+    f === :session_id && return Ptr{Int32}(x + 8)
+    f === :stream_id && return Ptr{Int32}(x + 12)
+    f === :echo_timestamp && return Ptr{Int64}(x + 16)
+    f === :reception_delta && return Ptr{Int64}(x + 24)
+    f === :receiver_id && return Ptr{Int64}(x + 32)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_rttm_header_stct, f::Symbol)
+    r = Ref{aeron_rttm_header_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_rttm_header_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_rttm_header_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_rttm_header_t = aeron_rttm_header_stct
+
+struct aeron_resolution_header_stct
+    data::NTuple{8, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_resolution_header_stct}, f::Symbol)
+    f === :res_type && return Ptr{Int8}(x + 0)
+    f === :res_flags && return Ptr{UInt8}(x + 1)
+    f === :udp_port && return Ptr{UInt16}(x + 2)
+    f === :age_in_ms && return Ptr{Int32}(x + 4)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_resolution_header_stct, f::Symbol)
+    r = Ref{aeron_resolution_header_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_resolution_header_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_resolution_header_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_resolution_header_t = aeron_resolution_header_stct
+
+struct aeron_resolution_header_ipv4_stct
+    data::NTuple{14, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_resolution_header_ipv4_stct}, f::Symbol)
+    f === :resolution_header && return Ptr{aeron_resolution_header_t}(x + 0)
+    f === :addr && return Ptr{NTuple{4, UInt8}}(x + 8)
+    f === :name_length && return Ptr{Int16}(x + 12)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_resolution_header_ipv4_stct, f::Symbol)
+    r = Ref{aeron_resolution_header_ipv4_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_resolution_header_ipv4_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_resolution_header_ipv4_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_resolution_header_ipv4_t = aeron_resolution_header_ipv4_stct
+
+struct aeron_resolution_header_ipv6_stct
+    data::NTuple{26, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_resolution_header_ipv6_stct}, f::Symbol)
+    f === :resolution_header && return Ptr{aeron_resolution_header_t}(x + 0)
+    f === :addr && return Ptr{NTuple{16, UInt8}}(x + 8)
+    f === :name_length && return Ptr{Int16}(x + 24)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_resolution_header_ipv6_stct, f::Symbol)
+    r = Ref{aeron_resolution_header_ipv6_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_resolution_header_ipv6_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_resolution_header_ipv6_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_resolution_header_ipv6_t = aeron_resolution_header_ipv6_stct
+
+struct aeron_option_hdeader_stct
+    data::NTuple{4, UInt8}
+end
+
+function Base.getproperty(x::Ptr{aeron_option_hdeader_stct}, f::Symbol)
+    f === :option_length && return Ptr{UInt16}(x + 0)
+    f === :type && return Ptr{UInt16}(x + 2)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::aeron_option_hdeader_stct, f::Symbol)
+    r = Ref{aeron_option_hdeader_stct}(x)
+    ptr = Base.unsafe_convert(Ptr{aeron_option_hdeader_stct}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{aeron_option_hdeader_stct}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+const aeron_option_header_t = aeron_option_hdeader_stct
+
+"""
+    aeron_udp_protocol_group_tag(sm, group_tag)
+
+### Prototype
+```c
+int aeron_udp_protocol_group_tag(aeron_status_message_header_t *sm, int64_t *group_tag);
+```
+"""
+function aeron_udp_protocol_group_tag(sm, group_tag)
+    @ccall libaeron.aeron_udp_protocol_group_tag(sm::Ptr{aeron_status_message_header_t}, group_tag::Ptr{Int64})::Cint
+end
+
+"""
+    aeron_res_header_address_length(res_type)
+
+### Prototype
+```c
+inline size_t aeron_res_header_address_length(int8_t res_type);
+```
+"""
+function aeron_res_header_address_length(res_type)
+    @ccall libaeron.aeron_res_header_address_length(res_type::Int8)::Csize_t
+end
+
+"""
+    aeron_compute_max_message_length(term_length)
+
+### Prototype
+```c
+inline size_t aeron_compute_max_message_length(size_t term_length);
+```
+"""
+function aeron_compute_max_message_length(term_length)
+    @ccall libaeron.aeron_compute_max_message_length(term_length::Csize_t)::Csize_t
+end
+
+"""
+    aeron_res_header_entry_length_ipv4(header)
+
+### Prototype
+```c
+size_t aeron_res_header_entry_length_ipv4(aeron_resolution_header_ipv4_t *header);
+```
+"""
+function aeron_res_header_entry_length_ipv4(header)
+    @ccall libaeron.aeron_res_header_entry_length_ipv4(header::Ptr{aeron_resolution_header_ipv4_t})::Csize_t
+end
+
+"""
+    aeron_res_header_entry_length_ipv6(header)
+
+### Prototype
+```c
+size_t aeron_res_header_entry_length_ipv6(aeron_resolution_header_ipv6_t *header);
+```
+"""
+function aeron_res_header_entry_length_ipv6(header)
+    @ccall libaeron.aeron_res_header_entry_length_ipv6(header::Ptr{aeron_resolution_header_ipv6_t})::Csize_t
+end
+
+"""
+    aeron_res_header_entry_length(res, remaining)
+
+### Prototype
+```c
+int aeron_res_header_entry_length(void *res, size_t remaining);
+```
+"""
+function aeron_res_header_entry_length(res, remaining)
+    @ccall libaeron.aeron_res_header_entry_length(res::Ptr{Cvoid}, remaining::Csize_t)::Cint
+end
+
+mutable struct __pthread_mutex_s
+    __lock::Cint
+    __count::Cuint
+    __owner::Cint
+    __nusers::Cuint
+    __kind::Cint
+    __spins::Cint
+    __list::__pthread_list_t
+    __pthread_mutex_s() = new()
+end
+
+const AERON_NULL_VALUE = -1
+
+const AERON_CLIENT_ERROR_DRIVER_TIMEOUT = -1000
+
+const AERON_CLIENT_ERROR_CLIENT_TIMEOUT = -1001
+
+const AERON_CLIENT_ERROR_CONDUCTOR_SERVICE_TIMEOUT = -1002
+
+const AERON_CLIENT_ERROR_BUFFER_FULL = -1003
+
+const AERON_CLIENT_MAX_LOCAL_ADDRESS_STR_LEN = 64
+
+const AERON_DIR_ENV_VAR = "AERON_DIR"
+
+const AERON_DRIVER_TIMEOUT_ENV_VAR = "AERON_DRIVER_TIMEOUT"
+
+const AERON_CLIENT_RESOURCE_LINGER_DURATION_ENV_VAR = "AERON_CLIENT_RESOURCE_LINGER_DURATION"
+
+const AERON_CLIENT_PRE_TOUCH_MAPPED_MEMORY_ENV_VAR = "AERON_CLIENT_PRE_TOUCH_MAPPED_MEMORY"
+
+const AERON_AGENT_ON_START_FUNCTION_ENV_VAR = "AERON_AGENT_ON_START_FUNCTION"
+
+const AERON_COUNTER_CACHE_LINE_LENGTH = Cuint(64)
+
+# Skipping MacroDefinition: AERON_COUNTER_VALUE_LENGTH sizeof ( aeron_counter_value_descriptor_t )
+
+const AERON_COUNTER_REGISTRATION_ID_OFFSET = offsetof(aeron_counter_value_descriptor_t, registration_id)
+
+# Skipping MacroDefinition: AERON_COUNTER_METADATA_LENGTH sizeof ( aeron_counter_metadata_descriptor_t )
+
+const AERON_COUNTER_TYPE_ID_OFFSET = offsetof(aeron_counter_metadata_descriptor_t, type_id)
+
+const AERON_COUNTER_FREE_FOR_REUSE_DEADLINE_OFFSET = offsetof(aeron_counter_metadata_descriptor_t, free_for_reuse_deadline_ms)
+
+const AERON_COUNTER_KEY_OFFSET = offsetof(aeron_counter_metadata_descriptor_t, key)
+
+const AERON_COUNTER_LABEL_LENGTH_OFFSET = offsetof(aeron_counter_metadata_descriptor_t, label)
+
+# Skipping MacroDefinition: AERON_COUNTER_MAX_LABEL_LENGTH sizeof ( ( ( aeron_counter_metadata_descriptor_t * ) NULL ) -> label )
+
+# Skipping MacroDefinition: AERON_COUNTER_MAX_KEY_LENGTH sizeof ( ( ( aeron_counter_metadata_descriptor_t * ) NULL ) -> key )
+
+const AERON_COUNTER_RECORD_UNUSED = 0
+
+const AERON_COUNTER_RECORD_ALLOCATED = 1
+
+const AERON_COUNTER_RECORD_RECLAIMED = -1
+
+const AERON_COUNTER_REGISTRATION_ID_DEFAULT = INT64_C(0)
+
+const AERON_COUNTER_NOT_FREE_TO_REUSE = INT64_MAX
+
+const AERON_COUNTER_OWNER_ID_DEFAULT = INT64_C(0)
+
+const AERON_NULL_COUNTER_ID = -1
+
+const AERON_PUBLICATION_NOT_CONNECTED = -(Clong(1))
+
+const AERON_PUBLICATION_BACK_PRESSURED = -(Clong(2))
+
+const AERON_PUBLICATION_ADMIN_ACTION = -(Clong(3))
+
+const AERON_PUBLICATION_CLOSED = -(Clong(4))
+
+const AERON_PUBLICATION_MAX_POSITION_EXCEEDED = -(Clong(5))
+
+const AERON_PUBLICATION_ERROR = -(Clong(6))
+
+const AERON_COMPILER_GCC = 1
+
+const AERON_COMPILER_LLVM = 1
+
+const AERON_CPU_X64 = 1
+
+const AERON_FORMAT_NUMBER_TO_LOCALE_STR_LEN = 32
+
+const AERON_EXPORT = __declspec(dllimport)
+
+const AERON_MAX_HOST_LENGTH = 384
+
+const AERON_MAX_PORT_LENGTH = 8
+
+const AERON_MAX_PREFIX_LENGTH = 8
+
+# const AERON_INIT_ONCE = pthread_once_t
+
+# const AERON_INIT_ONCE_VALUE = PTHREAD_ONCE_INIT
+
+# const aeron_mutex_init = pthread_mutex_init
+
+# const aeron_mutex_lock = pthread_mutex_lock
+
+# const aeron_mutex_unlock = pthread_mutex_unlock
+
+# const aeron_mutex_destroy = pthread_mutex_destroy
+
+# const aeron_thread_once = pthread_once
+
+# const aeron_thread_attr_init = pthread_attr_init
+
+# const aeron_thread_create = pthread_create
+
+# const aeron_thread_join = pthread_join
+
+# const aeron_thread_key_create = pthread_key_create
+
+# const aeron_thread_key_delete = pthread_key_delete
+
+# const aeron_thread_get_specific = pthread_getspecific
+
+# const aeron_thread_set_specific = pthread_setspecific
+
+const AERON_MAX_PATH = 384
+
+const AERON_AGENT_STATE_UNUSED = 0
+
+const AERON_AGENT_STATE_INITED = 1
+
+const AERON_AGENT_STATE_STARTED = 2
+
+const AERON_AGENT_STATE_MANUAL = 3
+
+const AERON_AGENT_STATE_STOPPING = 4
+
+const AERON_AGENT_STATE_STOPPED = 5
+
+const AERON_IDLE_STRATEGY_BACKOFF_MAX_SPINS = 10
+
+const AERON_IDLE_STRATEGY_BACKOFF_MAX_YIELDS = 20
+
+const AERON_IDLE_STRATEGY_BACKOFF_MIN_PARK_PERIOD_NS = Clonglong(1000)
+
+const AERON_IDLE_STRATEGY_BACKOFF_MAX_PARK_PERIOD_NS = 1 * 1000 * Clonglong(1000)
+
+const AERON_RES_HEADER_ADDRESS_LENGTH_IP4 = Cuint(4)
+
+const AERON_RES_HEADER_ADDRESS_LENGTH_IP6 = Cuint(16)
+
+const AERON_FRAME_HEADER_VERSION = 0
+
+const AERON_HDR_TYPE_PAD = 0x00
+
+const AERON_HDR_TYPE_DATA = 0x01
+
+const AERON_HDR_TYPE_NAK = 0x02
+
+const AERON_HDR_TYPE_SM = 0x03
+
+const AERON_HDR_TYPE_ERR = 0x04
+
+const AERON_HDR_TYPE_SETUP = 0x05
+
+const AERON_HDR_TYPE_RTTM = 0x06
+
+const AERON_HDR_TYPE_RES = 0x07
+
+const AERON_HDR_TYPE_ATS_DATA = 0x08
+
+const AERON_HDR_TYPE_ATS_SETUP = 0x09
+
+const AERON_HDR_TYPE_ATS_SM = 0x0a
+
+const AERON_HDR_TYPE_EXT = 0xffff
+
+# Skipping MacroDefinition: AERON_DATA_HEADER_LENGTH ( sizeof ( aeron_data_header_t ) )
+
+const AERON_DATA_HEADER_BEGIN_FLAG = UINT8_C(0x80)
+
+const AERON_DATA_HEADER_END_FLAG = UINT8_C(0x40)
+
+const AERON_DATA_HEADER_EOS_FLAG = UINT8_C(0x20)
+
+const AERON_DATA_HEADER_UNFRAGMENTED = UINT8_C(AERON_DATA_HEADER_BEGIN_FLAG | AERON_DATA_HEADER_END_FLAG)
+
+const AERON_DATA_HEADER_DEFAULT_RESERVED_VALUE = INT64_C(0)
+
+const AERON_STATUS_MESSAGE_HEADER_SEND_SETUP_FLAG = UINT8_C(0x80)
+
+const AERON_STATUS_MESSAGE_HEADER_EOS_FLAG = UINT8_C(0x40)
+
+const AERON_RTTM_HEADER_REPLY_FLAG = UINT8_C(0x80)
+
+const AERON_RES_HEADER_TYPE_NAME_TO_IP4_MD = 0x01
+
+const AERON_RES_HEADER_TYPE_NAME_TO_IP6_MD = 0x02
+
+const AERON_RES_HEADER_SELF_FLAG = UINT8_C(0x80)
+
+const AERON_FRAME_MAX_MESSAGE_LENGTH = Cuint(16) * Cuint(1024) * Cuint(1024)
+
+const AERON_OPTION_HEADER_IGNORE_FLAG = UINT16_C(0x8000)
+
+const AERON_OPT_HDR_TYPE_ATS_SUITE = UINT16_C(0x0001)
+
+const AERON_OPT_HDR_TYPE_ATS_RSA_KEY = UINT16_C(0x0002)
+
+const AERON_OPT_HDR_TYPE_ATS_RSA_KEY_ID = UINT16_C(0x0003)
+
+const AERON_OPT_HDR_TYPE_ATS_EC_KEY = UINT16_C(0x0004)
+
+const AERON_OPT_HDR_TYPE_ATS_EC_SIG = UINT16_C(0x0005)
+
+const AERON_OPT_HDR_TYPE_ATS_SECRET = UINT16_C(0x0006)
+
+const AERON_OPT_HDR_TYPE_ATS_GROUP_TAG = UINT16_C(0x0007)
+
+const AERON_OPT_HDR_ALIGNMENT = Cuint(4)
 
 
 # Ignore these bad macro translations by setting this dummy function
@@ -4713,6 +5413,20 @@ const AERON_URI_CHANNEL_SND_TIMESTAMP_OFFSET_KEY = "channel-snd-ts-offset"
 const AERON_URI_TIMESTAMP_OFFSET_RESERVED = "reserved"
 const AERON_URI_INVALID_TAG = -1
 # const AERON_NETUTIL_FORMATTED_MAX_LENGTH = INET6_ADDRSTRLEN + 8
+
+
+
+
+
+
+
+
+
+
+
+############# Custom
+const AERON_DATA_HEADER_LENGTH = ( sizeof( aeron_data_header_t ) )
+const AERON_ALIGNED_HEADER_LENGTH = AERON_ALIGN(AERON_DATA_HEADER_LENGTH, AERON_LOGBUFFER_FRAME_ALIGNMENT)
 
 # exports
 const PREFIXES = ["aeron_"]

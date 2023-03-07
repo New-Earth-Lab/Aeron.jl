@@ -1,12 +1,12 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.9.0-beta3"
+julia_version = "1.9.0-beta4"
 manifest_format = "2.0"
 project_hash = "e485cbfe212bfc1517f83f1c79eedc6aa0aaaaf8"
 
 [[deps.Aeron_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
-path = "/home/ubuntu/.julia/dev/Aeron_jll"
+git-tree-sha1 = "e2025419268f20e5b83844f76e72b1f04d816295"
 uuid = "d964258c-d1ad-568a-aca9-3ef511f5bffd"
 version = "1.40.0+0"
 

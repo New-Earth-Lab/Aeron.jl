@@ -1,21 +1,22 @@
 using Aeron
 
-conf = AeronConfig1(
-    "aeron:udp?endpoint=localhost:20121",
-    stream=1001,
-)
-
+# conf = AeronConfig(
+#     "aeron:udp?endpoint=localhost:20121",
+#     stream=1001,
+# )
+conf = AeronConfig(
+           channel="aeron:ipc",
+           stream=1001,
+       )
 
 i = 0
-Aeron.subscribe(conf) do header, buffer
+Aeron.subscribe2(conf) do header, buffer
     
     total = sum(buffer)
-    @info "Message received" total
+    @info "Message received"
 
-    # Break out after a while (Better to use a for loop/iterator API?)
     global i += 1
-    if i > 10
-        error()
-    end
 
+    return i < 10
 end
+

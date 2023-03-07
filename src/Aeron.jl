@@ -8,14 +8,14 @@ using Libdl
 using StrideArrays
 
 
-Base.@kwdef struct AeronConfig1
+Base.@kwdef struct AeronConfig
     channel::String
     stream::Int64
     fragment_count_limit::Int64=10
 end
-AeronConfig1(channel; kwargs...) = AeronConfig1(;channel, kwargs...)
-AeronConfig1(channel, stream; kwargs...) = AeronConfig1(;channel, stream, kwargs...)
-export AeronConfig1
+AeronConfig(channel; kwargs...) = AeronConfig(;channel, kwargs...)
+AeronConfig(channel, stream; kwargs...) = AeronConfig(;channel, stream, kwargs...)
+export AeronConfig
 
 
 include("subscribe.jl")
