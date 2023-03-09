@@ -4,9 +4,6 @@ include("LibAeron.jl")
 export LibAeron
 
 using CSyntax
-using Libdl
-using StrideArrays
-
 
 Base.@kwdef struct AeronConfig
     channel::String
