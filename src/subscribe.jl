@@ -1,5 +1,3 @@
-
-
 # Need two types: an iterable and frame type.
 
 # We may in future want to return additional information about the frame, e.g. sequence numbers.
@@ -7,24 +5,38 @@ struct AeronFrame{T}
     buffer::Vector{T}
 end
 
+mutable struct AeronSubscriptionSession
+    buffer::Vector{UInt8}
+    next_term_offset::Int32
+    buffer_limit::Int32
+    frame_received::Bool
+    # Constructor with initialized defaults
+    function AeronSubscriptionSession(
+        buffer = nothing,
+        next_term_offset = Int32(0),
+        buffer_limit = Int32(0),
+        frame_received = false;
+        sizehint=512*512
+    )
+        if isnothing(buffer)
+            buffer = Vector{UInt8}(undef, sizehint)
+            resize!(buffer,0)
+        end
+        new(buffer, next_term_offset, buffer_limit, frame_received)
+    end
+end
+
 mutable struct AeronSubscription
     const conf::AeronConfig
     const libaeron_subscription::Ptr{LibAeron.aeron_subscription_t}
     const fragment_assembler_ptr::Base.CFunction
-    const buffer::Vector{UInt8}
-    next_term_offset::Int32
-    buffer_limit::Int32
-    frame_received::Bool
+    const session_map::Dict{Int32,AeronSubscriptionSession}
     # Constructor
     AeronSubscription(
         conf,
         libaeron_subscription,
         fragment_assembler_ptr,
-        buffer,
-        next_term_offset = Int32(0),
-        buffer_limit = Int32(0),
-        frame_received = false,
-    ) = new(conf, libaeron_subscription, fragment_assembler_ptr, buffer, next_term_offset, buffer_limit, frame_received)
+    ) = new(conf, libaeron_subscription, fragment_assembler_ptr, Dict{Int,AeronSubscriptionSession}())
 end
 
 
@@ -77,13 +89,6 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
     context = Ptr{LibAeron.aeron_context_t}(C_NULL)
     libaeron_subscription = Ptr{LibAeron.aeron_subscription_t}(C_NULL)
     async = Ptr{LibAeron.aeron_async_add_subscription_t}(C_NULL)
-
-    # We will copy data into this buffer. 
-    # We will resize it to be the right size for each message.
-    # If the message size is larger than the buffer, our call to resize
-    # will reallocate it (julia should handle this transparently)
-    buffer = UInt8[]
-    sizehint!(buffer, sizehint)
 
     local result
 
@@ -155,40 +160,54 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
             header_values = header_values_ref[]
             frame = header_values.frame
 
+            # Each publisher gets its own session_id. We may be receiving data
+            # from multiple publisher simultaneously. We therefore assemble
+            # into a frame identified by that session_id, all stored in a dictionary.
+            if haskey(subscription.session_map, frame.session_id)
+                session = subscription.session_map[frame.session_id]
+            else
+                # Note: this allocates! 
+                # It should happen only once per publisher. 
+                session = subscription.session_map[frame.session_id] = AeronSubscriptionSession(;sizehint)
+            end
+
+            # The session contains a preallocated buffer (see above) that we copy into.
+            # We will resize it to be the right size for each message.
+            # If the message size is larger than the buffer, our call to resize
+            # will reallocate it (julia should handle this transparently)
+
             local aligned_length::Int32
 
             # Unfragmented case
             if frame.flags & LibAeron.AERON_DATA_HEADER_UNFRAGMENTED == LibAeron.AERON_DATA_HEADER_UNFRAGMENTED
-                resize!(buffer, length)
-                subscription.frame_received = true
-                # user_continue[] = callback(header_values, buffer)::Bool
+                resize!(session.buffer, length)
+                session.frame_received = true
             # Fragemented case: first fragment
             elseif frame.flags & LibAeron.AERON_DATA_HEADER_BEGIN_FLAG == LibAeron.AERON_DATA_HEADER_BEGIN_FLAG 
-                resize!(buffer, length)
-                if !isassigned(buffer, length)
-                    @error "Attempted to copy data past length of buffer. How did this happen?" size(buffer) subscription.buffer_limit
+                resize!(session.buffer, length)
+                if !isassigned(session.buffer, length)
+                    @error "Attempted to copy data past length of buffer. How did this happen?" size(buffer) session.buffer_limit
                     return
                 end
-                unsafe_copyto!(pointer(buffer), fragment_buffer, length)
+                unsafe_copyto!(pointer(session.buffer), fragment_buffer, length)
                 aligned_length = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + length, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
-                subscription.next_term_offset = frame.term_offset + aligned_length
-                subscription.buffer_limit = length
+                session.next_term_offset = frame.term_offset + aligned_length
+                session.buffer_limit = length
             # Appending case
-            elseif subscription.next_term_offset == frame.term_offset
+            elseif session.next_term_offset == frame.term_offset
                 # Resize to give sufficient room
-                if !isassigned(buffer, subscription.buffer_limit)
-                    resize!(buffer, subscription.buffer_limit + length)
+                if !isassigned(session.buffer, session.buffer_limit)
+                    resize!(session.buffer, session.buffer_limit + length)
                 end
-                unsafe_copyto!(pointer(buffer, subscription.buffer_limit+1), fragment_buffer, length)
-                subscription.buffer_limit = subscription.buffer_limit  + length
+                unsafe_copyto!(pointer(session.buffer, session.buffer_limit+1), fragment_buffer, length)
+                session.buffer_limit = session.buffer_limit  + length
                 # Case: we're done, trigger callback
                 if frame.flags & LibAeron.AERON_DATA_HEADER_END_FLAG == LibAeron.AERON_DATA_HEADER_END_FLAG
-                    # user_continue[] = callback(header_values, buffer)::Bool
-                    subscription.frame_received = true
+                    session.frame_received = true
                 # Case: we're not done, record next offset we expect
                 else
                     aligned_length = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + length, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
-                    subscription.next_term_offset = frame.term_offset + aligned_length
+                    session.next_term_offset = frame.term_offset + aligned_length
                 end
             else
             end
@@ -196,7 +215,7 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
             return nothing
         end
         fragment_assembler_ptr = @cfunction($fragment_assembler, Cvoid, (Ptr{Nothing}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t}))
-        subscription = AeronSubscription(conf, libaeron_subscription, fragment_assembler_ptr, buffer)
+        subscription = AeronSubscription(conf, libaeron_subscription, fragment_assembler_ptr)
 
         # Pass the subscription object to the user's callback.
         # They can iterate on it to receive frames.
@@ -222,147 +241,144 @@ end
 
 # Currently we don't use state
 function Base.iterate(subscription::AeronSubscription, state=nothing)
-    while !subscription.frame_received
+    while true
         fragments_read = LibAeron.aeron_subscription_poll(
             subscription.libaeron_subscription,
             subscription.fragment_assembler_ptr,
             # Context pointer for callback if we want it: in future we can use this to pass a pointer to our subscription struct.
             C_NULL,
-            subscription.conf.fragment_count_limit
+            # We have to put fragment_count_limit == 1 to preventing possibly completing two or more frames 
+            # (from multiple sessions) in the same iterate call. We can only return a single value at a time
+            # from an interator.
+            1,
+            # subscription.conf.fragment_count_limit
         )
         if fragments_read < 0
             error("aeron_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
+        elseif fragments_read > 0
+            for session in values(subscription.session_map)
+                if session.frame_received
+                    frame = AeronFrame(session.buffer)
+                    session.frame_received = false
+                    return frame, state
+                end
+            end
         end
         GC.safepoint()
         # TODO: this is currently a busy wait
     end
-    frame = AeronFrame(subscription.buffer)
     # TODO: exit cleanly if subscriber stops?
-    return frame, state
 end
 
-        # while true
-        #     fragments_read = LibAeron.aeron_subscription_poll(
-        #         libaeron_subscription,
-        #         fragment_assembler_ptr,
-        #         # Context pointer for callback if we want it
-        #         C_NULL,
-        #         conf.fragment_count_limit
-        #     )
-        #     if fragments_read < 0
-        #         error("aeron_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
-        #     end
-        #     GC.safepoint()
-        # end
 
 
-# The following is an alterative implementation
+# The following is an alterative implementation that uses the built in fragment assembler
 
-"""
-    subscribe_aeron_fragment_assembler(conf::AeronConfig) do header, bufarr::PtrArray
+# """
+#     subscribe_aeron_fragment_assembler(conf::AeronConfig) do header, bufarr::PtrArray
 
-Subscribe to a stream given by `conf`. Uses the aeron library's built in fragment
-assembler to re-assemble large frames. Memory is then wrapped with a PtrArray
-and passed to the callback.
+# Subscribe to a stream given by `conf`. Uses the aeron library's built in fragment
+# assembler to re-assemble large frames. Memory is then wrapped with a PtrArray
+# and passed to the callback.
 
-"""
-function subscribe_aeron_fragment_assembler(callback::Base.Callable, conf::AeronConfig; verbose=Val{false})
+# """
+# function subscribe_aeron_fragment_assembler(callback::Base.Callable, conf::AeronConfig; verbose=Val{false})
 
-    verbose && @info "Subscribing" conf.channel conf.stream
+#     verbose && @info "Subscribing" conf.channel conf.stream
 
-    aeron = Ptr{LibAeron.aeron_t}(C_NULL)
-    context = Ptr{LibAeron.aeron_context_t}(C_NULL)
-    subscription = Ptr{LibAeron.aeron_subscription_t}(C_NULL)
-    fragment_assembler = Ptr{LibAeron.aeron_fragment_assembler_t}(C_NULL)
-    async = Ptr{LibAeron.aeron_async_add_subscription_t}(C_NULL)
+#     aeron = Ptr{LibAeron.aeron_t}(C_NULL)
+#     context = Ptr{LibAeron.aeron_context_t}(C_NULL)
+#     subscription = Ptr{LibAeron.aeron_subscription_t}(C_NULL)
+#     fragment_assembler = Ptr{LibAeron.aeron_fragment_assembler_t}(C_NULL)
+#     async = Ptr{LibAeron.aeron_async_add_subscription_t}(C_NULL)
 
-    should_continue = Ref(true)
+#     should_continue = Ref(true)
 
-    try
+#     try
 
-        if @c(LibAeron.aeron_context_init(&context)) < 0
-            error("aeron_context_init: "*unsafe_string(LibAeron.aeron_errmsg()))
-        end
+#         if @c(LibAeron.aeron_context_init(&context)) < 0
+#             error("aeron_context_init: "*unsafe_string(LibAeron.aeron_errmsg()))
+#         end
 
-        if @c(LibAeron.aeron_init(&aeron, context)) < 0
-            error("aeron_init: "*unsafe_string(LibAeron.aeron_errmsg()))
-        end
-        verbose && @info "inited"
+#         if @c(LibAeron.aeron_init(&aeron, context)) < 0
+#             error("aeron_init: "*unsafe_string(LibAeron.aeron_errmsg()))
+#         end
+#         verbose && @info "inited"
 
-        if LibAeron.aeron_start(aeron) < 0
-            error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
-        end
-        verbose && @info "started"
+#         if LibAeron.aeron_start(aeron) < 0
+#             error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
+#         end
+#         verbose && @info "started"
 
-        print_available_image_ptr = @cfunction(print_available_image, Int64, (Ptr{Nothing}, Ptr{Nothing}, Ptr{Nothing}))
-        print_unavailable_image_ptr = @cfunction(print_unavailable_image, Int64, (Ptr{Nothing}, Ptr{Nothing}, Ptr{Nothing}))
+#         print_available_image_ptr = @cfunction(print_available_image, Int64, (Ptr{Nothing}, Ptr{Nothing}, Ptr{Nothing}))
+#         print_unavailable_image_ptr = @cfunction(print_unavailable_image, Int64, (Ptr{Nothing}, Ptr{Nothing}, Ptr{Nothing}))
 
-        if @c(LibAeron.aeron_async_add_subscription(
-            &async,
-            aeron,
-            conf.channel,
-            conf.stream,
-            print_available_image_ptr,
-            C_NULL,
-            print_unavailable_image_ptr,
-            C_NULL)) < 0
-            error("aeron_async_add_subscription: "*unsafe_string(LibAeron.aeron_errmsg()))
-        end
+#         if @c(LibAeron.aeron_async_add_subscription(
+#             &async,
+#             aeron,
+#             conf.channel,
+#             conf.stream,
+#             print_available_image_ptr,
+#             C_NULL,
+#             print_unavailable_image_ptr,
+#             C_NULL)) < 0
+#             error("aeron_async_add_subscription: "*unsafe_string(LibAeron.aeron_errmsg()))
+#         end
     
-        timeout = time() + 5
-        while (C_NULL == subscription)
-            if @c(LibAeron.aeron_async_add_subscription_poll(&subscription, async)) < 0
-                error("aeron_async_add_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
-            end    
-            yield()
-            if time() > timeout
-                error("timed out adding subscription after 5s")
-            end
-        end
+#         timeout = time() + 5
+#         while (C_NULL == subscription)
+#             if @c(LibAeron.aeron_async_add_subscription_poll(&subscription, async)) < 0
+#                 error("aeron_async_add_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
+#             end    
+#             yield()
+#             if time() > timeout
+#                 error("timed out adding subscription after 5s")
+#             end
+#         end
     
-        verbose && @info "Subscription channel status " LibAeron.aeron_subscription_channel_status(subscription)
+#         verbose && @info "Subscription channel status " LibAeron.aeron_subscription_channel_status(subscription)
 
-        # Use a trampoline to close over the user's function
-        function poll_handler_closure(clientd, buffer, length, header_ptr)
-            # Allocation free
-            bufarr = PtrArray(buffer, (length,))
+#         # Use a trampoline to close over the user's function
+#         function poll_handler_closure(clientd, buffer, length, header_ptr)
+#             # Allocation free
+#             bufarr = PtrArray(buffer, (length,))
     
-            # Allocates
-            header = unsafe_load(header_ptr)
+#             # Allocates
+#             header = unsafe_load(header_ptr)
 
-            should_continue[] = GC.@preserve header bufarr callback(header, bufarr)
+#             should_continue[] = GC.@preserve header bufarr callback(header, bufarr)
         
-            return nothing
-        end
+#             return nothing
+#         end
         
 
-        # poll_handler_ptr = @cfunction(poll_handler, Cvoid, (Ptr{Nothing}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t}))
-        poll_handler_ptr = @cfunction($poll_handler_closure, Cvoid, (Ptr{Nothing}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t}))
+#         # poll_handler_ptr = @cfunction(poll_handler, Cvoid, (Ptr{Nothing}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t}))
+#         poll_handler_ptr = @cfunction($poll_handler_closure, Cvoid, (Ptr{Nothing}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t}))
     
-        if @c(LibAeron.aeron_fragment_assembler_create(&fragment_assembler, poll_handler_ptr, subscription)) < 0
-            error("aeron_fragment_assembler_create: "*unsafe_string(LibAeron.aeron_errmsg()))
-        end
+#         if @c(LibAeron.aeron_fragment_assembler_create(&fragment_assembler, poll_handler_ptr, subscription)) < 0
+#             error("aeron_fragment_assembler_create: "*unsafe_string(LibAeron.aeron_errmsg()))
+#         end
 
-        aeron_fragment_assembler_handler_ptr = dlsym(dlopen(LibAeron.libaeron), :aeron_fragment_assembler_handler)
-        while should_continue[]
-            fragments_read = LibAeron.aeron_subscription_poll(
-                subscription,
-                aeron_fragment_assembler_handler_ptr,
-                fragment_assembler,
-                conf.fragment_count_limit
-            )
-            if fragments_read < 0
-                error("aeron_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
-            end
+#         aeron_fragment_assembler_handler_ptr = dlsym(dlopen(LibAeron.libaeron), :aeron_fragment_assembler_handler)
+#         while should_continue[]
+#             fragments_read = LibAeron.aeron_subscription_poll(
+#                 subscription,
+#                 aeron_fragment_assembler_handler_ptr,
+#                 fragment_assembler,
+#                 conf.fragment_count_limit
+#             )
+#             if fragments_read < 0
+#                 error("aeron_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
+#             end
 
         
-        end
+#         end
 
-    finally
-        LibAeron.aeron_subscription_close(subscription, C_NULL, C_NULL)
-        LibAeron.aeron_close(aeron)
-        LibAeron.aeron_context_close(context)
-        LibAeron.aeron_fragment_assembler_delete(fragment_assembler)
-        verbose && @info "cleanup complete"
-    end
-end
+#     finally
+#         LibAeron.aeron_subscription_close(subscription, C_NULL, C_NULL)
+#         LibAeron.aeron_close(aeron)
+#         LibAeron.aeron_context_close(context)
+#         LibAeron.aeron_fragment_assembler_delete(fragment_assembler)
+#         verbose && @info "cleanup complete"
+#     end
+# end
