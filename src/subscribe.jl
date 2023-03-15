@@ -265,6 +265,7 @@ function Base.iterate(subscription::AeronSubscription, state=nothing)
             end
         end
         GC.safepoint()
+        sleep(0)
         # TODO: this is currently a busy wait
     end
     # TODO: exit cleanly if subscriber stops?
