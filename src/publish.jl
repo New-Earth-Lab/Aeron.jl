@@ -1,9 +1,11 @@
 
-struct AeronPublication1
+struct AeronPublication
     handle::Ptr{LibAeron.aeron_publication_t}
+    context::Ptr{LibAeron.aeron_context_t}
+    aeron::Ptr{LibAeron.aeron_t}
 end
 
-function publisher(callback::Base.Callable, conf::AeronConfig)
+function publisher(conf::AeronConfig)
 
 
     println("Publishing to channel $(conf.channel) on Stream ID $(conf.stream)")
@@ -50,20 +52,38 @@ function publisher(callback::Base.Callable, conf::AeronConfig)
     
         @info "Publication channel status " LibAeron.aeron_publication_channel_status(publication)
 
-        pubhandle = AeronPublication1(publication)
-        callback(pubhandle)
+        # callback(pubhandle)
 
-
-    finally
+    catch err
         LibAeron.aeron_subscription_close(publication, C_NULL, C_NULL)
         LibAeron.aeron_close(aeron)
         LibAeron.aeron_context_close(context)
-        @info "cleanup complete"
+        rethrow(err)
+    end
+    pubhandle = AeronPublication(publication,context,aeron)
+
+    return pubhandle
+end
+
+function publisher(callback::Base.Callable, conf::AeronConfig)
+    pubhandle = publisher(conf)
+    try
+        callback(pubhandle)
+    finally
+        LibAeron.aeron_subscription_close(pubhandle.handle, C_NULL, C_NULL)
+        LibAeron.aeron_close(pubhandle.aeron)
+        LibAeron.aeron_context_close(pubhandle.context)
     end
 end
 
+function Base.close(pubhandle::AeronPublication)
+    LibAeron.aeron_subscription_close(pubhandle.handle, C_NULL, C_NULL)
+    LibAeron.aeron_close(pubhandle.aeron)
+    LibAeron.aeron_context_close(pubhandle.context)
+end
 
-function publication_offer(pub::AeronPublication1, message::AbstractArray{UInt8})
+
+function publication_offer(pub::AeronPublication, message::AbstractArray{UInt8})
 
     message_len = length(message)
     result = 
