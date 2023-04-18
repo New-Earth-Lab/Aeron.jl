@@ -241,7 +241,9 @@ end
 
 # Currently we don't use state
 function Base.iterate(subscription::AeronSubscription, state=nothing)
+    i = 0
     while true
+        i+=1
         fragments_read = LibAeron.aeron_subscription_poll(
             subscription.libaeron_subscription,
             subscription.fragment_assembler_ptr,
@@ -264,8 +266,11 @@ function Base.iterate(subscription::AeronSubscription, state=nothing)
                 end
             end
         end
-        GC.safepoint()
-        sleep(0)
+        # Insert safepoints every 100 polls
+        if mod(i, 1000) == 0
+            GC.safepoint()
+        end
+        # yield()
         # TODO: this is currently a busy wait
     end
     # TODO: exit cleanly if subscriber stops?
