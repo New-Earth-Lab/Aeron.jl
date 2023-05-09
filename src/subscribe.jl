@@ -149,10 +149,10 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
         # We could use `context` to pass our reference to it; however, it is easier for 
         # now to just close over it using an LLVM trampoline. If this causes compatibility issues
         # down the road we could do this bookkeeping manually.
-        function fragment_assembler(context, fragment_buffer, length, header_ptr)
+        function fragment_assembler(context, fragment_buffer, buflength, header_ptr)
 
-            # `framgent_buffer` and `length` is a pointer to the data in this fragment.
-            # We don't know the length of the entire frame in advance until it has finished
+            # `framgent_buffer` and `buflength` is a pointer to the data in this fragment.
+            # We don't know the buflength of the entire frame in advance until it has finished
             # arriving.
 
             # memcpy the header data into header_values_ref
@@ -176,38 +176,39 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
             # If the message size is larger than the buffer, our call to resize
             # will reallocate it (julia should handle this transparently)
 
-            local aligned_length::Int32
+            local aligned_buflength::Int32
 
             # Unfragmented case
             if frame.flags & LibAeron.AERON_DATA_HEADER_UNFRAGMENTED == LibAeron.AERON_DATA_HEADER_UNFRAGMENTED
-                resize!(session.buffer, length)
+                resize!(session.buffer, buflength)
                 session.frame_received = true
             # Fragemented case: first fragment
             elseif frame.flags & LibAeron.AERON_DATA_HEADER_BEGIN_FLAG == LibAeron.AERON_DATA_HEADER_BEGIN_FLAG 
-                resize!(session.buffer, length)
-                if !isassigned(session.buffer, length)
+                resize!(session.buffer, buflength)
+                if !isassigned(session.buffer, buflength)
                     @error "Attempted to copy data past length of buffer. How did this happen?" size(buffer) session.buffer_limit
                     return
                 end
-                unsafe_copyto!(pointer(session.buffer), fragment_buffer, length)
-                aligned_length = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + length, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
-                session.next_term_offset = frame.term_offset + aligned_length
-                session.buffer_limit = length
+                unsafe_copyto!(pointer(session.buffer), fragment_buffer, buflength)
+                aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
+                session.next_term_offset = frame.term_offset + aligned_buflength
+                session.buffer_limit = buflength
             # Appending case
             elseif session.next_term_offset == frame.term_offset
                 # Resize to give sufficient room
-                if !isassigned(session.buffer, session.buffer_limit)
-                    resize!(session.buffer, session.buffer_limit + length)
+                # if !isassigned(session.buffer, session.buffer_limit)
+                if length(session.buffer) != session.buffer_limit
+                    resize!(session.buffer, session.buffer_limit + buflength)
                 end
-                unsafe_copyto!(pointer(session.buffer, session.buffer_limit+1), fragment_buffer, length)
-                session.buffer_limit = session.buffer_limit  + length
+                unsafe_copyto!(pointer(session.buffer, session.buffer_limit+1), fragment_buffer, buflength)
+                session.buffer_limit = session.buffer_limit  + buflength
                 # Case: we're done, trigger callback
                 if frame.flags & LibAeron.AERON_DATA_HEADER_END_FLAG == LibAeron.AERON_DATA_HEADER_END_FLAG
                     session.frame_received = true
                 # Case: we're not done, record next offset we expect
                 else
-                    aligned_length = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + length, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
-                    session.next_term_offset = frame.term_offset + aligned_length
+                    aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
+                    session.next_term_offset = frame.term_offset + aligned_buflength
                 end
             else
             end
