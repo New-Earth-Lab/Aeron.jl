@@ -155,6 +155,12 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
             # We don't know the buflength of the entire frame in advance until it has finished
             # arriving.
 
+            # TODO: we have a problem where Julia has to box `subscription` for use inside this closure,
+            # since it is only recorded after we define this. For now, use a type-assert to mitigate
+            # the resulting type instability.
+            # This fixes the allocations but feels messy.
+            subscription2 = subscription::AeronSubscription
+
             # memcpy the header data into header_values_ref
             LibAeron.aeron_header_values(header_ptr, header_values_ref)
             header_values = header_values_ref[]
@@ -163,12 +169,12 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
             # Each publisher gets its own session_id. We may be receiving data
             # from multiple publisher simultaneously. We therefore assemble
             # into a frame identified by that session_id, all stored in a dictionary.
-            if haskey(subscription.session_map, frame.session_id)
-                session = subscription.session_map[frame.session_id]
+            if haskey(subscription2.session_map, frame.session_id)
+                session = subscription2.session_map[frame.session_id]
             else
                 # Note: this allocates! 
                 # It should happen only once per publisher. 
-                session = subscription.session_map[frame.session_id] = AeronSubscriptionSession(;sizehint)
+                session = subscription2.session_map[frame.session_id] = AeronSubscriptionSession(;sizehint)
             end
 
             # The session contains a preallocated buffer (see above) that we copy into.
