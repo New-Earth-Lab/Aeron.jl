@@ -210,7 +210,6 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
                 session.buffer_limit = session.buffer_limit  + buflength
                 # Case: we're done, trigger callback
                 if frame.flags & LibAeron.AERON_DATA_HEADER_END_FLAG == LibAeron.AERON_DATA_HEADER_END_FLAG
-                    @info "finished frame" session.buffer_limit buflength length(session.buffer)
                     session.frame_received = true
                 # Case: we're not done, record next offset we expect
                 else
