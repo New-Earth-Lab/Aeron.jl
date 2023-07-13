@@ -203,13 +203,14 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
             elseif session.next_term_offset == frame.term_offset
                 # Resize to give sufficient room
                 # if !isassigned(session.buffer, session.buffer_limit)
-                if length(session.buffer) != session.buffer_limit
+                if length(session.buffer) != session.buffer_limit + buflength
                     resize!(session.buffer, session.buffer_limit + buflength)
                 end
                 unsafe_copyto!(pointer(session.buffer, session.buffer_limit+1), fragment_buffer, buflength)
                 session.buffer_limit = session.buffer_limit  + buflength
                 # Case: we're done, trigger callback
                 if frame.flags & LibAeron.AERON_DATA_HEADER_END_FLAG == LibAeron.AERON_DATA_HEADER_END_FLAG
+                    @info "finished frame" session.buffer_limit buflength length(session.buffer)
                     session.frame_received = true
                 # Case: we're not done, record next offset we expect
                 else
