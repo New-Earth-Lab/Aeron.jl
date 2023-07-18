@@ -202,7 +202,6 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
             # Appending case
             elseif session.next_term_offset == frame.term_offset
                 # Resize to give sufficient room
-                # if !isassigned(session.buffer, session.buffer_limit)
                 if length(session.buffer) != session.buffer_limit + buflength
                     resize!(session.buffer, session.buffer_limit + buflength)
                 end

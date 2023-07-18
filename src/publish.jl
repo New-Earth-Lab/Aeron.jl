@@ -86,9 +86,15 @@ end
 function publication_offer(pub::AeronPublication, message::AbstractArray{UInt8})
 
     message_len = length(message)
-    result = 
-        LibAeron.aeron_publication_offer(pub.handle, message, message_len, C_NULL, C_NULL)
-
+    # Retry the publication in case we are rotating term buffers.
+    # Use ADMIN_ACTION as an initial sentinel
+    result = LibAeron.AERON_PUBLICATION_ADMIN_ACTION
+    retries = 5
+    while result == LibAeron.AERON_PUBLICATION_ADMIN_ACTION && retries > 0
+        retries -= 1
+        result = 
+            LibAeron.aeron_publication_offer(pub.handle, message, message_len, C_NULL, C_NULL)
+    end
     if result > 0
         return :success
         # println("yay!")
