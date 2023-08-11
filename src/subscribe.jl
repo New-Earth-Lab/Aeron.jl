@@ -14,29 +14,56 @@ mutable struct AeronSubscriptionSession
     function AeronSubscriptionSession(
         buffer = nothing,
         next_term_offset = Int32(0),
-        buffer_limit = Int32(0),
-        frame_received = false;
+        buffer_limit = Int32(0);
         sizehint=512*512
     )
         if isnothing(buffer)
             buffer = Vector{UInt8}(undef, sizehint)
             resize!(buffer,0)
         end
-        new(buffer, next_term_offset, buffer_limit, frame_received)
+        new(buffer, next_term_offset, buffer_limit, false)
     end
 end
 
+struct AeronSubscriptionInner
+    aeron::Ptr{LibAeron.aeron_t}
+    context::Ptr{LibAeron.aeron_context_t}
+    libaeron_subscription::Ptr{LibAeron.aeron_subscription_t}
+    session_map::Dict{Int32,AeronSubscriptionSession}
+    header_values_ref::Base.RefValue{LibAeron.aeron_header_values_t}
+    # Constructor
+    AeronSubscriptionInner(
+        aeron,
+        context,
+        libaeron_subscription,
+    ) = new(
+        aeron,
+        context,
+        libaeron_subscription,
+        Dict{Int,AeronSubscriptionSession}(),
+        Ref(LibAeron.aeron_header_values_t(ntuple(i->0x00, 44)))
+    )
+end
+
+# Mutable wrapper around AeronSubscription
+# so that we can take a pointer to it / preserve the pointer.
 mutable struct AeronSubscription
-    const conf::AeronConfig
-    const libaeron_subscription::Ptr{LibAeron.aeron_subscription_t}
-    const fragment_assembler_ptr::Base.CFunction
-    const session_map::Dict{Int32,AeronSubscriptionSession}
+    conf::AeronConfig
+    contents::Base.RefValue{AeronSubscriptionInner}
     # Constructor
     AeronSubscription(
         conf,
+        aeron,
+        context,
         libaeron_subscription,
-        fragment_assembler_ptr,
-    ) = new(conf, libaeron_subscription, fragment_assembler_ptr, Dict{Int,AeronSubscriptionSession}())
+    ) = new(
+        conf,
+        Ref(AeronSubscriptionInner(
+            aeron,
+            context,
+            libaeron_subscription,
+        ))
+    )
 end
 
 
@@ -82,6 +109,14 @@ end
 ````
 """
 function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512, verbose=false)
+    subscription = subscribe(conf; sizehint, verbose)
+    try
+        callback(subscription)
+    finally
+        close(subscription)
+    end
+end
+function subscribe(conf::AeronConfig; sizehint=512*512, verbose=false)
 
     @info "Subscribing" conf.channel conf.stream
 
@@ -89,8 +124,6 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
     context = Ptr{LibAeron.aeron_context_t}(C_NULL)
     libaeron_subscription = Ptr{LibAeron.aeron_subscription_t}(C_NULL)
     async = Ptr{LibAeron.aeron_async_add_subscription_t}(C_NULL)
-
-    local result
 
     try
 
@@ -136,261 +169,174 @@ function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512,
     
         @info "Subscription channel status " LibAeron.aeron_subscription_channel_status(libaeron_subscription)
 
-        # Create a "pointer" to an uninitialized aeron_header_values_t struct.
-        # Annoyingly we have to manually initialize it with zeros.
-        # The aeron_header_values_t struct is immutable and doesn't escape, so is therefore stack allocated.
-        # We're not allowed to get pointers to stack allocated data in Julia so we place it into a mutable
-        # Ref. This way it's heap-allocated and we can pass that pointer into aeron to be mutated..
-        header_values_ref = Ref(Aeron.LibAeron.aeron_header_values_t(ntuple(i->0x00, 44)))
+        subscription = AeronSubscription(conf, aeron, context, libaeron_subscription)
 
+        @show subscription
+        # Return the subscription object for them to iterate over
+        return subscription
 
-        # After creating the fragment_assembler, we stuff it and other needed context into our
-        # AeronSubscription struct. 
-        # We could use `context` to pass our reference to it; however, it is easier for 
-        # now to just close over it using an LLVM trampoline. If this causes compatibility issues
-        # down the road we could do this bookkeeping manually.
-        function fragment_assembler(context, fragment_buffer, buflength, header_ptr)
-
-            # `framgent_buffer` and `buflength` is a pointer to the data in this fragment.
-            # We don't know the buflength of the entire frame in advance until it has finished
-            # arriving.
-
-            # TODO: we have a problem where Julia has to box `subscription` for use inside this closure,
-            # since it is only recorded after we define this. For now, use a type-assert to mitigate
-            # the resulting type instability.
-            # This fixes the allocations but feels messy.
-            subscription2 = subscription::AeronSubscription
-
-            # memcpy the header data into header_values_ref
-            LibAeron.aeron_header_values(header_ptr, header_values_ref)
-            header_values = header_values_ref[]
-            frame = header_values.frame
-
-            # Each publisher gets its own session_id. We may be receiving data
-            # from multiple publisher simultaneously. We therefore assemble
-            # into a frame identified by that session_id, all stored in a dictionary.
-            if haskey(subscription2.session_map, frame.session_id)
-                session = subscription2.session_map[frame.session_id]
-            else
-                # Note: this allocates! 
-                # It should happen only once per publisher. 
-                session = subscription2.session_map[frame.session_id] = AeronSubscriptionSession(;sizehint)
-            end
-
-            # The session contains a preallocated buffer (see above) that we copy into.
-            # We will resize it to be the right size for each message.
-            # If the message size is larger than the buffer, our call to resize
-            # will reallocate it (julia should handle this transparently)
-
-            local aligned_buflength::Int32
-
-            # Unfragmented case
-            if frame.flags & LibAeron.AERON_DATA_HEADER_UNFRAGMENTED == LibAeron.AERON_DATA_HEADER_UNFRAGMENTED
-                resize!(session.buffer, buflength)
-                session.frame_received = true
-            # Fragemented case: first fragment
-            elseif frame.flags & LibAeron.AERON_DATA_HEADER_BEGIN_FLAG == LibAeron.AERON_DATA_HEADER_BEGIN_FLAG 
-                resize!(session.buffer, buflength)
-                if !isassigned(session.buffer, buflength)
-                    @error "Attempted to copy data past length of buffer. How did this happen?" size(buffer) session.buffer_limit
-                    return
-                end
-                unsafe_copyto!(pointer(session.buffer), fragment_buffer, buflength)
-                aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
-                session.next_term_offset = frame.term_offset + aligned_buflength
-                session.buffer_limit = buflength
-            # Appending case
-            elseif session.next_term_offset == frame.term_offset
-                # Resize to give sufficient room
-                if length(session.buffer) != session.buffer_limit + buflength
-                    resize!(session.buffer, session.buffer_limit + buflength)
-                end
-                unsafe_copyto!(pointer(session.buffer, session.buffer_limit+1), fragment_buffer, buflength)
-                session.buffer_limit = session.buffer_limit  + buflength
-                # Case: we're done, trigger callback
-                if frame.flags & LibAeron.AERON_DATA_HEADER_END_FLAG == LibAeron.AERON_DATA_HEADER_END_FLAG
-                    session.frame_received = true
-                # Case: we're not done, record next offset we expect
-                else
-                    aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
-                    session.next_term_offset = frame.term_offset + aligned_buflength
-                end
-            else
-            end
-
-            return nothing
+    catch exception
+        @error "Could not subscript to stream" exception
+        if libaeron_subscription != C_NULL
+            LibAeron.aeron_subscription_close(libaeron_subscription, C_NULL, C_NULL)
         end
-        fragment_assembler_ptr = @cfunction($fragment_assembler, Cvoid, (Ptr{Nothing}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t}))
-        subscription = AeronSubscription(conf, libaeron_subscription, fragment_assembler_ptr)
-
-        # Pass the subscription object to the user's callback.
-        # They can iterate on it to receive frames.
-        result = callback(subscription)
-
-        verbose && @info "will close subscription"
-
-    finally
-        LibAeron.aeron_subscription_close(libaeron_subscription, C_NULL, C_NULL)
-        LibAeron.aeron_close(aeron)
-        LibAeron.aeron_context_close(context)
+        if aeron != C_NULL
+            LibAeron.aeron_close(aeron)
+        end
+        if context != C_NULL
+            LibAeron.aeron_context_close(context)
+        end
         verbose && @info "cleanup complete"
     end
-    return result
 end
 
-# struct AeronSubscription
-#     conf::AeronConfig
-#     libaeron_subscription::Ptr{LibAeron.aeron_subscription_t}
-#     fragment_assembler_ptr::Ptr# TODO make concerete
-#     buffer::Vector{UInt8}
-# end
+# Our custom fragment assembler places data into a pre-allocated Julia Array as it arrives.
+# The aeron-provided fragment assemblers are not optimal for use in Julia since it would
+# require us to copy the data once it is all done, allocate a new array each time with 
+# unsafe_wrap (this actually allocates a small header!), or use a work around like 
+# StrideArrays.
+# We sizehint! the array, and then grow it from 0 length as fragments arrive.
+# If the incoming messages are more or less consistently sized, then the array will quickly
+# grow to fit the largest incoming message and subsequent messages will be received without
+# any allocations.
+function fragment_assembler(context_ptr::Ptr{AeronSubscriptionInner}, fragment_buffer, buflength, header_ptr)
+    # `framgent_buffer` and `buflength` is a pointer to the data in this fragment.
+    # We don't know the buflength of the entire frame in advance until it has finished
+    # arriving.
+
+    subscription2 = unsafe_load(context_ptr)
+
+    # memcpy the header data into header_values_ref
+    LibAeron.aeron_header_values(header_ptr, subscription2.header_values_ref)
+    header_values = subscription2.header_values_ref[]
+    frame = header_values.frame
+
+    # Each publisher gets its own session_id. We may be receiving data
+    # from multiple publisher simultaneously. We therefore assemble
+    # into a frame identified by that session_id, all stored in a dictionary.
+    if haskey(subscription2.session_map, frame.session_id)
+        session = subscription2.session_map[frame.session_id]
+    else
+        # Note: this allocates! 
+        # It should happen only once per publisher if messages are consistently sized. 
+        session = subscription2.session_map[frame.session_id] = AeronSubscriptionSession()
+    end
+
+    # The session contains a preallocated buffer (see above) that we copy into.
+    # We will resize it to be the right size for each message.
+    # If the message size is larger than the buffer, our call to resize
+    # will reallocate it (julia should handle this transparently)
+
+    local aligned_buflength::Int32
+    
+    # Unfragmented case
+    if frame.flags & LibAeron.AERON_DATA_HEADER_UNFRAGMENTED == LibAeron.AERON_DATA_HEADER_UNFRAGMENTED
+        resize!(session.buffer, buflength)
+        session.frame_received = true
+    # Fragemented case: first fragment
+    elseif frame.flags & LibAeron.AERON_DATA_HEADER_BEGIN_FLAG == LibAeron.AERON_DATA_HEADER_BEGIN_FLAG 
+        session.frame_received = false
+        resize!(session.buffer, buflength)
+        if !isassigned(session.buffer, buflength)
+            @error "Attempted to copy data past length of buffer. How did this happen?" size(session.buffer) session.buffer_limit
+            return
+        end
+        unsafe_copyto!(pointer(session.buffer), fragment_buffer, buflength)
+        aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
+        session.next_term_offset = frame.term_offset + aligned_buflength
+        session.buffer_limit = buflength
+    # Appending case
+    elseif session.next_term_offset == frame.term_offset
+        # Resize to give sufficient room
+        if length(session.buffer) != session.buffer_limit + buflength
+            resize!(session.buffer, session.buffer_limit + buflength)
+        end
+        unsafe_copyto!(pointer(session.buffer, session.buffer_limit+1), fragment_buffer, buflength)
+        session.buffer_limit = session.buffer_limit  + buflength
+        # Case: we're done, trigger callback
+        if frame.flags & LibAeron.AERON_DATA_HEADER_END_FLAG == LibAeron.AERON_DATA_HEADER_END_FLAG
+            session.frame_received = true
+        # Case: we're not done, record next offset we expect
+        else
+            aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
+            session.next_term_offset = frame.term_offset + aligned_buflength
+        end
+    else
+    end
+
+    return
+end
+
+
+"""
+    close(subscription)
+"""
+function Base.close(subhandle::AeronSubscription)
+    LibAeron.aeron_subscription_close(subhandle.contents[].libaeron_subscription, C_NULL, C_NULL)
+    LibAeron.aeron_close(subhandle.contents[].aeron)
+    LibAeron.aeron_context_close(subhandle.contents[].context)
+end
+
 
 # Currently we don't use state
-function Base.iterate(subscription::AeronSubscription, state=nothing)
+"""
+Iterator interface to an aeron subscription. Polls internally to receive
+full messages.
+"""
+function Base.iterate(subscription::AeronSubscription, _=nothing::Nothing)
     i = 0
     while true
         i+=1
-        fragments_read = LibAeron.aeron_subscription_poll(
-            subscription.libaeron_subscription,
-            subscription.fragment_assembler_ptr,
-            # Context pointer for callback if we want it: in future we can use this to pass a pointer to our subscription struct.
-            C_NULL,
-            # We have to put fragment_count_limit == 1 to preventing possibly completing two or more frames 
-            # (from multiple sessions) in the same iterate call. We can only return a single value at a time
-            # from an interator.
-            1,
-            # subscription.conf.fragment_count_limit
-        )
-        if fragments_read < 0
-            error("aeron_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
-        elseif fragments_read > 0
-            for session in values(subscription.session_map)
-                if session.frame_received
-                    frame = AeronFrame(session.buffer)
-                    session.frame_received = false
-                    return frame, state
-                end
-            end
+        out = poll(subscription)
+        if !isnothing(out)
+            return out, nothing
         end
-        # Insert safepoints every 100 polls
+        # Insert safepoints every 1000 polls
         if mod(i, 1000) == 0
             GC.safepoint()
         end
         # yield()
         # TODO: this is currently a busy wait
     end
-    # TODO: exit cleanly if subscriber stops?
 end
 
+"""
+    Aeron.poll(subscription)::Union{Nothing,AeronFrame}
 
+Do work to receive fragments from a given subscription if available. If a received
+fragment completes a frame, the full frame is returned as an `AeronFrame`
+(otherwise `nothing`)
+"""
+function poll(subscription::AeronSubscription; fragment_count_limit=1)
 
-# The following is an alterative implementation that uses the built in fragment assembler
+    subscription_ptr = pointer_from_objref(subscription.contents)
 
-# """
-#     subscribe_aeron_fragment_assembler(conf::AeronConfig) do header, bufarr::PtrArray
-
-# Subscribe to a stream given by `conf`. Uses the aeron library's built in fragment
-# assembler to re-assemble large frames. Memory is then wrapped with a PtrArray
-# and passed to the callback.
-
-# """
-# function subscribe_aeron_fragment_assembler(callback::Base.Callable, conf::AeronConfig; verbose=Val{false})
-
-#     verbose && @info "Subscribing" conf.channel conf.stream
-
-#     aeron = Ptr{LibAeron.aeron_t}(C_NULL)
-#     context = Ptr{LibAeron.aeron_context_t}(C_NULL)
-#     subscription = Ptr{LibAeron.aeron_subscription_t}(C_NULL)
-#     fragment_assembler = Ptr{LibAeron.aeron_fragment_assembler_t}(C_NULL)
-#     async = Ptr{LibAeron.aeron_async_add_subscription_t}(C_NULL)
-
-#     should_continue = Ref(true)
-
-#     try
-
-#         if @c(LibAeron.aeron_context_init(&context)) < 0
-#             error("aeron_context_init: "*unsafe_string(LibAeron.aeron_errmsg()))
-#         end
-
-#         if @c(LibAeron.aeron_init(&aeron, context)) < 0
-#             error("aeron_init: "*unsafe_string(LibAeron.aeron_errmsg()))
-#         end
-#         verbose && @info "inited"
-
-#         if LibAeron.aeron_start(aeron) < 0
-#             error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
-#         end
-#         verbose && @info "started"
-
-#         print_available_image_ptr = @cfunction(print_available_image, Int64, (Ptr{Nothing}, Ptr{Nothing}, Ptr{Nothing}))
-#         print_unavailable_image_ptr = @cfunction(print_unavailable_image, Int64, (Ptr{Nothing}, Ptr{Nothing}, Ptr{Nothing}))
-
-#         if @c(LibAeron.aeron_async_add_subscription(
-#             &async,
-#             aeron,
-#             conf.channel,
-#             conf.stream,
-#             print_available_image_ptr,
-#             C_NULL,
-#             print_unavailable_image_ptr,
-#             C_NULL)) < 0
-#             error("aeron_async_add_subscription: "*unsafe_string(LibAeron.aeron_errmsg()))
-#         end
+   fragment_assembler_ptr = @cfunction(
+        fragment_assembler,
+        Cvoid,
+        (Ptr{AeronSubscriptionInner}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t})
+    )
     
-#         timeout = time() + 5
-#         while (C_NULL == subscription)
-#             if @c(LibAeron.aeron_async_add_subscription_poll(&subscription, async)) < 0
-#                 error("aeron_async_add_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
-#             end    
-#             yield()
-#             if time() > timeout
-#                 error("timed out adding subscription after 5s")
-#             end
-#         end
-    
-#         verbose && @info "Subscription channel status " LibAeron.aeron_subscription_channel_status(subscription)
+    GC.@preserve subscription  begin
+        fragments_read = LibAeron.aeron_subscription_poll(
+            subscription.contents[].libaeron_subscription,
+            fragment_assembler_ptr,
+            subscription_ptr,
+            fragment_count_limit,
+        )
+    end
 
-#         # Use a trampoline to close over the user's function
-#         function poll_handler_closure(clientd, buffer, length, header_ptr)
-#             # Allocation free
-#             bufarr = PtrArray(buffer, (length,))
-    
-#             # Allocates
-#             header = unsafe_load(header_ptr)
-
-#             should_continue[] = GC.@preserve header bufarr callback(header, bufarr)
-        
-#             return nothing
-#         end
-        
-
-#         # poll_handler_ptr = @cfunction(poll_handler, Cvoid, (Ptr{Nothing}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t}))
-#         poll_handler_ptr = @cfunction($poll_handler_closure, Cvoid, (Ptr{Nothing}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t}))
-    
-#         if @c(LibAeron.aeron_fragment_assembler_create(&fragment_assembler, poll_handler_ptr, subscription)) < 0
-#             error("aeron_fragment_assembler_create: "*unsafe_string(LibAeron.aeron_errmsg()))
-#         end
-
-#         aeron_fragment_assembler_handler_ptr = dlsym(dlopen(LibAeron.libaeron), :aeron_fragment_assembler_handler)
-#         while should_continue[]
-#             fragments_read = LibAeron.aeron_subscription_poll(
-#                 subscription,
-#                 aeron_fragment_assembler_handler_ptr,
-#                 fragment_assembler,
-#                 conf.fragment_count_limit
-#             )
-#             if fragments_read < 0
-#                 error("aeron_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
-#             end
-
-        
-#         end
-
-#     finally
-#         LibAeron.aeron_subscription_close(subscription, C_NULL, C_NULL)
-#         LibAeron.aeron_close(aeron)
-#         LibAeron.aeron_context_close(context)
-#         LibAeron.aeron_fragment_assembler_delete(fragment_assembler)
-#         verbose && @info "cleanup complete"
-#     end
-# end
+    if fragments_read < 0
+        error("aeron_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
+    elseif fragments_read == 0
+        return nothing
+    elseif fragments_read > 0
+        for session in values(subscription.contents[].session_map)
+            if session.frame_received
+                frame = AeronFrame(session.buffer)
+                session.frame_received = false
+                return frame
+            end
+        end
+    end
+end
