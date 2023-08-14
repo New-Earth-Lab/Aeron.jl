@@ -231,8 +231,9 @@ function fragment_assembler(context_ptr::Ptr{AeronSubscriptionInner}, fragment_b
     
     # Unfragmented case
     if frame.flags & LibAeron.AERON_DATA_HEADER_UNFRAGMENTED == LibAeron.AERON_DATA_HEADER_UNFRAGMENTED
-        resize!(session.buffer, buflength)
         session.frame_received = true
+        resize!(session.buffer, buflength)
+        unsafe_copyto!(pointer(session.buffer), fragment_buffer, buflength)
     # Fragemented case: first fragment
     elseif frame.flags & LibAeron.AERON_DATA_HEADER_BEGIN_FLAG == LibAeron.AERON_DATA_HEADER_BEGIN_FLAG 
         session.frame_received = false
@@ -260,6 +261,7 @@ function fragment_assembler(context_ptr::Ptr{AeronSubscriptionInner}, fragment_b
         else
             aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
             session.next_term_offset = frame.term_offset + aligned_buflength
+            session.frame_received = false
         end
     else
     end
