@@ -270,6 +270,56 @@ function fragment_assembler(context_ptr::Ptr{AeronSubscriptionInner}, fragment_b
 end
 
 
+
+# This version of the fragment assembler deliberately does no work.
+# Polling with this version prevents us from backpressuring but requires minimal work.
+function fragment_assembler_noop(context_ptr::Ptr{AeronSubscriptionInner}, fragment_buffer, buflength, header_ptr)
+    # See fragment_assembler comments for details. 
+    subscription = unsafe_load(context_ptr)
+    LibAeron.aeron_header_values(header_ptr, subscription.header_values_ref)
+    header_values = subscription.header_values_ref[]
+    frame = header_values.frame
+    if haskey(subscription.session_map, frame.session_id)
+        session = subscription.session_map[frame.session_id]
+    else
+        session = subscription.session_map[frame.session_id] = AeronSubscriptionSession()
+    end
+    local aligned_buflength::Int32
+    if frame.flags & LibAeron.AERON_DATA_HEADER_UNFRAGMENTED == LibAeron.AERON_DATA_HEADER_UNFRAGMENTED
+        session.frame_received = true
+        resize!(session.buffer, buflength)
+        #unsafe_copyto!(pointer(session.buffer), fragment_buffer, buflength)
+    elseif frame.flags & LibAeron.AERON_DATA_HEADER_BEGIN_FLAG == LibAeron.AERON_DATA_HEADER_BEGIN_FLAG 
+        session.frame_received = false
+        resize!(session.buffer, buflength)
+        if !isassigned(session.buffer, buflength)
+            @error "Attempted to copy data past length of buffer. How did this happen?" size(session.buffer) session.buffer_limit
+            return
+        end
+        #unsafe_copyto!(pointer(session.buffer), fragment_buffer, buflength)
+        aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
+        session.next_term_offset = frame.term_offset + aligned_buflength
+        session.buffer_limit = buflength
+    elseif session.next_term_offset == frame.term_offset
+        if length(session.buffer) != session.buffer_limit + buflength
+            resize!(session.buffer, session.buffer_limit + buflength)
+        end
+        #unsafe_copyto!(pointer(session.buffer, session.buffer_limit+1), fragment_buffer, buflength)
+        session.buffer_limit = session.buffer_limit  + buflength
+        if frame.flags & LibAeron.AERON_DATA_HEADER_END_FLAG == LibAeron.AERON_DATA_HEADER_END_FLAG
+            session.frame_received = true
+        else
+            aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
+            session.next_term_offset = frame.term_offset + aligned_buflength
+            session.frame_received = false
+        end
+    else
+    end
+
+    return
+end
+
+
 """
     close(subscription)
 """
@@ -308,16 +358,27 @@ end
 Do work to receive fragments from a given subscription if available. If a received
 fragment completes a frame, the full frame is returned as an `AeronFrame`
 (otherwise `nothing`)
+
+Pass `noop=true` to poll for messages without doing any work to assemble incoming data
+or copy it anywhere (to discard messages without backpressuring).
 """
-function poll(subscription::AeronSubscription; fragment_count_limit=1)
+function poll(subscription::AeronSubscription; fragment_count_limit=1, noop=false)
 
     subscription_ptr = pointer_from_objref(subscription.contents)
 
-   fragment_assembler_ptr = @cfunction(
-        fragment_assembler,
-        Cvoid,
-        (Ptr{AeronSubscriptionInner}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t})
-    )
+    if noop
+        fragment_assembler_ptr = @cfunction(
+            fragment_assembler_noop,
+            Cvoid,
+            (Ptr{AeronSubscriptionInner}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t})
+        )
+    else
+        fragment_assembler_ptr = @cfunction(
+            fragment_assembler,
+            Cvoid,
+            (Ptr{AeronSubscriptionInner}, Ptr{UInt8}, Csize_t, Ptr{LibAeron.aeron_header_t})
+        )
+    end
     
     GC.@preserve subscription  begin
         fragments_read = LibAeron.aeron_subscription_poll(
@@ -339,6 +400,83 @@ function poll(subscription::AeronSubscription; fragment_count_limit=1)
                 session.frame_received = false
                 return frame
             end
+        end
+    end
+end
+
+
+Base.@kwdef mutable struct AeronWatchHandle1{T<:Base.Callable}
+    const subscription::AeronSubscription
+    const callback::T
+    active::Bool=true
+    decimate::Int=1
+    decimate_time::Float64=0.0
+    decimate_last_index::Int=0
+    decimate_last_time::Float64=0.0
+end
+AeronWatchHandle = AeronWatchHandle1
+
+"""
+    watch(callback::Base.Callable, subscription::AeronSubscription)
+
+Using a background Julia thread, poll `subscription` and run `callback` 
+with a message each time a full message is received.
+
+Implementation note: a single Julia thread is used for any/all subscriptions
+that are watched. You can safely `watch` many different streams without 
+needing more than one background thread available.
+
+Returns: AeronWatchHandle
+
+See also: iterate(subscription)
+"""
+function watch(callback::Base.Callable, subscription::AeronSubscription; kwargs...)
+    wh = AeronWatchHandle(;subscription, callback, kwargs...)
+    push!(watch_handles, wh)
+    if isnothing(poller_task[])
+        poller_task[] = Threads.@spawn :default _launch_poller_task(watch_handles)
+        errormonitor(poller_task[])
+    end
+    return wh
+end
+
+
+"""
+Temporarilly pause or continue processing callbacks for a given watched subscription. 
+Messages are still received and dealt with, but no data is copied and
+"""
+function active(wh::AeronWatchHandle, active::Bool)
+    return wh.active = active
+end
+
+"""
+Return if callbacks are being processed for a given subscription.
+"""
+function active(wh::AeronWatchHandle)
+    return wh.active
+end
+
+const watch_handles = AeronWatchHandle[]
+const poller_task = Ref{Union{Nothing, Task}}(nothing)
+
+function _launch_poller_task(watch_handles)
+    i = 0
+    while true
+        i += 1
+
+        for wh in watch_handles
+            if wh.active
+                out = poll(wh.subscription)
+                if !isnothing(out)
+                    wh.callback(out)
+                end
+            else
+                poll(wh.subscription, noop=true)
+            end
+        end
+        # Insert safepoints every 1000 polls
+        if mod(i, 1000) == 0
+            GC.safepoint()
         end
     end
 end
