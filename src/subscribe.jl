@@ -10,6 +10,7 @@ mutable struct AeronSubscriptionSession
     next_term_offset::Int32
     buffer_limit::Int32
     frame_received::Bool
+    wait_until_message_start::Bool
     # Constructor with initialized defaults
     function AeronSubscriptionSession(
         buffer = nothing,
@@ -21,7 +22,7 @@ mutable struct AeronSubscriptionSession
             buffer = Vector{UInt8}(undef, sizehint)
             resize!(buffer,0)
         end
-        new(buffer, next_term_offset, buffer_limit, false)
+        new(buffer, next_term_offset, buffer_limit, false, false)
     end
 end
 
@@ -231,11 +232,13 @@ function fragment_assembler(context_ptr::Ptr{AeronSubscriptionInner}, fragment_b
     
     # Unfragmented case
     if frame.flags & LibAeron.AERON_DATA_HEADER_UNFRAGMENTED == LibAeron.AERON_DATA_HEADER_UNFRAGMENTED
+        session.wait_until_message_start = false
         session.frame_received = true
         resize!(session.buffer, buflength)
         unsafe_copyto!(pointer(session.buffer), fragment_buffer, buflength)
     # Fragemented case: first fragment
     elseif frame.flags & LibAeron.AERON_DATA_HEADER_BEGIN_FLAG == LibAeron.AERON_DATA_HEADER_BEGIN_FLAG 
+        session.wait_until_message_start = false
         session.frame_received = false
         resize!(session.buffer, buflength)
         if !isassigned(session.buffer, buflength)
@@ -247,7 +250,7 @@ function fragment_assembler(context_ptr::Ptr{AeronSubscriptionInner}, fragment_b
         session.next_term_offset = frame.term_offset + aligned_buflength
         session.buffer_limit = buflength
     # Appending case
-    elseif session.next_term_offset == frame.term_offset
+    elseif session.next_term_offset == frame.term_offset && !session.wait_until_message_start
         # Resize to give sufficient room
         if length(session.buffer) != session.buffer_limit + buflength
             resize!(session.buffer, session.buffer_limit + buflength)
@@ -284,38 +287,7 @@ function fragment_assembler_noop(context_ptr::Ptr{AeronSubscriptionInner}, fragm
     else
         session = subscription.session_map[frame.session_id] = AeronSubscriptionSession()
     end
-    local aligned_buflength::Int32
-    if frame.flags & LibAeron.AERON_DATA_HEADER_UNFRAGMENTED == LibAeron.AERON_DATA_HEADER_UNFRAGMENTED
-        session.frame_received = true
-        resize!(session.buffer, buflength)
-        #unsafe_copyto!(pointer(session.buffer), fragment_buffer, buflength)
-    elseif frame.flags & LibAeron.AERON_DATA_HEADER_BEGIN_FLAG == LibAeron.AERON_DATA_HEADER_BEGIN_FLAG 
-        session.frame_received = false
-        resize!(session.buffer, buflength)
-        if !isassigned(session.buffer, buflength)
-            @error "Attempted to copy data past length of buffer. How did this happen?" size(session.buffer) session.buffer_limit
-            return
-        end
-        #unsafe_copyto!(pointer(session.buffer), fragment_buffer, buflength)
-        aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
-        session.next_term_offset = frame.term_offset + aligned_buflength
-        session.buffer_limit = buflength
-    elseif session.next_term_offset == frame.term_offset
-        if length(session.buffer) != session.buffer_limit + buflength
-            resize!(session.buffer, session.buffer_limit + buflength)
-        end
-        #unsafe_copyto!(pointer(session.buffer, session.buffer_limit+1), fragment_buffer, buflength)
-        session.buffer_limit = session.buffer_limit  + buflength
-        if frame.flags & LibAeron.AERON_DATA_HEADER_END_FLAG == LibAeron.AERON_DATA_HEADER_END_FLAG
-            session.frame_received = true
-        else
-            aligned_buflength = LibAeron.AERON_ALIGN(LibAeron.AERON_DATA_HEADER_LENGTH + buflength, LibAeron.AERON_LOGBUFFER_FRAME_ALIGNMENT)
-            session.next_term_offset = frame.term_offset + aligned_buflength
-            session.frame_received = false
-        end
-    else
-    end
-
+    session.wait_until_message_start = true
     return
 end
 
