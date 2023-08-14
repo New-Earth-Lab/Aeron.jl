@@ -382,8 +382,8 @@ Base.@kwdef mutable struct AeronWatchHandle1{T<:Base.Callable}
     const callback::T
     active::Bool=true
     decimate::Int=1
+    decimate_idx::Int=0
     decimate_time::Float64=0.0
-    decimate_last_index::Int=0
     decimate_last_time::Float64=0.0
 end
 AeronWatchHandle = AeronWatchHandle1
@@ -404,13 +404,22 @@ See also: iterate(subscription)
 """
 function watch(callback::Base.Callable, subscription::AeronSubscription; kwargs...)
     wh = AeronWatchHandle(;subscription, callback, kwargs...)
-    push!(watch_handles, wh)
+    if !haskey(watch_handles, subscription)
+        watch_handles[subscription] = AeronWatchHandle[]
+    end
+    push!(watch_handles[subscription], wh)
     if isnothing(poller_task[])
         poller_task[] = Threads.@spawn :default _launch_poller_task(watch_handles)
         errormonitor(poller_task[])
     end
     return wh
 end
+# TODO:
+# function watch(callback::Base.Callable, conf::AeronConfig; kwargs...)
+#     subscribe(conf) do sub
+#         watch(callback, sub; kwargs...)
+#     end
+# end
 
 
 """
@@ -428,27 +437,43 @@ function active(wh::AeronWatchHandle)
     return wh.active
 end
 
-const watch_handles = AeronWatchHandle[]
+const watch_handles = Dict{AeronSubscription,Vector{AeronWatchHandle}}()
 const poller_task = Ref{Union{Nothing, Task}}(nothing)
 
 function _launch_poller_task(watch_handles)
     i = 0
     while true
-        i += 1
-
-        for wh in watch_handles
-            if wh.active
-                out = poll(wh.subscription)
-                if !isnothing(out)
-                    wh.callback(out)
+        # TODO: we should support multiple watch handles for the same subscription using a dictionary
+        for sub in keys(watch_handles)
+            any_active = false
+            for wh in watch_handles[sub]
+                any_active |= wh.active
+            end
+            if !any_active
+                poll(sub, noop=true)
+                continue
+            end
+            out = poll(sub)
+            if !isnothing(out)
+                for wh in watch_handles[sub]
+                    if mod(wh.decimate_idx, wh.decimate) == 0 &&
+                        (wh.decimate_time == 0 || time() - wh.decimate_last_time > wh.decimate_time)
+                        wh.callback(out)
+                        if wh.decimate_time > 0
+                            wh.decimate_last_time = time()
+                        end
+                    end
                 end
-            else
-                poll(wh.subscription, noop=true)
+            end
+            for wh in watch_handles[sub]
+                wh.decimate_idx += 1
             end
         end
         # Insert safepoints every 1000 polls
         if mod(i, 1000) == 0
             GC.safepoint()
         end
+
+        i += 1
     end
 end
