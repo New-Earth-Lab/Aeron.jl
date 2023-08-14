@@ -204,22 +204,22 @@ function fragment_assembler(context_ptr::Ptr{AeronSubscriptionInner}, fragment_b
     # We don't know the buflength of the entire frame in advance until it has finished
     # arriving.
 
-    subscription2 = unsafe_load(context_ptr)
+    subscription = unsafe_load(context_ptr)
 
     # memcpy the header data into header_values_ref
-    LibAeron.aeron_header_values(header_ptr, subscription2.header_values_ref)
-    header_values = subscription2.header_values_ref[]
+    LibAeron.aeron_header_values(header_ptr, subscription.header_values_ref)
+    header_values = subscription.header_values_ref[]
     frame = header_values.frame
 
     # Each publisher gets its own session_id. We may be receiving data
     # from multiple publisher simultaneously. We therefore assemble
     # into a frame identified by that session_id, all stored in a dictionary.
-    if haskey(subscription2.session_map, frame.session_id)
-        session = subscription2.session_map[frame.session_id]
+    if haskey(subscription.session_map, frame.session_id)
+        session = subscription.session_map[frame.session_id]
     else
         # Note: this allocates! 
         # It should happen only once per publisher if messages are consistently sized. 
-        session = subscription2.session_map[frame.session_id] = AeronSubscriptionSession()
+        session = subscription.session_map[frame.session_id] = AeronSubscriptionSession()
     end
 
     # The session contains a preallocated buffer (see above) that we copy into.
