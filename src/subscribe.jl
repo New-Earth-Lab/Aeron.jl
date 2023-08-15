@@ -177,7 +177,7 @@ function subscribe(conf::AeronConfig; sizehint=512*512, verbose=false)
         return subscription
 
     catch exception
-        @error "Could not subscript to stream" exception
+        @error "Could not subscribe to stream" exception
         if libaeron_subscription != C_NULL
             LibAeron.aeron_subscription_close(libaeron_subscription, C_NULL, C_NULL)
         end
@@ -188,6 +188,7 @@ function subscribe(conf::AeronConfig; sizehint=512*512, verbose=false)
             LibAeron.aeron_context_close(context)
         end
         verbose && @info "cleanup complete"
+        rethrow(exception)
     end
 end
 
@@ -377,7 +378,7 @@ function poll(subscription::AeronSubscription; fragment_count_limit=1, noop=fals
 end
 
 
-Base.@kwdef mutable struct AeronWatchHandle1{T<:Base.Callable}
+Base.@kwdef mutable struct AeronWatchHandle{T<:Base.Callable}
     const subscription::AeronSubscription
     const callback::T
     active::Bool=true
@@ -386,7 +387,6 @@ Base.@kwdef mutable struct AeronWatchHandle1{T<:Base.Callable}
     decimate_time::Float64=0.0
     decimate_last_time::Float64=0.0
 end
-AeronWatchHandle = AeronWatchHandle1
 
 """
     watch(callback::Base.Callable, subscription::AeronSubscription)
@@ -414,6 +414,13 @@ function watch(callback::Base.Callable, subscription::AeronSubscription; kwargs.
     end
     return wh
 end
+function unwatch(wh::AeronWatchHandle)
+    arr = watch_handles[wh.subscription]
+    deleteat!(arr, findfirst(==(wh), arr))
+end
+
+# TODO: thread safety
+
 # TODO:
 # function watch(callback::Base.Callable, conf::AeronConfig; kwargs...)
 #     subscribe(conf) do sub
