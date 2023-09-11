@@ -302,6 +302,7 @@ function Base.close(subhandle::AeronSubscription)
     LibAeron.aeron_context_close(subhandle.contents[].context)
 end
 
+Base.IteratorSize(::AeronSubscription) = Base.IsInfinite()
 
 # Currently we don't use state
 """
