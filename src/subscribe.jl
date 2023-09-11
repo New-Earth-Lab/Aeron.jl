@@ -409,6 +409,7 @@ function watch(callback::Base.Callable, subscription::AeronSubscription; kwargs.
     end
     push!(watch_handles[subscription], wh)
     if isnothing(poller_task[])
+        shouldexit[] = false
         poller_task[] = Threads.@spawn :default _launch_poller_task(watch_handles)
         errormonitor(poller_task[])
     end
@@ -417,16 +418,11 @@ end
 function unwatch(wh::AeronWatchHandle)
     arr = watch_handles[wh.subscription]
     deleteat!(arr, findfirst(==(wh), arr))
+    if isempty(watch_handles)
+        shouldexit[]= true
+    end
 end
 
-# TODO: thread safety
-
-# TODO:
-# function watch(callback::Base.Callable, conf::AeronConfig; kwargs...)
-#     subscribe(conf) do sub
-#         watch(callback, sub; kwargs...)
-#     end
-# end
 
 
 """
@@ -446,9 +442,24 @@ end
 
 const watch_handles = Dict{AeronSubscription,Vector{AeronWatchHandle}}()
 const poller_task = Ref{Union{Nothing, Task}}(nothing)
+const shouldexit = Ref{Bool}(false)
+
+function unwatchall()
+    shouldexit[] = true
+    empty!(watch_handles)
+    fetch(poller_task[])
+end
 
 function _launch_poller_task(watch_handles)
     i = 0
+    # Single-thread mode check
+    # If we only have a single thread (and no interactive thread)
+    # we have to yield back to the scheduler periodically.
+    # This gives reduced performance.
+    singlethreadmode = Threads.nthreads() ==1
+    if singlethreadmode
+        @warn "Subscribing to aeron feeds with only a single thread leads to reduced performance (single-thread-fallback active)"
+    end
     while true
         # TODO: we should support multiple watch handles for the same subscription using a dictionary
         for sub in keys(watch_handles)
@@ -478,9 +489,22 @@ function _launch_poller_task(watch_handles)
         end
         # Insert safepoints every 1000 polls
         if mod(i, 1000) == 0
+            if shouldexit[]
+                return
+            end
             GC.safepoint()
+            if singlethreadmode
+                sleep(0.0)
+            end
         end
-
         i += 1
     end
+end
+
+# Prevent issues in case Aeron.jl is used by a downstream module that watches
+# any streams during preocmpilation
+function __init__()
+    empty!(watch_handles)
+    poller_task[] = nothing
+    shouldexit[] = false
 end
