@@ -10,21 +10,10 @@ function publisher(conf::AeronConfig)
 
     println("Publishing to channel $(conf.channel) on Stream ID $(conf.stream)")
 
-    aeron = Ptr{LibAeron.aeron_t}(C_NULL)
-    context = Ptr{LibAeron.aeron_context_t}(C_NULL)
     publication = Ptr{LibAeron.aeron_publication_t}(C_NULL)
     async = Ptr{LibAeron.aeron_async_add_publication_t}(C_NULL)
 
     try
-
-        if @c(LibAeron.aeron_context_init(&context)) < 0
-            error("aeron_context_init: "*unsafe_string(LibAeron.aeron_errmsg()))
-        end
-
-        if @c(LibAeron.aeron_init(&aeron, context)) < 0
-            error("aeron_init: "*unsafe_string(LibAeron.aeron_errmsg()))
-        end
-        @info "inited"
 
         if LibAeron.aeron_start(aeron) < 0
             error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
@@ -56,8 +45,6 @@ function publisher(conf::AeronConfig)
 
     catch err
         LibAeron.aeron_publication_close(publication, C_NULL, C_NULL)
-        LibAeron.aeron_close(aeron)
-        LibAeron.aeron_context_close(context)
         rethrow(err)
     end
     pubhandle = AeronPublication(publication,context,aeron)
@@ -71,15 +58,11 @@ function publisher(callback::Base.Callable, conf::AeronConfig)
         callback(pubhandle)
     finally
         LibAeron.aeron_publication_close(pubhandle.handle, C_NULL, C_NULL)
-        LibAeron.aeron_close(pubhandle.aeron)
-        LibAeron.aeron_context_close(pubhandle.context)
     end
 end
 
 function Base.close(pubhandle::AeronPublication)
     LibAeron.aeron_publication_close(pubhandle.handle, C_NULL, C_NULL)
-    LibAeron.aeron_close(pubhandle.aeron)
-    LibAeron.aeron_context_close(pubhandle.context)
 end
 
 
