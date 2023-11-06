@@ -55,7 +55,7 @@ function publisher(conf::AeronConfig)
         # callback(pubhandle)
 
     catch err
-        LibAeron.aeron_subscription_close(publication, C_NULL, C_NULL)
+        LibAeron.aeron_publication_close(publication, C_NULL, C_NULL)
         LibAeron.aeron_close(aeron)
         LibAeron.aeron_context_close(context)
         rethrow(err)
@@ -70,14 +70,14 @@ function publisher(callback::Base.Callable, conf::AeronConfig)
     try
         callback(pubhandle)
     finally
-        LibAeron.aeron_subscription_close(pubhandle.handle, C_NULL, C_NULL)
+        LibAeron.aeron_publication_close(pubhandle.handle, C_NULL, C_NULL)
         LibAeron.aeron_close(pubhandle.aeron)
         LibAeron.aeron_context_close(pubhandle.context)
     end
 end
 
 function Base.close(pubhandle::AeronPublication)
-    LibAeron.aeron_subscription_close(pubhandle.handle, C_NULL, C_NULL)
+    LibAeron.aeron_publication_close(pubhandle.handle, C_NULL, C_NULL)
     LibAeron.aeron_close(pubhandle.aeron)
     LibAeron.aeron_context_close(pubhandle.context)
 end
