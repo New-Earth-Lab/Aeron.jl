@@ -83,36 +83,41 @@ function Base.close(pubhandle::AeronPublication)
 end
 
 
-function publication_offer(pub::AeronPublication, message::AbstractArray{UInt8})
+# robust: if robust is true, try a bit harder to send the message, retrying if there are adminaction
+# or backpressure
+function publication_offer(pub::AeronPublication, message::AbstractArray{UInt8}, robust=true, robust_timeout_ns=100_000)
 
-    message_len = length(message)
-    # Retry the publication in case we are rotating term buffers.
-    # Use ADMIN_ACTION as an initial sentinel
-    result = LibAeron.AERON_PUBLICATION_ADMIN_ACTION
-    retries = 5
-    while result == LibAeron.AERON_PUBLICATION_ADMIN_ACTION && retries > 0
-        retries -= 1
+    if robust
+        start_time = time_ns()
+        message_len = length(message)
+        # Retry the publication in case we are rotating term buffers.
+        # Use ADMIN_ACTION as an initial sentinel
+        result = LibAeron.AERON_PUBLICATION_ADMIN_ACTION
+        while (
+            result == LibAeron.AERON_PUBLICATION_ADMIN_ACTION ||
+            result == LibAeron.AERON_PUBLICATION_BACK_PRESSURED
+        ) && time_ns() - start_time < robust_timeout_ns
+            result = 
+                LibAeron.aeron_publication_offer(pub.handle, message, message_len, C_NULL, C_NULL)
+        end
+    else
         result = 
-            LibAeron.aeron_publication_offer(pub.handle, message, message_len, C_NULL, C_NULL)
+                LibAeron.aeron_publication_offer(pub.handle, message, message_len, C_NULL, C_NULL)
     end
+
+
     if result > 0
         return :success
-        # println("yay!")
     elseif LibAeron.AERON_PUBLICATION_BACK_PRESSURED == result
         return :backpressured
-        # println("Offer failed due to back pressure")
     elseif LibAeron.AERON_PUBLICATION_NOT_CONNECTED == result
         return :notconnected
-        # println("Offer failed because publisher is not connected to a subscriber")
     elseif LibAeron.AERON_PUBLICATION_ADMIN_ACTION == result
         return :adminaction
-        # println("Offer failed because of an administration action in the system")
     elseif LibAeron.AERON_PUBLICATION_CLOSED == result
-        # return :closed
         error("Offer failed because publication is closed")
     else
         return :unknown
-        # println("Offer failed due to unknown reason ", res)
     end
     # if !LibAeron.aeron_publication_is_connected(publication)
         # println("No active subscribers detected")
