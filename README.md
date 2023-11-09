@@ -8,12 +8,32 @@ Using this library, you can shuttle data between processes or machines with zero
 
 ## Example
 
-This example assumes you have already started an Aeron media driver (for now you will have to compile aeronmd yourself from the [upstream repo](https://github.com/real-logic/Aeron)). You must start one media driver per user/computer.
+### Media Driver
+Aeron uses a "media driver" to coordinate moving data between processes or over the network. You must start one media driver per computer (and perhaps user, on multi-user systems). This is a standalone process that runs in the background.
+
+For supported platforms, we provide a pre-built media driver that you can run like this:
+```julia
+using Aeron_jll
+run(`$(aeronmd())`)
+```
+
+You can also compile it yourself from the [upstream repo](https://github.com/real-logic/Aeron)).
+
+
+### Context
+Start by creating an aeron context object. This will fail if the media driver isn't yet running.
+```julia
+ctx = Aeron.AeronCtx()
+```
 
 ### Publisher
 
-First, specify the stream. You can use an inter-process-communication channel or UDP / UDP multicast across a network.
+Aeron communications take place over a "channel" and "stream". The channel can be "aeron:ipc" 
+to use shared memory if both endpoints are on the same computer, or a UDP address if they
+are across a network.
 The stream number is a unique integer to specify which stream of data to publish to / listen on.
+
+Create a config object to hold these parameters:
 ```julia
 conf = AeronConfig(
     channel="aeron:ipc",
@@ -24,8 +44,8 @@ conf = AeronConfig(
 Now start publishing to that stream. You have to convert your data into a vector of bytes (UInt8).
 Interpretting those bytes is up to you. You could serialize / deserialize a message using any format
 you want, or just send raw arrays.
-```
-Aeron.publisher(conf) do pub
+```julia
+Aeron.publisher(ctx, conf) do pub
     
     # For this test, send 10,000 bytes incrementing from 0:255 in a repeating cycle.
     message = zeros(UInt8, 10_000)
@@ -55,13 +75,13 @@ The subscriber looks similar, only you use a for loop to pull data frames out
 of the subscription. 
 
 The main loop is completely allocation free.
-```
+```julia
 conf = AeronConfig(
-           channel="aeron:ipc",
-           stream=1001,
-       )
+    channel="aeron:ipc",
+    stream=1001,
+)
 
-Aeron.subscribe(conf) do sub
+Aeron.subscribe(ctx, conf) do sub
 
     # Loop forever:
     # for frame in sub
