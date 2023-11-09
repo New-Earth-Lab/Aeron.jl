@@ -6,23 +6,33 @@ This repository provides LibAeron.jl and Aeron.jl. The former containers bare-bo
 
 Using this library, you can shuttle data between processes or machines with zero dynamic memory allocations and at very low latency.
 
-## Example
 
 ### Media Driver
-Aeron uses a "media driver" to coordinate moving data between processes or over the network. You must start one media driver per computer (and perhaps user, on multi-user systems). This is a standalone process that runs in the background.
+Aeron uses a "media driver", which is a standalone process, to coordinate moving data between processes or over the network. You must start one media driver per computer (and perhaps user, on multi-user systems). The client library (linked into Julia) then communicates only with the media driver using shared memory.
 
-For supported platforms, we provide a pre-built media driver that you can run like this:
+For supported platforms (GNU/linux x64 and aarch64, Apple silicon), we provide both the pre-built client library and media driver. 
+
+You can start the media driver like this:
 ```julia
 using Aeron_jll
 run(`$(aeronmd())`)
 ```
 
-You can also compile it yourself from the [upstream repo](https://github.com/real-logic/Aeron)).
+For other platforms (eg. Windows and Intel macs), you can build the client library and media driver  yourself following instrutions from the [upstream repo](https://github.com/real-logic/Aeron)). Either the Java or C media driver will work.
 
+## Example
 
-### Context
-Start by creating an aeron context object. This will fail if the media driver isn't yet running.
+### Setup
+
+Start the media driver process in the background (note: only one media driver per computer & user account).
 ```julia
+using Aeron_jll
+run(`$(aeronmd())`, wait=false)
+```
+
+Now create an aeron context object to initialize the client library. This will fail if the media driver isn't yet running.
+```julia
+using Aeron
 ctx = Aeron.AeronCtx()
 ```
 
@@ -103,3 +113,7 @@ Aeron.subscribe(ctx, conf) do sub
     return
 end
 ```
+
+
+## More Control
+The submodule `Aeron.LibAeron` directly wraps the C aeron client library. Use this if you want to handle all the details of the connection yourself, or want to ensure true zero-copy semantics.
