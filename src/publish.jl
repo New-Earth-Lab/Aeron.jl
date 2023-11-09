@@ -5,7 +5,7 @@ struct AeronPublication
     aeron::Ptr{LibAeron.aeron_t}
 end
 
-function publisher(conf::AeronConfig)
+function publisher(ctx::AeronCtx, conf::AeronConfig)
 
 
     println("Publishing to channel $(conf.channel) on Stream ID $(conf.stream)")
@@ -15,14 +15,14 @@ function publisher(conf::AeronConfig)
 
     try
 
-        if LibAeron.aeron_start(aeron) < 0
+        if LibAeron.aeron_start(ctx.aeron) < 0
             error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
         end
         @info "started"
 
         if @c(LibAeron.aeron_async_add_publication(
             &async,
-            aeron,
+            ctx.aeron,
             conf.channel,
             conf.stream,)) < 0
             error("aeron_async_add_publication: "*unsafe_string(LibAeron.aeron_errmsg()))
@@ -47,13 +47,13 @@ function publisher(conf::AeronConfig)
         LibAeron.aeron_publication_close(publication, C_NULL, C_NULL)
         rethrow(err)
     end
-    pubhandle = AeronPublication(publication,context,aeron)
+    pubhandle = AeronPublication(publication,ctx.context,ctx.aeron)
 
     return pubhandle
 end
 
-function publisher(callback::Base.Callable, conf::AeronConfig)
-    pubhandle = publisher(conf)
+function publisher(callback::Base.Callable, ctx::AeronCtx,  conf::AeronConfig)
+    pubhandle = publisher(ctx, conf)
     try
         callback(pubhandle)
     finally

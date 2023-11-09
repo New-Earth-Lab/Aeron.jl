@@ -109,18 +109,15 @@ subscribe(conf) do stream
 end
 ````
 """
-function subscribe(callback::Base.Callable, conf::AeronConfig; sizehint=512*512, verbose=false)
-    subscription = subscribe(conf; sizehint, verbose)
+function subscribe(callback::Base.Callable, ctx::AeronCtx,  conf::AeronConfig; sizehint=512*512, verbose=false)
+    subscription = subscribe(ctx, conf; sizehint, verbose)
     try
         callback(subscription)
     finally
         close(subscription)
     end
 end
-function subscribe(conf::AeronConfig; sizehint=512*512, verbose=false)
-
-    @info "Subscribing" conf.channel conf.stream
-
+function subscribe(ctx::AeronCtx, conf::AeronConfig; sizehint=512*512, verbose=false)
 
     libaeron_subscription = Ptr{LibAeron.aeron_subscription_t}(C_NULL)
     async = Ptr{LibAeron.aeron_async_add_subscription_t}(C_NULL)
@@ -131,7 +128,7 @@ function subscribe(conf::AeronConfig; sizehint=512*512, verbose=false)
 
         if @c(LibAeron.aeron_async_add_subscription(
             &async,
-            aeron,
+            ctx.aeron,
             conf.channel,
             conf.stream,
             print_available_image_ptr,
@@ -152,11 +149,8 @@ function subscribe(conf::AeronConfig; sizehint=512*512, verbose=false)
             end
         end
     
-        @info "Subscription channel status " LibAeron.aeron_subscription_channel_status(libaeron_subscription)
+        subscription = AeronSubscription(conf, ctx.aeron, ctx.context, libaeron_subscription)
 
-        subscription = AeronSubscription(conf, aeron, context, libaeron_subscription)
-
-        @show subscription
         # Return the subscription object for them to iterate over
         return subscription
 
@@ -477,43 +471,10 @@ function _launch_poller_task(watch_handles)
     end
 end
 
-# Define a module-wide aeron context
-aeron = C_NULL
-context = C_NULL
-
 # Prevent issues in case Aeron.jl is used by a downstream module that watches
 # any streams during precompilation
 function __init__()
-    # Initialize 
-    global aeron = Ptr{LibAeron.aeron_t}(C_NULL)
-    global context = Ptr{LibAeron.aeron_context_t}(C_NULL)
-    if @c(LibAeron.aeron_context_init(&context)) < 0
-        error("aeron_context_init: "*unsafe_string(LibAeron.aeron_errmsg()))
-    end
-
-    if @c(LibAeron.aeron_init(&aeron, context)) < 0
-        error("aeron_init: "*unsafe_string(LibAeron.aeron_errmsg()))
-    end
-    @info "inited"
-
-    if LibAeron.aeron_start(aeron) < 0
-        error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
-    end
-    @info "started"
-
-
     empty!(watch_handles)
     poller_task[] = nothing
     shouldexit[] = false
 end
-
-atexit() do 
-    if aeron != C_NULL
-        LibAeron.aeron_close(aeron)
-    end
-    if context != C_NULL
-        LibAeron.aeron_context_close(context)
-    end
-end
-# function 
-# # atexit
