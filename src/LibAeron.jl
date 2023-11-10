@@ -1,8 +1,5 @@
 module LibAeron
-
 using Aeron_jll
-export Aeron_jll
-
 using CEnum
 
 # Prologue file

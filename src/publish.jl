@@ -5,10 +5,10 @@ struct AeronPublication
     aeron::Ptr{LibAeron.aeron_t}
 end
 
-function publisher(ctx::AeronCtx, conf::AeronConfig)
+function publisher(ctx::AeronContext, conf::AeronConfig)
 
 
-    println("Publishing to channel $(conf.channel) on Stream ID $(conf.stream)")
+    @debug "Publishing to channel $(conf.channel) on Stream ID $(conf.stream)"
 
     publication = Ptr{LibAeron.aeron_publication_t}(C_NULL)
     async = Ptr{LibAeron.aeron_async_add_publication_t}(C_NULL)
@@ -18,7 +18,7 @@ function publisher(ctx::AeronCtx, conf::AeronConfig)
         if LibAeron.aeron_start(ctx.aeron) < 0
             error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
         end
-        @info "started"
+        @debug "started"
 
         if @c(LibAeron.aeron_async_add_publication(
             &async,
@@ -39,7 +39,7 @@ function publisher(ctx::AeronCtx, conf::AeronConfig)
             end
         end
     
-        @info "Publication channel status " LibAeron.aeron_publication_channel_status(publication)
+        @debug "Publication channel status " LibAeron.aeron_publication_channel_status(publication)
 
         # callback(pubhandle)
 
@@ -52,7 +52,7 @@ function publisher(ctx::AeronCtx, conf::AeronConfig)
     return pubhandle
 end
 
-function publisher(callback::Base.Callable, ctx::AeronCtx,  conf::AeronConfig)
+function publisher(callback::Base.Callable, ctx::AeronContext,  conf::AeronConfig)
     pubhandle = publisher(ctx, conf)
     try
         callback(pubhandle)
@@ -65,10 +65,16 @@ function Base.close(pubhandle::AeronPublication)
     LibAeron.aeron_publication_close(pubhandle.handle, C_NULL, C_NULL)
 end
 
+"""
+    put!(pub::AeronPublication, data::AbstractArray{UInt8}; robust=true, robust_timeout_ns=100_000)::Symbol
 
-# robust: if robust is true, try a bit harder to send the message, retrying if there are adminaction
-# or backpressure
-function publication_offer(pub::AeronPublication, message::AbstractArray{UInt8}, robust=true, robust_timeout_ns=100_000)
+Send data over an aeron publication. The return value is `:success`, `:backpressured`, `:notconnected`, or 
+`:unknown`. Errors if the publication is closed.
+
+If robust is true, try a bit harder to send the message, retrying repeatedly 
+if the status is `:adminaction` or `:backpressure` until `robust_timeout_ns` passes.
+"""
+function Base.put!(pub::AeronPublication, message::AbstractArray{UInt8}, robust=true, robust_timeout_ns=100_000)
 
     if robust
         start_time = time_ns()
@@ -106,3 +112,4 @@ function publication_offer(pub::AeronPublication, message::AbstractArray{UInt8},
         # println("No active subscribers detected")
     # end
 end
+const publication_offer = Base.put!

@@ -1,18 +1,18 @@
 # Need two types: an iterable and frame type.
 
 # We may in future want to return additional information about the frame, e.g. sequence numbers.
-struct AeronFrame{T}
+struct AeronAssembledMessage{T}
     buffer::Vector{T}
 end
 
-mutable struct AeronSubscriptionSession
+mutable struct AeronSubscriberSession
     buffer::Vector{UInt8}
     next_term_offset::Int32
     buffer_limit::Int32
     frame_received::Bool
     wait_until_message_start::Bool
     # Constructor with initialized defaults
-    function AeronSubscriptionSession(
+    function AeronSubscriberSession(
         buffer = nothing,
         next_term_offset = Int32(0),
         buffer_limit = Int32(0);
@@ -30,7 +30,7 @@ struct AeronSubscriptionInner
     aeron::Ptr{LibAeron.aeron_t}
     context::Ptr{LibAeron.aeron_context_t}
     libaeron_subscription::Ptr{LibAeron.aeron_subscription_t}
-    session_map::Dict{Int32,AeronSubscriptionSession}
+    session_map::Dict{Int32,AeronSubscriberSession}
     header_values_ref::Base.RefValue{LibAeron.aeron_header_values_t}
     # Constructor
     AeronSubscriptionInner(
@@ -41,7 +41,7 @@ struct AeronSubscriptionInner
         aeron,
         context,
         libaeron_subscription,
-        Dict{Int,AeronSubscriptionSession}(),
+        Dict{Int,AeronSubscriberSession}(),
         Ref(LibAeron.aeron_header_values_t(ntuple(i->0x00, 44)))
     )
 end
@@ -79,7 +79,7 @@ end
 
 """
 
-    subscribe(callback::Base.Callable, conf::AeronConfig)
+    subscriber(callback::Base.Callable, conf::AeronConfig)
 
 Subscribe to a stream given by `conf`. Inside the callback, you have access to an AeronSubscription
 object that can be iterated to receive frames.
@@ -92,13 +92,13 @@ object that can be iterated to receive frames.
 
 ## Examples
 ````julia
-subscribe(callback, conf) do stream
+subscriber(callback, conf) do stream
     frame = first(stream)
     @info "received frame"
     return copy(frame.buffer)
 end
 
-subscribe(conf) do stream
+subscriber(conf) do stream
     for frame in stream
         @info "received frame" sum(frame.buffer)
 
@@ -109,15 +109,15 @@ subscribe(conf) do stream
 end
 ````
 """
-function subscribe(callback::Base.Callable, ctx::AeronCtx,  conf::AeronConfig; sizehint=512*512, verbose=false)
-    subscription = subscribe(ctx, conf; sizehint, verbose)
+function subscriber(callback::Base.Callable, ctx::AeronContext,  conf::AeronConfig; sizehint=512*512, verbose=false)
+    subscription = subscriber(ctx, conf; sizehint, verbose)
     try
         callback(subscription)
     finally
         close(subscription)
     end
 end
-function subscribe(ctx::AeronCtx, conf::AeronConfig; sizehint=512*512, verbose=false)
+function subscriber(ctx::AeronContext, conf::AeronConfig; sizehint=512*512, verbose=false)
 
     libaeron_subscription = Ptr{LibAeron.aeron_subscription_t}(C_NULL)
     async = Ptr{LibAeron.aeron_async_add_subscription_t}(C_NULL)
@@ -155,7 +155,7 @@ function subscribe(ctx::AeronCtx, conf::AeronConfig; sizehint=512*512, verbose=f
         return subscription
 
     catch exception
-        @error "Could not subscribe to stream" exception
+        @error "Could not subscriber to stream" exception
         if libaeron_subscription != C_NULL
             LibAeron.aeron_subscription_close(libaeron_subscription, C_NULL, C_NULL)
         end
@@ -192,7 +192,7 @@ function fragment_assembler(context_ptr::Ptr{AeronSubscriptionInner}, fragment_b
     else
         # Note: this allocates! 
         # It should happen only once per publisher if messages are consistently sized. 
-        session = subscription.session_map[frame.session_id] = AeronSubscriptionSession()
+        session = subscription.session_map[frame.session_id] = AeronSubscriberSession()
     end
 
     # The session contains a preallocated buffer (see above) that we copy into.
@@ -257,7 +257,7 @@ function fragment_assembler_noop(context_ptr::Ptr{AeronSubscriptionInner}, fragm
     if haskey(subscription.session_map, frame.session_id)
         session = subscription.session_map[frame.session_id]
     else
-        session = subscription.session_map[frame.session_id] = AeronSubscriptionSession()
+        session = subscription.session_map[frame.session_id] = AeronSubscriberSession()
     end
     session.wait_until_message_start = true
     return
@@ -282,7 +282,7 @@ function Base.iterate(subscription::AeronSubscription, _=nothing::Nothing)
     i = 0
     while true
         i+=1
-        out = poll(subscription)
+        fragments_read, out = poll(subscription)
         if !isnothing(out)
             return out, nothing
         end
@@ -291,15 +291,26 @@ function Base.iterate(subscription::AeronSubscription, _=nothing::Nothing)
             GC.safepoint()
         end
         # yield()
-        # TODO: this is currently a busy wait
+        # this is currently a busy wait
     end
 end
 
 """
-    Aeron.poll(subscription)::Union{Nothing,AeronFrame}
+    message = take!(sub::AeronSubscription)::AeronAssembledMessage
+
+Take exactly one fully assembled message from an aeron subscription.
+function Base.take!(subscription::AeronSubscription)
+"""
+function Base.take!(sub::AeronSubscription)
+    message, _ = iterate(sub)
+    return message
+end
+
+"""
+    Aeron.poll(subscription; fragment_count_limit=1, noop=false)::Union{Nothing,AeronAssembledMessage}
 
 Do work to receive fragments from a given subscription if available. If a received
-fragment completes a frame, the full frame is returned as an `AeronFrame`
+fragment completes a frame, the full frame is returned as an `AeronAssembledMessage`
 (otherwise `nothing`)
 
 Pass `noop=true` to poll for messages without doing any work to assemble incoming data
@@ -335,15 +346,18 @@ function poll(subscription::AeronSubscription; fragment_count_limit=1, noop=fals
     if fragments_read < 0
         error("aeron_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
     elseif fragments_read == 0
-        return nothing
+        return fragments_read, nothing
     elseif fragments_read > 0
         for session in values(subscription.contents[].session_map)
             if session.frame_received
-                frame = AeronFrame(session.buffer)
+                frame = AeronAssembledMessage(session.buffer)
                 session.frame_received = false
-                return frame
+                return fragments_read, frame
             end
         end
+        return fragments_read, nothing
+    else
+        return fragments_read, nothing
     end
 end
 

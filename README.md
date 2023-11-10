@@ -12,10 +12,10 @@ Aeron uses a "media driver", which is a standalone process, to coordinate moving
 
 For supported platforms (GNU/linux x64 and aarch64, Apple silicon), we provide both the pre-built client library and media driver. 
 
-You can start the media driver like this:
+In a dedicated Julia process, you can start the media driver like this:
 ```julia
-using Aeron_jll
-run(`$(aeronmd())`)
+using Aeron
+Aeron.mediadriver()
 ```
 
 For other platforms (eg. Windows and Intel macs), you can build the client library and media driver  yourself following instrutions from the [upstream repo](https://github.com/real-logic/Aeron)). Either the Java or C media driver will work.
@@ -33,7 +33,7 @@ run(`$(aeronmd())`, wait=false)
 Now create an aeron context object to initialize the client library. This will fail if the media driver isn't yet running.
 ```julia
 using Aeron
-ctx = Aeron.AeronCtx()
+ctx = AeronContext()
 ```
 
 ### Publisher
@@ -70,7 +70,7 @@ Aeron.publisher(ctx, conf) do pub
         # message = Vector{UInt8}(msg)
 
         # Status is a symbol to indicate if the publication was successful.
-        status = Aeron.publication_offer(pub, message)
+        status = put!(pub, message)
 
         @show status
         sleep(1)
@@ -91,26 +91,60 @@ conf = AeronConfig(
     stream=1001,
 )
 
-Aeron.subscribe(ctx, conf) do sub
+Aeron.subscriber(ctx, conf) do sub
 
     # Loop forever:
-    # for frame in sub
-    #     total = sum(frame.buffer)
+    # for message in sub
+    #     total = sum(message.buffer)
     #     @info "Message received" total
     # end
 
-    # Loop for 10 frames:
-    for (i, frame) in enumerate(sub)
-        total = sum(frame.buffer)
+    # Loop for 10 message:
+    for (i, message) in enumerate(sub)
+        total = sum(message.buffer)
         @info "Message received" total
         if i > 10
             break
         end
     end
 
-    # frame.buffer is a byte vector that is valid during that loop iteration only.
+    # message is an AeronAssembledMessage
+    # message.buffer is a byte vector that is valid during that loop iteration only.
 
     return
+end
+```
+
+
+You can also poll the subscription as needed. This is a great way to incorporate a subscription
+into an existing event loop.
+
+
+The main loop is completely allocation free.
+```julia
+conf = AeronConfig(
+    channel="aeron:ipc",
+    stream=1001,
+)
+
+sub = Aeron.subscriber(ctx, conf)
+
+# Take a single assembled messages directly (blocking, busy wait)
+message = take!(sub)
+
+# Read 0 or more fragments
+while true
+    fragments_read, message = Aeron.poll(
+        sub;
+        # fragment_count_limit=1,
+        # noop=false
+    )
+    # Large messages are split into multiple fragments and automatically reassembled. 
+    # fragments_read is an integer number of message fragments received. 
+    # If a message is received
+    if !isnothing(message)
+        # process message
+    end
 end
 ```
 

@@ -1,14 +1,19 @@
 module Aeron
+using CSyntax
+using Compat
+using Aeron_jll
 
 include("LibAeron.jl")
-using CSyntax
 
-export AeronCtx
-mutable struct AeronCtx
+export AeronContext, AeronConfig
+@compat public mediadriver, subscriber, publisher, publication_offer, poll, watch, unwatch, active, unwatchall
+
+export AeronContext
+mutable struct AeronContext
     aeron::Ptr{Nothing}
     context::Ptr{Nothing}
 end
-function AeronCtx()
+function AeronContext()
     # Initialize 
     aeron = Ptr{LibAeron.aeron_t}(C_NULL)
     context = Ptr{LibAeron.aeron_context_t}(C_NULL)
@@ -23,12 +28,12 @@ function AeronCtx()
     if LibAeron.aeron_start(aeron) < 0
         error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
     end
-    ctx =  AeronCtx(aeron,context)
+    ctx =  AeronContext(aeron,context)
     finalizer(close, ctx)
     return ctx
 end
 
-function AeronCtx(callback::Base.Callable)    
+function AeronContext(callback::Base.Callable)    
     ctx = aeronctx()
     try
         callback(ctx)
@@ -38,7 +43,7 @@ function AeronCtx(callback::Base.Callable)
 end
 
 
-function Base.close(ctx::AeronCtx)
+function Base.close(ctx::AeronContext)
     if ctx.aeron != C_NULL
         LibAeron.aeron_close(ctx.aeron)
     end
@@ -60,6 +65,34 @@ AeronConfig(channel; kwargs...) = AeronConfig(;channel, kwargs...)
 AeronConfig(channel, stream; kwargs...) = AeronConfig(;channel, stream, kwargs...)
 export AeronConfig
 
+
+"""
+    mediadriver(;env=String[], wait=true)
+
+Run the aeron media driver process. One media driver must be run per computer & user account
+in order to pass data between processes and over the network.
+
+You can control some aspects of how the media driver runs by passing environment variables in 
+the `env` vector of strings.
+
+See the aeron wiki at: https://github.com/real-logic/aeron/wiki/Configuration-Options
+
+
+Pass `wait=false` to 
+"""
+function mediadriver(;env::Vector{String}=String[], wait=true)
+    cmd = addenv(Aeron_jll.aeronmd(), env)
+    t = run(`$(cmd)`; wait)
+    if !wait
+        @async begin
+            ret = fetch(t)
+            if ret.exitcode > 0
+                @error "media driver exited with error" exitcode=ret.exitcode
+            end
+        end
+    end
+    return t
+end
 
 include("subscribe.jl")
 include("publish.jl")
