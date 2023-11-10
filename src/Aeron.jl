@@ -65,12 +65,12 @@ end
 
 
 Base.@kwdef struct AeronConfig
-    channel::String
+    uri::String
     stream::Int64
     fragment_count_limit::Int64=10
 end
-AeronConfig(channel; kwargs...) = AeronConfig(;channel, kwargs...)
-AeronConfig(channel, stream; kwargs...) = AeronConfig(;channel, stream, kwargs...)
+AeronConfig(uri; kwargs...) = AeronConfig(;uri, kwargs...)
+AeronConfig(uri, stream; kwargs...) = AeronConfig(;uri, stream, kwargs...)
 export AeronConfig
 
 

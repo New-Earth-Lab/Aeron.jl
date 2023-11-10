@@ -39,7 +39,7 @@ ctx = AeronContext()
 
 ### Publisher
 
-Aeron communications take place over a "channel" and "stream". The channel can be "aeron:ipc" 
+Aeron communications take place over a "uri" and "stream". The uri can be "aeron:ipc" 
 to use shared memory if both endpoints are on the same computer, or a UDP address if they
 are across a network.
 The stream number is a unique integer to specify which stream of data to publish to / listen on.
@@ -47,7 +47,7 @@ The stream number is a unique integer to specify which stream of data to publish
 Create a config object to hold these parameters:
 ```julia
 conf = AeronConfig(
-    channel="aeron:ipc",
+    uri="aeron:ipc",
     stream=1001,
 )
 ```
@@ -88,7 +88,7 @@ of the subscription.
 The main loop is completely allocation free.
 ```julia
 conf = AeronConfig(
-    channel="aeron:ipc",
+    uri="aeron:ipc",
     stream=1001,
 )
 
@@ -124,7 +124,7 @@ into an existing event loop.
 The main loop is completely allocation free.
 ```julia
 conf = AeronConfig(
-    channel="aeron:ipc",
+    uri="aeron:ipc",
     stream=1001,
 )
 

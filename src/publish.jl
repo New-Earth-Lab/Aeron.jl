@@ -8,7 +8,7 @@ end
 function publisher(ctx::AeronContext, conf::AeronConfig)
 
 
-    @debug "Publishing to channel $(conf.channel) on Stream ID $(conf.stream)"
+    @debug "Publishing to uri $(conf.uri) on Stream ID $(conf.stream)"
 
     publication = Ptr{LibAeron.aeron_publication_t}(C_NULL)
     async = Ptr{LibAeron.aeron_async_add_publication_t}(C_NULL)
@@ -23,7 +23,7 @@ function publisher(ctx::AeronContext, conf::AeronConfig)
         if @c(LibAeron.aeron_async_add_publication(
             &async,
             ctx.aeron,
-            conf.channel,
+            conf.uri,
             conf.stream,)) < 0
             error("aeron_async_add_publication: "*unsafe_string(LibAeron.aeron_errmsg()))
         end
@@ -39,7 +39,7 @@ function publisher(ctx::AeronContext, conf::AeronConfig)
             end
         end
     
-        @debug "Publication channel status " LibAeron.aeron_publication_channel_status(publication)
+        @debug "Publication uri status " LibAeron.aeron_publication_uri_status(publication)
 
         # callback(pubhandle)
 
