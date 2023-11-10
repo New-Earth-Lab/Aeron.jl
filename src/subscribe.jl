@@ -129,7 +129,7 @@ function subscriber(ctx::AeronContext, conf::AeronConfig; sizehint=512*512, verb
         if @c(LibAeron.aeron_async_add_subscription(
             &async,
             ctx.aeron,
-            conf.channel,
+            conf.uri,
             conf.stream,
             print_available_image_ptr,
             C_NULL,
