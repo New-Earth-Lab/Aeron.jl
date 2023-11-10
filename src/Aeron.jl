@@ -13,12 +13,20 @@ mutable struct AeronContext
     aeron::Ptr{Nothing}
     context::Ptr{Nothing}
 end
-function AeronContext()
+function AeronContext(;dir::Union{Nothing,AbstractString}=nothing)
     # Initialize 
     aeron = Ptr{LibAeron.aeron_t}(C_NULL)
     context = Ptr{LibAeron.aeron_context_t}(C_NULL)
     if @c(LibAeron.aeron_context_init(&context)) < 0
         error("aeron_context_init: "*unsafe_string(LibAeron.aeron_errmsg()))
+    end
+
+    if !isnothing(dir)
+        ret = LibAeron.aeron_context_set_dir(context, dir)
+        if ret != 0
+            msg = LibAeron.aeron_errmsg()
+            error(lazy"failed to set aeron directory: $msg")
+        end
     end
 
     if @c(LibAeron.aeron_init(&aeron, context)) < 0
