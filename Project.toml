@@ -1,7 +1,7 @@
 name = "Aeron"
 uuid = "42ac8a32-990f-4d8c-aece-52d731103226"
 authors = ["William Thompson <wthompson@uvic.ca>"]
-version = "1.0.0"
+version = "2.0.0"
 
 [deps]
 Aeron_jll = "d964258c-d1ad-568a-aca9-3ef511f5bffd"
