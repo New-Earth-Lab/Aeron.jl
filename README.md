@@ -24,13 +24,14 @@ For other platforms (eg. Windows and Intel macs), you can build the client libra
 
 ### Setup
 
-Start the media driver process in the background (note: only one media driver per computer & user account).
+Start the media driver process (note: only one media driver per computer & user account).
+This will block.
 ```julia
-using Aeron_jll
-run(`$(aeronmd())`, wait=false)
+using Aeron
+Aeron.mediadriver()
 ```
 
-Now create an aeron context object to initialize the client library. This will fail if the media driver isn't yet running.
+Now in another Julia process, create an aeron context object to initialize the client library. This will fail if the media driver isn't yet running.
 ```julia
 using Aeron
 ctx = AeronContext()
