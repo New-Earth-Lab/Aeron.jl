@@ -43,7 +43,7 @@ function AeronContext(;dir::Union{Nothing,AbstractString}=nothing)
 end
 
 function AeronContext(callback::Base.Callable)    
-    ctx = aeronctx()
+    ctx = AeronContext()
     try
         callback(ctx)
     finally
