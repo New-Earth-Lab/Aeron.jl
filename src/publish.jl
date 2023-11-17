@@ -15,10 +15,6 @@ function publisher(ctx::AeronContext, conf::AeronConfig)
 
     try
 
-        if LibAeron.aeron_start(ctx.aeron) < 0
-            error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
-        end
-        @debug "started"
 
         if @c(LibAeron.aeron_async_add_publication(
             &async,
@@ -40,8 +36,6 @@ function publisher(ctx::AeronContext, conf::AeronConfig)
         end
     
         @debug "Publication uri status " LibAeron.aeron_publication_uri_status(publication)
-
-        # callback(pubhandle)
 
     catch err
         LibAeron.aeron_publication_close(publication, C_NULL, C_NULL)
@@ -76,9 +70,9 @@ if the status is `:adminaction` or `:backpressure` until `robust_timeout_ns` pas
 """
 function Base.put!(pub::AeronPublication, message::AbstractArray{UInt8}, robust=true, robust_timeout_ns=100_000)
 
+    message_len = length(message)
     if robust
         start_time = time_ns()
-        message_len = length(message)
         # Retry the publication in case we are rotating term buffers.
         # Use ADMIN_ACTION as an initial sentinel
         result = LibAeron.AERON_PUBLICATION_ADMIN_ACTION
@@ -93,7 +87,6 @@ function Base.put!(pub::AeronPublication, message::AbstractArray{UInt8}, robust=
         result = 
                 LibAeron.aeron_publication_offer(pub.handle, message, message_len, C_NULL, C_NULL)
     end
-
 
     if result > 0
         return :success

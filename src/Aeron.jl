@@ -36,6 +36,7 @@ function AeronContext(;dir::Union{Nothing,AbstractString}=nothing)
     if LibAeron.aeron_start(aeron) < 0
         error("aeron_start: "*unsafe_string(LibAeron.aeron_errmsg()))
     end
+    
     ctx =  AeronContext(aeron,context)
     finalizer(close, ctx)
     return ctx
