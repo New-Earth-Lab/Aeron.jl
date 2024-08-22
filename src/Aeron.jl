@@ -45,7 +45,7 @@ end
 function AeronContext(callback::Base.Callable)    
     ctx = AeronContext()
     try
-        callback(ctx)
+        return callback(ctx)
     finally
         close(ctx)
     end

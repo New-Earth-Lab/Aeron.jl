@@ -138,11 +138,14 @@ function subscriber(ctx::AeronContext, conf::AeronConfig; sizehint=512*512, verb
             error("aeron_async_add_subscription: "*unsafe_string(LibAeron.aeron_errmsg()))
         end
     
+        println("checking for subscription")
         timeout = time() + 5
         while (C_NULL == libaeron_subscription)
             if @c(LibAeron.aeron_async_add_subscription_poll(&libaeron_subscription, async)) < 0
                 error("aeron_async_add_subscription_poll: "*unsafe_string(LibAeron.aeron_errmsg()))
-            end    
+            end
+            println("waiting for subscription..")
+            Libc.systemsleep(0.01)
             yield()
             if time() > timeout
                 error("timed out adding subscription after 5s")
@@ -427,10 +430,11 @@ end
 const watch_handles = Dict{AeronSubscription,Vector{AeronWatchHandle}}()
 const poller_task = Ref{Union{Nothing, Task}}(nothing)
 const shouldexit = Ref{Bool}(false)
+const watch_handles_lock = ReentrantLock()
 
 function unwatchall()
     shouldexit[] = true
-    empty!(watch_handles)
+    @lock watch_handles_lock empty!(watch_handles)
     fetch(poller_task[])
 end
 
@@ -446,7 +450,7 @@ function _launch_poller_task(watch_handles)
     end
     while true
         # TODO: we should support multiple watch handles for the same subscription using a dictionary
-        for sub in keys(watch_handles)
+        @lock watch_handles_lock for sub in keys(watch_handles)
             any_active = false
             for wh in watch_handles[sub]
                 any_active |= wh.active
@@ -455,7 +459,7 @@ function _launch_poller_task(watch_handles)
                 poll(sub, noop=true)
                 continue
             end
-            out = poll(sub)
+            fragments_read, out = poll(sub)
             if !isnothing(out)
                 for wh in watch_handles[sub]
                     if mod(wh.decimate_idx, wh.decimate) == 0 &&
@@ -488,7 +492,7 @@ end
 # Prevent issues in case Aeron.jl is used by a downstream module that watches
 # any streams during precompilation
 function __init__()
-    empty!(watch_handles)
+    @lock watch_handles_lock empty!(watch_handles)
     poller_task[] = nothing
     shouldexit[] = false
 end

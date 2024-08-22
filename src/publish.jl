@@ -98,11 +98,12 @@ function Base.put!(pub::AeronPublication, message::AbstractArray{UInt8}, robust=
         return :adminaction
     elseif LibAeron.AERON_PUBLICATION_CLOSED == result
         error("Offer failed because publication is closed")
+    elseif LibAeron.AERON_PUBLICATION_MAX_POSITION_EXCEEDED == result
+        return :max_position_exceeded
+    elseif LibAeron.AERON_PUBLICATION_ERROR == result
+        return :general_publication_error
     else
         return :unknown
     end
-    # if !LibAeron.aeron_publication_is_connected(publication)
-        # println("No active subscribers detected")
-    # end
 end
 const publication_offer = Base.put!
