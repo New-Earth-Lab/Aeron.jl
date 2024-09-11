@@ -13,7 +13,7 @@ mutable struct AeronContext
     aeron::Ptr{Nothing}
     context::Ptr{Nothing}
 end
-function AeronContext(;dir::Union{Nothing,AbstractString}=nothing)
+function AeronContext(;dir::Union{Nothing,AbstractString}=get(ENV, "AERONJL_CTX_DIR", nothing))
     # Initialize 
     aeron = Ptr{LibAeron.aeron_t}(C_NULL)
     context = Ptr{LibAeron.aeron_context_t}(C_NULL)
